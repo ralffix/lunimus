@@ -2,73 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Supabase Login System</title>
-  <style>
-    body { font-family: sans-serif; max-width: 400px; margin: auto; padding: 2rem; }
-    input { display: block; margin-bottom: 1rem; width: 100%; padding: 0.5rem; }
-    button { padding: 0.5rem 1rem; }
-    .msg { margin-bottom: 1rem; color: red; }
-    .success { color: green; }
-  </style>
+  <title>Lunimus Login</title>
 </head>
 <body>
-  <h2>Login</h2>
-  <div id="login-msg" class="msg"></div>
-  <input type="email" id="login-email" placeholder="Email" required />
-  <input type="password" id="login-password" placeholder="Password" required />
+  <!-- Your login/register form elements here -->
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
   <button id="login-btn">Login</button>
-
-  <h2>Register</h2>
-  <div id="register-msg" class="msg"></div>
-  <input type="email" id="register-email" placeholder="Email" required />
-  <input type="password" id="register-password" placeholder="Password" required />
   <button id="register-btn">Register</button>
+  <div id="message"></div>
 
-  <!-- Load Supabase JS SDK and your config -->
+  <!-- Load Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Load config -->
   <script src="supabase.js"></script>
   <script>
-    // Wait until supabase.js is loaded and config is available
-    const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    // Initialize Supabase client
+    const supabase = window.supabase
+      || supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-    // Login
     document.getElementById('login-btn').onclick = async () => {
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      const msg = document.getElementById('login-msg');
-      msg.textContent = '';
-      if (!email || !password) {
-        msg.textContent = 'Please enter both email and password.';
-        return;
-      }
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        msg.textContent = error.message;
-        msg.classList.remove('success');
-      } else {
-        msg.textContent = 'Login successful!';
-        msg.classList.add('success');
-      }
+      document.getElementById('message').innerText = error ? error.message : 'Login successful!';
     };
 
-    // Register
     document.getElementById('register-btn').onclick = async () => {
-      const email = document.getElementById('register-email').value;
-      const password = document.getElementById('register-password').value;
-      const msg = document.getElementById('register-msg');
-      msg.textContent = '';
-      if (!email || !password) {
-        msg.textContent = 'Please enter both email and password.';
-        return;
-      }
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
       const { error } = await supabase.auth.signUp({ email, password });
-      if (error) {
-        msg.textContent = error.message;
-        msg.classList.remove('success');
-      } else {
-        msg.textContent = 'Registration successful! Please check your email to confirm.';
-        msg.classList.add('success');
-      }
+      document.getElementById('message').innerText = error ? error.message : 'Registration successful!';
     };
   </script>
 </body>
