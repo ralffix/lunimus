@@ -1,81 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Lunimus - Login / Register</title>
+  <title>Login | Lunimus</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #0d1117;
-      color: #c9d1d9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2em;
-    }
-    input {
-      padding: 10px;
-      margin: 5px;
-      width: 200px;
-      border-radius: 8px;
-      border: none;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 5px;
-      border: none;
-      border-radius: 8px;
-      background: #238636;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #2ea043;
-    }
-    .form-box {
-      background: #161b22;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #000;
-      margin-top: 20px;
-    }
-  </style>
+  <script type="module" src="supabase.js"></script>
 </head>
 <body>
+  <h2>Login or Register</h2>
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+  <br>
+  <button onclick="login()">Login</button>
+  <button onclick="register()">Register</button>
 
-  <h1>Welcome to Lunimus</h1>
-  <div class="form-box">
-    <input type="email" id="email" placeholder="Email" /><br>
-    <input type="password" id="password" placeholder="Password" /><br>
-    <button onclick="register()">Register</button>
-    <button onclick="login()">Login</button>
-  </div>
-
-  <script>
-    const supabase = supabase.createClient(
-      'https://ojodoocwsgbprgxndtmp.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qb2Rvb2N3c2dicHJneG5kdG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MzYyNTUsImV4cCI6MjA2OTIxMjI1NX0.Yp4lHyHLWugYmAGJQPwZMZP7TT0o2hSsWzW4-VVEwyk'
-    );
-
-    async function register() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      const { error } = await supabase.auth.signUp({ email, password });
-      alert(error ? error.message : 'Registered! Check your email to confirm.');
-    }
+  <script type="module">
+    import './supabase.js';
 
     async function login() {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return alert("Login failed: " + error.message);
+      alert("Login OK");
+      window.location.href = "dashboard.html";
+    }
 
-      const { error, data } = await supabase.auth.signInWithPassword({ email, password });
-      alert(error ? error.message : 'Logged in successfully!');
-      if (!error) {
-        // You can now redirect or show user-specific content
-        console.log("User:", data.user);
-      }
+    async function register() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) return alert("Register failed: " + error.message);
+      alert("Registered! You can now login.");
     }
   </script>
 </body>
