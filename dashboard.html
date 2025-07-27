@@ -9,14 +9,14 @@
   <button id="logout-btn">Logout</button>
   <div id="session-info"></div>
 
-  <!-- Load Supabase SDK -->
+  <!-- 1. Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Load config -->
+  <!-- 2. Config -->
   <script src="supabase.js"></script>
+  <!-- 3. Your app logic -->
   <script>
     // Initialize Supabase client
-    const supabase = window.supabase
-      || supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
     // Example: Check session and display info
     (async () => {
