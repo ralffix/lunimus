@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Games | Lunimus</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script type="module" src="supabase.js"></script>
+</head>
+<body>
+  <h1>My Game Library</h1>
+  <div id="gameList"></div>
 
+  <script type="module">
+    import './supabase.js';
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const user = sessionData.session?.user;
+
+    if (!user) {
+      alert("Not logged in!");
+      window.location.href = "index.html";
+    }
+
+    const games = ["Game 1", "Game 2", "Game 3", "Game 4"];
+    const owned = await supabase
+      .from("owned_games")
+      .select("game_name")
+      .eq("user_id", user.id);
+
+    const ownedSet = new Set(owned.data.map(g => g.game_name));
+    const container = document.getElementById("gameList");
+
+    games.forEach(game => {
+      const div = document.createElement("div");
+      div.textContent = game;
+
+      if (ownedSet.has(game)) {
+        div.innerHTML += " ✅";
+      } else {
+        const btn = document.createElement("button");
+        btn.textContent = "Buy";
+        btn.onclick = async () => {
+          await supabase.from("owned_games").insert([{ user_id: user.id, game_name: game }]);
+          alert("You now own: " + game);
+          location.reload();
+        };
+        div.appendChild(btn);
+      }
+
+      container.appendChild(div);
+    });
+  </script>
+</body>
+</html>
