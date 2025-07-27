@@ -5,34 +5,34 @@
   <title>Lunimus Login</title>
 </head>
 <body>
-  <!-- Your login/register form elements here -->
   <input id="email" type="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
   <button id="login-btn">Login</button>
   <button id="register-btn">Register</button>
   <div id="message"></div>
 
-  <!-- Load Supabase SDK -->
+  <!-- 1. Load Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Load config -->
-  <script src="supabase.js"></script>
   <script>
-    // Initialize Supabase client
-    const supabase = window.supabase
-      || supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+    // 2. Set config variables
+    const SUPABASE_URL = 'https://ojodoocwsgbprgxndtmp.supabase.co';
+    const SUPABASE_ANON_KEY = 'your-anon-key-here'; // Replace with your actual key
 
-    document.getElementById('login-btn').onclick = async () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      document.getElementById('message').innerText = error ? error.message : 'Login successful!';
-    };
+    // 3. Initialize Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     document.getElementById('register-btn').onclick = async () => {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const { error } = await supabase.auth.signUp({ email, password });
       document.getElementById('message').innerText = error ? error.message : 'Registration successful!';
+    };
+
+    document.getElementById('login-btn').onclick = async () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      document.getElementById('message').innerText = error ? error.message : 'Login successful!';
     };
   </script>
 </body>
