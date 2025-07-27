@@ -1,17 +1,33 @@
 /* styles.css */
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
   font-family: Arial, sans-serif;
+}
+
+body {
+  background-image: url('your-image.jpg'); /* Replace with your image path */
+  background-repeat: no-repeat;
+  background-size: 100% auto; /* fit width, height auto */
+  background-position: top center;
+  min-height: 200vh; /* to allow vertical scroll */
 }
 
 .topbar {
   display: flex;
   align-items: center;
-  background-color: #222;
+  background-color: rgba(34, 34, 34, 0.9); /* slight transparency */
   color: white;
   padding: 10px 20px;
   gap: 15px;
+  position: fixed; /* keep nav fixed on top */
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 }
 
 .topbar button,
@@ -34,4 +50,9 @@ body {
 
 .topbar .spacer {
   flex-grow: 1;
+}
+
+/* Prevent content from hiding under fixed topbar */
+body > *:not(.topbar) {
+  padding-top: 50px; /* match nav height */
 }
