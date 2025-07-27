@@ -18,26 +18,14 @@
   <!-- Load Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- Load your key config first -->
+  <script src="supabase.js"></script>
+
   <script>
-    // Replace with your full Supabase URL and anon key
-    const supabaseClient = supabase.createClient(
-      'https://ojodoocwsgbprgxndtmp.supabase.co',
-      'YOUR_FULL_ANON_KEY_HERE'
-    );
+    // Now create the client using the global variables from supabase.js
+    const supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
     window.addEventListener("DOMContentLoaded", () => {
-
-      // Optional: Listen for auth state changes to update UI or redirect
-      supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session) {
-          console.log('User logged in:', session.user.email);
-          // You could redirect here or update UI
-          // window.location.href = '/dashboard.html';
-        } else {
-          console.log('User logged out');
-        }
-      });
-
       // Register
       document.getElementById('register-btn').addEventListener('click', async () => {
         const email = document.getElementById('register-email').value;
@@ -72,8 +60,7 @@
             alert('Login error: ' + error.message);
           } else {
             alert('Login successful!');
-            // Redirect to dashboard or home page
-            window.location.href = '/dashboard.html';
+            window.location.href = '/dashboard.html'; // redirect after login
           }
         } catch (err) {
           alert('Unexpected error: ' + err.message);
