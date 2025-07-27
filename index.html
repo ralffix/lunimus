@@ -1,37 +1,61 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login | Lunimus</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script type="module" src="supabase.js"></script>
+  <meta charset="UTF-8">
+  <title>Lunimus Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <h2>Login or Register</h2>
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-  <br>
-  <button onclick="login()">Login</button>
-  <button onclick="register()">Register</button>
+  <h2>Login</h2>
+  <input type="email" id="login-email" placeholder="Email">
+  <input type="password" id="login-password" placeholder="Password">
+  <button id="login-btn">Login</button>
 
-  <script type="module">
-    import './supabase.js';
+  <h2>Register</h2>
+  <input type="email" id="register-email" placeholder="Email">
+  <input type="password" id="register-password" placeholder="Password">
+  <button id="register-btn">Register</button>
+
+  <script>
+    const supabase = supabase.createClient(
+      'https://ojodoocwsgbprgxndtmp.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qb2Rvb2N3c2dicHJneG5kdG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MzYyNTUsImV4cCI6MjA2OTIxMjI1NX0.Yp4lHyHLWugYmAGJQPwZMZP7TT0o2hSsWzW4-VVEwyk'
+    );
 
     async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) return alert("Login failed: " + error.message);
-      alert("Login OK");
-      window.location.href = "dashboard.html";
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        alert('Login failed: ' + error.message);
+      } else {
+        alert('Login successful!');
+      }
     }
 
     async function register() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) return alert("Register failed: " + error.message);
-      alert("Registered! You can now login.");
+      const email = document.getElementById('register-email').value;
+      const password = document.getElementById('register-password').value;
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password
+      });
+
+      if (error) {
+        alert('Register failed: ' + error.message);
+      } else {
+        alert('Registered successfully!');
+      }
     }
+
+    document.getElementById('login-btn').addEventListener('click', login);
+    document.getElementById('register-btn').addEventListener('click', register);
   </script>
 </body>
 </html>
