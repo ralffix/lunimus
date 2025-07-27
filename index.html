@@ -15,18 +15,29 @@
   <input type="password" id="register-password" placeholder="Password" />
   <button id="register-btn">Register</button>
 
-  <!-- ✅ Load Supabase SDK FIRST -->
+  <!-- Load Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    // ✅ Initialize after SDK is loaded
+    // Replace with your full Supabase URL and anon key
     const supabaseClient = supabase.createClient(
       'https://ojodoocwsgbprgxndtmp.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qb2Rvb2N3c2dicHJneG5kdG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MzYyNTUsImV4cCI6MjA2OTIxMjI1NX0.Yp4lHyHLWugYmAGJQPwZMZP7TT0o[...]'
+      'YOUR_FULL_ANON_KEY_HERE'
     );
 
-    // ✅ Wait until DOM is fully ready
     window.addEventListener("DOMContentLoaded", () => {
+
+      // Optional: Listen for auth state changes to update UI or redirect
+      supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session) {
+          console.log('User logged in:', session.user.email);
+          // You could redirect here or update UI
+          // window.location.href = '/dashboard.html';
+        } else {
+          console.log('User logged out');
+        }
+      });
+
       // Register
       document.getElementById('register-btn').addEventListener('click', async () => {
         const email = document.getElementById('register-email').value;
@@ -35,11 +46,15 @@
           alert("Please enter both email and password.");
           return;
         }
-        const { error } = await supabaseClient.auth.signUp({ email, password });
-        if (error) {
-          alert('Register error: ' + error.message);
-        } else {
-          alert('Registered successfully. You can now log in.');
+        try {
+          const { error } = await supabaseClient.auth.signUp({ email, password });
+          if (error) {
+            alert('Register error: ' + error.message);
+          } else {
+            alert('Registered successfully. You can now log in.');
+          }
+        } catch (err) {
+          alert('Unexpected error: ' + err.message);
         }
       });
 
@@ -51,11 +66,17 @@
           alert("Please enter both email and password.");
           return;
         }
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) {
-          alert('Login error: ' + error.message);
-        } else {
-          alert('Login successful!');
+        try {
+          const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (error) {
+            alert('Login error: ' + error.message);
+          } else {
+            alert('Login successful!');
+            // Redirect to dashboard or home page
+            window.location.href = '/dashboard.html';
+          }
+        } catch (err) {
+          alert('Unexpected error: ' + err.message);
         }
       });
     });
