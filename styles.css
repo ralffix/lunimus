@@ -11,9 +11,8 @@ html, body {
 body {
   background-image: url('eb8e95a2-270c-4e09-a609-ef91a6d149b6.png'); /* Replace with your image path */
   background-repeat: no-repeat;
-  background-size: 100% auto; /* fit width, height auto */
+  background-size: 90% auto; /* fit width, height auto */
   background-position: top center;
-  min-height: 200vh; /* to allow vertical scroll */
 }
 
 .topbar {
