@@ -1,0 +1,37 @@
+/* styles.css */
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  background-color: #222;
+  color: white;
+  padding: 10px 20px;
+  gap: 15px;
+}
+
+.topbar button,
+.topbar a {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.topbar button:hover,
+.topbar a:hover {
+  background-color: #444;
+}
+
+.topbar .spacer {
+  flex-grow: 1;
+}
