@@ -1,53 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Games | Lunimus</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script type="module" src="supabase.js"></script>
+  <meta charset="UTF-8" />
+  <title>Lunimus Dashboard</title>
 </head>
 <body>
-  <h1>My Game Library</h1>
-  <div id="gameList"></div>
+  <h1>Dashboard</h1>
+  <button id="logout-btn">Logout</button>
+  <div id="session-info"></div>
 
-  <script type="module">
-    import './supabase.js';
+  <!-- Load Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Load config -->
+  <script src="supabase.js"></script>
+  <script>
+    // Initialize Supabase client
+    const supabase = window.supabase
+      || supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const user = sessionData.session?.user;
+    // Example: Check session and display info
+    (async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      document.getElementById('session-info').innerText =
+        session ? 'Logged in as: ' + session.user.email : 'Not logged in.';
+    })();
 
-    if (!user) {
-      alert("Not logged in!");
-      window.location.href = "index.html";
-    }
-
-    const games = ["Game 1", "Game 2", "Game 3", "Game 4"];
-    const owned = await supabase
-      .from("owned_games")
-      .select("game_name")
-      .eq("user_id", user.id);
-
-    const ownedSet = new Set(owned.data.map(g => g.game_name));
-    const container = document.getElementById("gameList");
-
-    games.forEach(game => {
-      const div = document.createElement("div");
-      div.textContent = game;
-
-      if (ownedSet.has(game)) {
-        div.innerHTML += " ✅";
-      } else {
-        const btn = document.createElement("button");
-        btn.textContent = "Buy";
-        btn.onclick = async () => {
-          await supabase.from("owned_games").insert([{ user_id: user.id, game_name: game }]);
-          alert("You now own: " + game);
-          location.reload();
-        };
-        div.appendChild(btn);
-      }
-
-      container.appendChild(div);
-    });
+    // Logout
+    document.getElementById('logout-btn').onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+    };
   </script>
 </body>
 </html>
