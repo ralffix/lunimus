@@ -15,49 +15,47 @@
   <input type="password" id="register-password" placeholder="Password" />
   <button id="register-btn">Register</button>
 
-  <!-- Load Supabase SDK -->
+  <!-- 1. Load Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Now run your script AFTER the SDK is loaded -->
   <script>
-    window.addEventListener("DOMContentLoaded", async () => {
-      const supabase = supabase.createClient(
-        'https://ojodoocwsgbprgxndtmp.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qb2Rvb2N3c2dicHJneG5kdG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MzYyNTUsImV4cCI6MjA2OTIxMjI1NX0.Yp4lHyHLWugYmAGJQPwZMZP7TT0o2hSsWzW4-VVEwyk'
-      );
+    // 2. Initialize Supabase client immediately after SDK loads
+    const supabase = supabase.createClient(
+      'https://ojodoocwsgbprgxndtmp.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qb2Rvb2N3c2dicHJneG5kdG1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2MzYyNTUsImV4cCI6MjA2OTIxMjI1NX0.Yp4lHyHLWugYmAGJQPwZMZP7TT0o2hSsWzW4-VVEwyk'
+    );
 
+    // 3. Wait for the DOM to be ready before attaching handlers
+    window.addEventListener("DOMContentLoaded", () => {
+      // Login function
       async function login() {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
 
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           alert('Login failed: ' + error.message);
         } else {
           alert('Login successful!');
+          // Redirect to dashboard or another page if you want:
+          // window.location.href = 'dashboard.html';
         }
       }
 
+      // Register function
       async function register() {
         const email = document.getElementById('register-email').value;
         const password = document.getElementById('register-password').value;
 
-        const { error } = await supabase.auth.signUp({
-          email,
-          password
-        });
-
+        const { error } = await supabase.auth.signUp({ email, password });
         if (error) {
           alert('Register failed: ' + error.message);
         } else {
-          alert('Registered successfully!');
+          alert('Registered successfully! You can now log in.');
         }
       }
 
+      // Attach click handlers
       document.getElementById('login-btn').addEventListener('click', login);
       document.getElementById('register-btn').addEventListener('click', register);
     });
