@@ -15,14 +15,13 @@
   <input type="password" id="register-password" placeholder="Password" />
   <button id="register-btn">Register</button>
 
-  <!-- Load Supabase SDK -->
+  <!-- 1. Load Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Load your key config first -->
+  <!-- 2. Load your config -->
   <script src="supabase.js"></script>
 
   <script>
-    // Now create the client using the global variables from supabase.js
+    // 3. Now create the client using the keys from supabase.js
     const supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
     window.addEventListener("DOMContentLoaded", () => {
@@ -60,7 +59,7 @@
             alert('Login error: ' + error.message);
           } else {
             alert('Login successful!');
-            window.location.href = '/dashboard.html'; // redirect after login
+            window.location.href = '/dashboard.html';
           }
         } catch (err) {
           alert('Unexpected error: ' + err.message);
