@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Test</title>
+    <style>
+        #stats {
+            margin-top: 10px;
+            font-family: Arial, sans-serif;
+        }
+        .best-time {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <canvas
+        id="manaPamatne" width="500" height="500" style="border: 2px solid rgb(0, 0, 0);background-color: rgb(255, 255, 255);">
+    </canvas>
+    <button id="startButton" style="margin-top: 10px;">Start</button>
+    <button id="resetButton" style="margin-top: 10px; display: none;">Reset</button>
+
+    <div id="stats">
+        <p><strong>Best Time:</strong> <span id="bestTime">0.0s</span></p>
+        <p><strong>Last 3 Times:</strong> <span id="lastTimes">None</span></p>
+    </div>
+
+    <script>
+        // Game settings
+        let manaPamatne = document.getElementById("manaPamatne");
+        let zimejums = manaPamatne.getContext("2d");
+        let X = 150, Y = 100, radiuss = 20;
+        let platums = 500, augstums = 500;
+        let enemies = [];
+        let enamy_speed = 1;
+        let spawnIntervalTime = 1000;
+        let spawnInterval, speedInterval, spawnReductionTimeout, spawnChanceInterval;
+        let keys = {};
+        let gameRunning = false;
+
+        let superEnemy = null;
+        let superEnemySpeed = 800;
+
+        // Super enemy spawn chance (starts at 0.001%)
+        let superEnemySpawnChance = 0.001;
+
+        // Pink line for super enemy path
+        let superEnemyPath = null;
+
+        let redPartXOffset = 0;
+        let redPartWidth = 10;
+        let redPartYOffset = 5;
+        let redPartHeight = 20;
+
+        let startTime;
+
+        // Best time and last 3 times
+        let bestTime = 0;
+        let lastTimes = [];
+
+        // Event listeners for key presses
+        addEventListener("keydown", (e) => keys[e.keyCode] = true);
+        addEventListener("keyup", (e) => keys[e.keyCode] = false);
+
+        // Update player position based on key presses
+        function updatePlayerPosition() {
+            if (keys[87] && Y - radiuss > 0) Y -= 2; // W
+            if (keys[83] && Y + radiuss < augstums) Y += 2; // S
+            if (keys[68] && X + radiuss < platums) X += 2; // D
+            if (keys[65] && X - radiuss > 0) X -= 2; // A
+        }
+
+        // Spawn enemies
+        function spawnEnemy() {
+            let elapsedTime = Date.now() - startTime;
+            let enamy_spawn_Y = Math.random() * augstums;
+            let enamy_spawn_X = 0;
+            enemies.push({ x: enamy_spawn_X, y: enamy_spawn_Y, direction: 'right' });
+
+            if (elapsedTime >= 20000) {
+                enamy_spawn_X = Math.random() * platums;
+                enamy_spawn_Y = 0;
+                enemies.push({ x: enamy_spawn_X, y: enamy_spawn_Y, direction: 'down' });
+            }
+        }
+
+        // Spawn super enemy with a configurable chance
+        function spawnSuperEnemy() {
+            if (!superEnemy && Math.random() < superEnemySpawnChance) {
+                // Determine the spawn position and direction
+                let direction = ['right', 'left', 'down', 'up'][Math.floor(Math.random() * 4)];
+                let spawnX, spawnY;
+
+                // Set the spawn position based on the direction
+                switch (direction) {
+                    case 'right':
+                        spawnX = 0; // Start at the left edge
+                        spawnY = Math.random() * augstums;
+                        break;
+                    case 'left':
+                        spawnX = platums; // Start at the right edge
+                        spawnY = Math.random() * augstums;
+                        break;
+                    case 'down':
+                        spawnX = Math.random() * platums;
+                        spawnY = 0; // Start at the top edge
+                        break;
+                    case 'up':
+                        spawnX = Math.random() * platums;
+                        spawnY = augstums; // Start at the bottom edge
+                        break;
+                }
+
+                // Set the pink line path
+                superEnemyPath = { x: spawnX, y: spawnY, direction: direction };
+
+                // Delay the actual spawning of the super enemy
+                setTimeout(() => {
+                    superEnemy = {
+                        x: spawnX,
+                        y: spawnY,
+                        direction: direction,
+                    };
+                    superEnemyPath = null; // Remove the pink line after spawning
+                    superEnemySpawnChance = 0.001; // Reset spawn chance
+                }, 1000); // 1-second delay
+            }
+        }
+
+        // Increase the super enemy spawn chance every second
+        function increaseSpawnChance() {
+            superEnemySpawnChance += 0.00001; // Increase by 0.001%
+        }
+
+        // Move enemies
+        function moveEnemies() {
+            if (!gameRunning) return;
+            for (let i = 0; i < enemies.length; i++) {
+                if (enemies[i].direction === 'right') {
+                    enemies[i].x += enamy_speed;
+                    if (enemies[i].x > platums) {
+                        enemies.splice(i, 1);
+                        i--;
+                    }
+                } else if (enemies[i].direction === 'down') {
+                    enemies[i].y += enamy_speed;
+                    if (enemies[i].y > augstums) {
+                        enemies.splice(i, 1);
+                        i--;
+                    }
+                }
+            }
+
+            if (superEnemy) {
+                switch (superEnemy.direction) {
+                    case 'right':
+                        superEnemy.x += superEnemySpeed / 60;
+                        if (superEnemy.x > platums) superEnemy = null;
+                        break;
+                    case 'left':
+                        superEnemy.x -= superEnemySpeed / 60;
+                        if (superEnemy.x < -40) superEnemy = null;
+                        break;
+                    case 'down':
+                        superEnemy.y += superEnemySpeed / 60;
+                        if (superEnemy.y > augstums) superEnemy = null;
+                        break;
+                    case 'up':
+                        superEnemy.y -= superEnemySpeed / 60;
+                        if (superEnemy.y < -10) superEnemy = null;
+                        break;
+                }
+            }
+        }
+
+        // Draw the game
+        function zimet() {
+            zimejums.clearRect(0, 0, platums, augstums);
+
+            // Draw enemies
+            zimejums.fillStyle = "red";
+            for (let i = 0; i < enemies.length; i++) {
+                zimejums.save();
+                if (enemies[i].direction === 'down') {
+                    zimejums.translate(enemies[i].x + 20, enemies[i].y + 5);
+                    zimejums.rotate(Math.PI / 2);
+                    zimejums.fillRect(-20, -5, 40, 10);
+                } else {
+                    zimejums.fillRect(enemies[i].x, enemies[i].y, 40, 10);
+                }
+                zimejums.restore();
+            }
+
+            // Draw the pink line for the super enemy path
+            if (superEnemyPath) {
+                zimejums.strokeStyle = "pink";
+                zimejums.lineWidth = 10; // Set the line thickness to 10px
+                zimejums.beginPath();
+                switch (superEnemyPath.direction) {
+                    case 'right':
+                        zimejums.moveTo(superEnemyPath.x, superEnemyPath.y);
+                        zimejums.lineTo(platums, superEnemyPath.y);
+                        break;
+                    case 'left':
+                        zimejums.moveTo(superEnemyPath.x, superEnemyPath.y);
+                        zimejums.lineTo(0, superEnemyPath.y);
+                        break;
+                    case 'down':
+                        zimejums.moveTo(superEnemyPath.x, superEnemyPath.y);
+                        zimejums.lineTo(superEnemyPath.x, augstums);
+                        break;
+                    case 'up':
+                        zimejums.moveTo(superEnemyPath.x, superEnemyPath.y);
+                        zimejums.lineTo(superEnemyPath.x, 0);
+                        break;
+                }
+                zimejums.stroke();
+            }
+
+            // Draw super enemy
+            if (superEnemy) {
+                zimejums.save();
+                zimejums.fillStyle = "blue";
+                zimejums.translate(superEnemy.x + 20, superEnemy.y + 5);
+                switch (superEnemy.direction) {
+                    case 'right': break;
+                    case 'left': zimejums.rotate(Math.PI); break;
+                    case 'down': zimejums.rotate(Math.PI / 2); break;
+                    case 'up': zimejums.rotate(-Math.PI / 2); break;
+                }
+                zimejums.fillRect(-20, -5, 40, 10);
+                zimejums.restore();
+            }
+
+            // Draw player
+            zimejums.fillStyle = "orange";
+            zimejums.beginPath();
+            zimejums.arc(X, Y, radiuss, 0, 2 * Math.PI);
+            zimejums.fill();
+
+            // Display elapsed time
+            let elapsedTime = (Date.now() - startTime) / 1000;
+            zimejums.fillStyle = "black";
+            zimejums.font = "20px Arial";
+            zimejums.fillText(`Time: ${elapsedTime.toFixed(1)}s`, platums - 150, 30);
+        }
+
+        // Update the best time and last 3 times
+        function updateStats(elapsedTime) {
+            // Update last 3 times
+            lastTimes.unshift(elapsedTime);
+            if (lastTimes.length > 3) lastTimes.pop();
+
+            // Update best time
+            if (elapsedTime > bestTime) {
+                bestTime = elapsedTime;
+            }
+
+            // Update the stats display
+            const bestTimeElement = document.getElementById("bestTime");
+            const lastTimesElement = document.getElementById("lastTimes");
+
+            bestTimeElement.textContent = `${bestTime.toFixed(1)}s`;
+
+            // Highlight the best time in the last 3 times
+            lastTimesElement.innerHTML = lastTimes
+                .map(time => time === bestTime ? `<span class="best-time">${time.toFixed(1)}s</span>` : `${time.toFixed(1)}s`)
+                .join(", ");
+        }
+
+        // Check for collisions
+        function checkCollision() {
+            for (let i = 0; i < enemies.length; i++) {
+                if (enemies[i].direction === 'right') {
+                    if (
+                        X + radiuss > enemies[i].x &&
+                        X - radiuss < enemies[i].x + 40 &&
+                        Y + radiuss > enemies[i].y &&
+                        Y - radiuss < enemies[i].y + 10
+                    ) {
+                        gameOver();
+                        break;
+                    }
+                } else if (enemies[i].direction === 'down') {
+                    if (
+                        X + radiuss > enemies[i].x + redPartXOffset &&
+                        X - radiuss < enemies[i].x + redPartXOffset + redPartWidth &&
+                        Y + radiuss > enemies[i].y + redPartYOffset &&
+                        Y - radiuss < enemies[i].y + redPartYOffset + redPartHeight
+                    ) {
+                        gameOver();
+                        break;
+                    }
+                }
+            }
+
+            if (superEnemy) {
+                if (
+                    X + radiuss > superEnemy.x &&
+                    X - radiuss < superEnemy.x + 40 &&
+                    Y + radiuss > superEnemy.y &&
+                    Y - radiuss < superEnemy.y + 10
+                ) {
+                    gameOver();
+                }
+            }
+        }
+
+        // Handle game over
+        function gameOver() {
+            gameRunning = false;
+            clearInterval(spawnInterval);
+            clearInterval(speedInterval);
+            clearInterval(spawnChanceInterval);
+            clearTimeout(spawnReductionTimeout);
+
+            // Calculate elapsed time
+            let elapsedTime = (Date.now() - startTime) / 1000;
+
+            // Update stats
+            updateStats(elapsedTime);
+
+            zimejums.fillStyle = "black";
+            zimejums.font = "50px Arial";
+            zimejums.fillText("Game Over", platums / 2 - 100, augstums / 2);
+
+            document.getElementById("resetButton").style.display = "inline";
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+            updatePlayerPosition();
+            moveEnemies();
+            spawnSuperEnemy(); // Attempt to spawn super enemy
+            zimet();
+            checkCollision();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start the game
+        function startGame() {
+            gameRunning = true;
+            startTime = Date.now();
+            enemies = [];
+            superEnemy = null;
+            superEnemyPath = null;
+            superEnemySpawnChance = 0.001; // Reset spawn chance
+            X = 150;
+            Y = 100;
+            enamy_speed = 1;
+
+            document.getElementById("startButton").style.display = "none";
+            document.getElementById("resetButton").style.display = "none";
+
+            spawnInterval = setInterval(spawnEnemy, spawnIntervalTime);
+            speedInterval = setInterval(() => enamy_speed += 0.2, 5000);
+            spawnChanceInterval = setInterval(increaseSpawnChance, 1000); // Increase spawn chance every second
+
+            gameLoop();
+        }
+
+        // Reset the game
+        function resetGame() {
+            startGame();
+        }
+
+        document.getElementById("startButton").addEventListener("click", startGame);
+        document.getElementById("resetButton").addEventListener("click", resetGame);
+    </script>
+</body>
+</html>
