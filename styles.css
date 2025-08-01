@@ -9,8 +9,9 @@ html, body {
 }
 
 body {
-  background-color: black
-  background-image: url('eb8e95a2-270c-4e09-a609-ef91a6d149b6.png'); /* Replace with your image path */
+  background-color: rgb(24, 24, 24);
+  background-image: linear-gradient(to right, rgba(24, 24, 24, 0.8), rgba(24, 24, 24, 0.2), rgba(24, 24, 24, 0.8)), 
+                    url('eb8e95a2-270c-4e09-a609-ef91a6d149b6.png'); /* Side-to-side gradient with brighter middle */
   background-repeat: no-repeat;
   background-size: 90% auto; /* fit width, height auto */
   background-position: top center;
@@ -65,4 +66,4 @@ body > *:not(.topbar) {
             color: green;
             font-weight: bold;
 }
-    
+
