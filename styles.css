@@ -11,9 +11,9 @@ html, body {
 body {
   background-color: rgb(24, 24, 24);
   background-image: linear-gradient(to right, rgba(24, 24, 24, 0.8), rgba(24, 24, 24, 0.2), rgba(24, 24, 24, 0.8)), 
-                    url('eb8e95a2-270c-4e09-a609-ef91a6d149b6.png'); /* Side-to-side gradient with brighter middle */
+                    url('background.jpeg'); /* Side-to-side gradient with brighter middle */
   background-repeat: no-repeat;
-  background-size: 90% auto; /* fit width, height auto */
+  background-size: 95% auto; /* fit width, height auto */
   background-position: top center;
 }
 
@@ -65,5 +65,14 @@ body > *:not(.topbar) {
 .best-time {
             color: green;
             font-weight: bold;
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content:first baseline;
+  height: calc(100% - 50px); /* adjust for topbar height */
+  color: rgb(104, 104, 104);  
+  padding-left: 10px;
+  padding-right: 10px;
 }
 

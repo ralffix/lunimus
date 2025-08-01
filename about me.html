@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>about me</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <a href="index.html">Home</a>
+    <a href="#">My Games</a>
+    <a href="#">Buy Games</a>
+    <a href="other progekts.html">Other Projects</a>
+    <a href="#">minecraft server</a>
+    <a href="#">About Me</a>
+    <a href="#">Sign In / Log In</a>
+  </nav>
+    <div class="content">
+        <h1>About Me</h1>
+        <p>Welcome to my personal page! Here you can learn more about me, my interests, and my projects.</p>
+    
+        <h2>Who I Am</h2>
+        <p>
+            I'm Ralfs and I am <span id="my-age"></span>, a passionate developer always building something.
+          </p>          
+    
+        <h2>My Interests</h2>
+        <ul>
+          <li>Game Development (Minecraft mods, Unity, etc.)</li>
+          <li>Web Development (HTML, CSS, JavaScript)</li>
+          <li>Open Source Projects</li>
+          <li>Exploring new tech and APIs</li>
+          <li>Creating servers, bots, and weird ideas</li>
+        </ul>
+    
+
+
+        <script>
+            const birthYear = 2010;
+            const currentYear = new Date().getFullYear();
+            document.getElementById("my-age").textContent = currentYear - birthYear;
+          </script>          
+
+</body>
+</html>
