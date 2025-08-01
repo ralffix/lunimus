@@ -13,7 +13,7 @@ body {
   background-image: linear-gradient(to right, rgba(24, 24, 24, 0.8), rgba(24, 24, 24, 0.2), rgba(24, 24, 24, 0.8)), 
                     url('background.jpeg'); /* Side-to-side gradient with brighter middle */
   background-repeat: no-repeat;
-  background-size: 95% auto; /* fit width, height auto */
+  background-size: 80% auto; /* fit width, height auto */
   background-position: top center;
 }
 
