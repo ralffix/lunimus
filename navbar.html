@@ -22,11 +22,16 @@
     authLinks.innerHTML = '';
 
     if (session && session.user) {
-      const userEmail = document.createElement('span');
-      userEmail.textContent = session.user.email;
-      userEmail.style.marginRight = '10px';
-      userEmail.style.color = '#66ffcc';
+      // User email link to profile page
+      const userEmailLink = document.createElement('a');
+      userEmailLink.href = 'profile.html';
+      userEmailLink.textContent = session.user.email;
+      userEmailLink.style.marginRight = '10px';
+      userEmailLink.style.color = '#66ffcc';
+      userEmailLink.style.textDecoration = 'underline';
+      userEmailLink.style.cursor = 'pointer';
 
+      // Logout button
       const logoutBtn = document.createElement('button');
       logoutBtn.textContent = 'Logout';
       logoutBtn.style.cursor = 'pointer';
@@ -39,9 +44,10 @@
         window.location.reload();
       };
 
-      authLinks.appendChild(userEmail);
+      authLinks.appendChild(userEmailLink);
       authLinks.appendChild(logoutBtn);
     } else {
+      // Show login link if no session
       const loginLink = document.createElement('a');
       loginLink.href = 'login.html';
       loginLink.textContent = 'Sign In / Log In';

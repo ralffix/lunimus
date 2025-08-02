@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profile Settings</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <main class="login-container">
+    <h2>Profile Settings</h2>
+    <div id="user-email"></div>
+
+    <h3>Change Password</h3>
+    <input type="password" id="new-password" placeholder="New Password" />
+    <button id="change-password-btn">Change Password</button>
+
+    <h3>Delete Account</h3>
+    <button id="delete-account-btn" style="background-color: #ff4444; color: white;">
+      Delete My Account
+    </button>
+
+    <div id="message"></div>
+  </main>
+
+  <!-- Load Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Load your supabase config -->
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+    // Load navbar
+    fetch("navbar.html")
+      .then(res => res.text())
+      .then(html => document.getElementById("navbar").innerHTML = html);
+
+    const messageDiv = document.getElementById("message");
+    const userEmailDiv = document.getElementById("user-email");
+
+    async function loadUser() {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session || !session.user) {
+        messageDiv.innerText = "You must be logged in to access this page.";
+        messageDiv.style.color = "red";
+        // Optionally redirect to login page after a few seconds
+        setTimeout(() => window.location.href = "login.html", 3000);
+        return;
+      }
+
+      userEmailDiv.innerText = `Logged in as: ${session.user.email}`;
+    }
+
+    async function changePassword() {
+      const newPassword = document.getElementById("new-password").value;
+      if (!newPassword) {
+        showMessage("Please enter a new password.", true);
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+      if (error) {
+        showMessage(error.message, true);
+      } else {
+        showMessage("Password changed successfully!");
+        document.getElementById("new-password").value = "";
+      }
+    }
+
+    async function deleteAccount() {
+      if (!confirm("Are you absolutely sure? This action cannot be undone.")) return;
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !session.user) {
+        showMessage("You must be logged in to delete your account.", true);
+        return;
+      }
+
+      const user = session.user;
+
+      // Supabase does not offer direct API to delete user from client,
+      // so you must implement a server-side function (e.g. Supabase Edge Function)
+      // or use Admin API with a backend to delete the user securely.
+      // Here, we'll just sign the user out and show a message.
+
+      showMessage("Account deletion requires backend support. Please contact support.", true);
+
+      // Optionally sign out user
+      // await supabase.auth.signOut();
+      // window.location.href = "index.html";
+    }
+
+    function showMessage(msg, isError = false) {
+      messageDiv.innerText = msg;
+      messageDiv.style.color = isError ? "red" : "lightgreen";
+    }
+
+    document.getElementById("change-password-btn").addEventListener("click", changePassword);
+    document.getElementById("delete-account-btn").addEventListener("click", deleteAccount);
+
+    loadUser();
+  </script>
+</body>
+</html>
