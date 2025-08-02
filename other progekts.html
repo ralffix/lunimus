@@ -2,14 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>other progets</title>
+  <title>Other Projects</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Reuse your dashboard card style */
+    .dashboard-card {
+      transition: transform 0.2s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: #222;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      text-decoration: none;
+      color: #66edff;
+      box-shadow: 0 0 15px transparent;
+      user-select: none;
+      max-width: 300px;
+      margin: 1rem auto;
+      display: block;
+    }
+    .dashboard-card:hover {
+      transform: scale(1.05);
+      border-color: currentColor;
+      box-shadow: 0 0 25px currentColor;
+    }
+  </style>
 </head>
 <body>
   <div id="navbar"></div>
 
+  <main class="content" style="max-width: 900px; margin: 2rem auto;">
+    <section id="other-projects" class="server-details">
+      <h2>Other Projects</h2>
 
-  
+      <!-- One project card -->
+      <a href="kautkas.html" class="dashboard-card">
+        <h3>My 1 ever html game</h3>
+        <p>A game that i mad in 3h at my school.</p>
+      </a>
+
+      <!-- Copy this <a> block to add more projects -->
+    </section>
+  </main>
 
   <script>
     fetch("navbar.html")
@@ -17,7 +52,6 @@
       .then(data => {
         document.getElementById("navbar").innerHTML = data;
       });
-  </script>  
+  </script>
 </body>
 </html>
-

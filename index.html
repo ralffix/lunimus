@@ -4,17 +4,68 @@
   <meta charset="UTF-8" />
   <title>Lumimus home</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Dashboard card extra styles */
+    .dashboard-card {
+      transition: transform 0.2s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+      flex: 1 1 200px;
+      background: #222;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 0 15px transparent;
+      user-select: none;
+    }
+    .dashboard-card:hover {
+      transform: scale(1.05);
+      border-color: currentColor;
+      box-shadow: 0 0 25px currentColor;
+    }
+  </style>
 </head>
 <body>
-  <nav class="topbar">
-    <a href="index.html">Home</a>
-    <a href="#">My Games</a>
-    <a href="#">Buy Games</a>
-    <a href="other progekts.html">Other Projects</a>
-    <a href="#">minecraft server</a>
-    <a href="about me.html">About Me</a>
-    <a href="#">Sign In / Log In</a>
-  </nav>
+  <div id="navbar"></div>
+
+  <main class="content" style="max-width: 900px; margin: 2rem auto;">
+    <section id="dashboard" class="server-details">
+      <h2>Welcome to Lumimus</h2>
+      <p>Your hub for games, projects, and Minecraft fun.</p>
+
+      <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+        <a href="#" class="dashboard-card" style="color: #00bfff;">
+          <h3>Buy Games</h3>
+          <p>Browse and purchase my games.</p>
+        </a>
+
+        <a href="#" class="dashboard-card" style="color: #66ffcc;">
+          <h3>My Games</h3>
+          <p>Download and play my released games.</p>
+        </a>
+
+        <a href="server.html" class="dashboard-card" style="color: #ffcc00;">
+          <h3>Minecraft Server</h3>
+          <p>Join my custom Minecraft world.</p>
+        </a>
+
+        <a href="other progekts.html" class="dashboard-card" style="color: #ff66cc;">
+          <h3>Other Projects</h3>
+          <p>Explore my other tech and creative works.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Load the navbar
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      });
+  </script>
 </body>
 </html>
-
