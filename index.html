@@ -2,15 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Lumimus home</title>
+  <title>Lunimus | Home</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* Dashboard card extra styles */
+    .home-hero {
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 3rem 1rem;
+      border-radius: 12px;
+      margin: 2rem auto;
+      max-width: 800px;
+    }
+
+    .home-hero h1 {
+      font-size: 3rem;
+      color: #66ffcc;
+    }
+
+    .home-hero p {
+      font-size: 1.2rem;
+      color: #ccc;
+      margin-top: 1rem;
+    }
+
+    .dashboard-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin: 3rem auto;
+      max-width: 1000px;
+    }
+
     .dashboard-card {
       transition: transform 0.2s ease;
       cursor: pointer;
       border: 1px solid transparent;
-      flex: 1 1 200px;
+      flex: 1 1 220px;
       background: #222;
       border-radius: 12px;
       padding: 20px;
@@ -20,47 +48,56 @@
       box-shadow: 0 0 15px transparent;
       user-select: none;
     }
+
     .dashboard-card:hover {
       transform: scale(1.05);
       border-color: currentColor;
       box-shadow: 0 0 25px currentColor;
+    }
+
+    .dashboard-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.5rem;
+    }
+
+    .dashboard-card p {
+      color: #ccc;
     }
   </style>
 </head>
 <body>
   <div id="navbar"></div>
 
-  <main class="content" style="max-width: 900px; margin: 2rem auto;">
-    <section id="dashboard" class="server-details">
-      <h2>Welcome to Lumimus</h2>
-      <p>Your hub for games, projects, and Minecraft fun.</p>
+  <main>
+    <section class="home-hero">
+      <h1>🌌 Welcome to Lunimus</h1>
+      <p>Your hub for games, creations, and Minecraft chaos. Dive in and explore!</p>
+    </section>
 
-      <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
-        <a href="#" class="dashboard-card" style="color: #00bfff;">
-          <h3>Buy Games</h3>
-          <p>Browse and purchase my games.</p>
-        </a>
+    <section class="dashboard-grid">
+      <a href="#" class="dashboard-card" style="color: #00bfff;">
+        <h3>🎮 Buy Games</h3>
+        <p>Browse and purchase original indie games.</p>
+      </a>
 
-        <a href="#" class="dashboard-card" style="color: #66ffcc;">
-          <h3>My Games</h3>
-          <p>Download and play my released games.</p>
-        </a>
+      <a href="#" class="dashboard-card" style="color: #66ffcc;">
+        <h3>📂 My Games</h3>
+        <p>Download and play all my released titles.</p>
+      </a>
 
-        <a href="server.html" class="dashboard-card" style="color: #ffcc00;">
-          <h3>Minecraft Server</h3>
-          <p>Join my custom Minecraft world.</p>
-        </a>
+      <a href="server.html" class="dashboard-card" style="color: #ffcc00;">
+        <h3>🧱 Minecraft Server</h3>
+        <p>Jump into custom hide-and-seek gameplay.</p>
+      </a>
 
-        <a href="other progekts.html" class="dashboard-card" style="color: #ff66cc;">
-          <h3>Other Projects</h3>
-          <p>Explore my other tech and creative works.</p>
-        </a>
-      </div>
+      <a href="other%20progekts.html" class="dashboard-card" style="color: #ff66cc;">
+        <h3>🧪 Other Projects</h3>
+        <p>From tech to art — see what else I’ve built.</p>
+      </a>
     </section>
   </main>
 
   <script>
-    // Load the navbar
     fetch("navbar.html")
       .then(response => response.text())
       .then(data => {
