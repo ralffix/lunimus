@@ -6,29 +6,38 @@
 </head>
 <body>
   <h1>Dashboard</h1>
+  <div>Welcome, <span id="user-email"></span></div>
   <button id="logout-btn">Logout</button>
-  <div id="session-info"></div>
 
-  <!-- 1. Load Supabase SDK -->
+  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- 2. Load your Supabase configuration -->
-  <script src="supabase.js"></script>
-  <!-- 3. Initialize and use Supabase client -->
+  <!-- Your config -->
+  <script src="supabase-config.js"></script>
+
   <script>
-    // Always initialize the client AFTER the SDK and config are loaded!
     const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-    // Check session and display user info
-    (async () => {
+    async function checkAuth() {
       const { data: { session }, error } = await supabase.auth.getSession();
-      document.getElementById('session-info').innerText =
-        session && session.user ? 'Logged in as: ' + session.user.email : 'Not logged in.';
-    })();
+      if (error) {
+        console.error(error.message);
+        return;
+      }
+      if (!session) {
+        alert('You are not logged in. Redirecting to login page...');
+        window.location.href = 'login.html'; // Change to your login page URL
+      } else {
+        document.getElementById('user-email').innerText = session.user.email;
+      }
+    }
 
-    // Logout logic
-    document.getElementById('logout-btn').onclick = async () => {
-      await supabase.auth.signOut();
-      window.location.href = 'index.html';
+    window.onload = () => {
+      checkAuth();
+
+      document.getElementById('logout-btn').onclick = async () => {
+        await supabase.auth.signOut();
+        window.location.href = 'login.html'; // Redirect to login after logout
+      };
     };
   </script>
 </body>

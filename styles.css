@@ -213,3 +213,99 @@ body > *:not(.topbar) {
 }
 
 
+/* Login page styling */
+.login-container {
+  max-width: 400px;
+  margin: 100px auto;
+  background-color: rgba(34, 34, 34, 0.9);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 255, 204, 0.2);
+  text-align: center;
+}
+
+.login-container h2 {
+  color: #66ffcc;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #ddd;
+  font-size: 1rem;
+}
+
+.login-container input::placeholder {
+  color: #666;
+}
+
+.login-container button {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#login-btn {
+  background: linear-gradient(to right, #00ffcc, #00bfff);
+  color: #000;
+}
+
+#login-btn:hover {
+  background: linear-gradient(to right, #00bfff, #00ffcc);
+}
+
+#register-btn {
+  background-color: #444;
+  color: #fff;
+}
+
+#register-btn:hover {
+  background-color: #666;
+}
+
+#message {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: #ff6666;
+}
+.back-btn {
+  background-color: transparent;
+  border: none;
+  color: #00bfff;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.back-btn:hover {
+  color: #66ffcc;
+  text-decoration: underline;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: #ccc;
+}
+
+.remember-me input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: #00ffcc;
+}

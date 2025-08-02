@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lunimus Login</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Optional: center the login form */
+    .login-container {
+      max-width: 400px;
+      margin: 6rem auto;
+      background: rgba(0,0,0,0.7);
+      padding: 2rem;
+      border-radius: 12px;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    input[type="email"], input[type="password"] {
+      padding: 10px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+    button {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #00bfff;
+      color: black;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background: #0099cc;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+    #message {
+      min-height: 1.5em;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <label>
+      <input type="checkbox" id="remember-me" /> Remember Me
+    </label>
+    <button id="login-btn">Login</button>
+    <button id="register-btn">Register</button>
+    <button id="back-btn">Back</button>
+    <div id="message"></div>
+  </div>
+
+  <!-- Load Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Load secret keys (should be gitignored) -->
+  <script src="supabase-config.js"></script>
+
+  <script>
+    // Wait for config to load, then initialize supabase
+    function init() {
+      if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+        showMessage('Supabase config missing or not loaded!', true);
+        return;
+      }
+
+      window.supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+      // Prefill email if saved
+      const savedEmail = localStorage.getItem('savedEmail');
+      if (savedEmail) {
+        document.getElementById('email').value = savedEmail;
+        document.getElementById('remember-me').checked = true;
+      }
+
+      document.getElementById('register-btn').onclick = async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        if (!email || !password) {
+          return showMessage('Please enter both email and password.', true);
+        }
+        const { error } = await window.supabaseClient.auth.signUp({ email, password });
+        showMessage(error ? error.message : 'Registration successful! Please check your email.');
+      };
+
+      document.getElementById('login-btn').onclick = async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const rememberMe = document.getElementById('remember-me').checked;
+        if (!email || !password) {
+          return showMessage('Please enter both email and password.', true);
+        }
+
+        const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+          showMessage(error.message, true);
+        } else {
+          showMessage('Login successful! Redirecting...');
+          if (rememberMe) {
+            localStorage.setItem('savedEmail', email);
+          } else {
+            localStorage.removeItem('savedEmail');
+          }
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1000);
+        }
+      };
+
+      document.getElementById('back-btn').onclick = () => {
+        window.history.back();
+      };
+    }
+
+    function showMessage(msg, isError = false) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.innerText = msg;
+      messageDiv.style.color = isError ? 'red' : 'lightgreen';
+    }
+
+    // Run init after window loads to ensure all scripts loaded
+    window.onload = init;
+  </script>
+</body>
+</html>

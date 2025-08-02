@@ -1,10 +1,53 @@
 <nav class="topbar">
-    <a href="index.html">Home</a>
-    <a href="#">My Games</a>
-    <a href="#">Buy Games</a>
-    <a href="other progekts.html">Other Projects</a>
-    <a href="server.html">Minecraft Server</a>
-    <a href="about me.html">About Me</a>
-    <a href="#">Sign In / Log In</a>
-  </nav>
-  
+  <a href="index.html">Home</a>
+  <a href="#">My Games</a>
+  <a href="#">Buy Games</a>
+  <a href="other progekts.html">Other Projects</a>
+  <a href="server.html">Minecraft Server</a>
+  <a href="about me.html">About Me</a>
+  <span id="auth-links">
+    <a href="login.html" id="login-link">Sign In / Log In</a>
+  </span>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script>
+  const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+  async function updateAuthUI() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    const authLinks = document.getElementById('auth-links');
+    authLinks.innerHTML = '';
+
+    if (session && session.user) {
+      const userEmail = document.createElement('span');
+      userEmail.textContent = session.user.email;
+      userEmail.style.marginRight = '10px';
+      userEmail.style.color = '#66ffcc';
+
+      const logoutBtn = document.createElement('button');
+      logoutBtn.textContent = 'Logout';
+      logoutBtn.style.cursor = 'pointer';
+      logoutBtn.style.background = 'transparent';
+      logoutBtn.style.border = 'none';
+      logoutBtn.style.color = 'white';
+      logoutBtn.style.fontSize = '16px';
+      logoutBtn.onclick = async () => {
+        await supabase.auth.signOut();
+        window.location.reload();
+      };
+
+      authLinks.appendChild(userEmail);
+      authLinks.appendChild(logoutBtn);
+    } else {
+      const loginLink = document.createElement('a');
+      loginLink.href = 'login.html';
+      loginLink.textContent = 'Sign In / Log In';
+      authLinks.appendChild(loginLink);
+    }
+  }
+
+  updateAuthUI();
+</script>
