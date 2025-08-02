@@ -76,3 +76,131 @@ body > *:not(.topbar) {
   padding-right: 10px;
 }
 
+.mc-server-page {
+  color: white;
+  padding: 2rem 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.server-hero {
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.server-hero h1 {
+  font-size: 2.5rem;
+  color: #66ffcc;
+}
+
+.server-hero p {
+  font-size: 1.2rem;
+  color: #ccc;
+}
+
+.server-ip {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+
+.server-ip button {
+  margin-left: 10px;
+  background-color: #444;
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.server-ip button:hover {
+  background-color: #666;
+}
+
+.server-details {
+  margin-bottom: 2rem;
+}
+
+.server-details h2 {
+  color: #00bfff;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.server-details ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.server-details li {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.server-details li::before {
+  content: "🎮";
+  position: absolute;
+  left: 0;
+}
+
+.server-gallery {
+  margin-bottom: 2rem;
+}
+
+.server-gallery h2 {
+  font-size: 1.8rem;
+  color: #ffcc00;
+  margin-bottom: 1rem;
+}
+
+.gallery-images {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.gallery-images img {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #000;
+}
+
+.join-now {
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.join-now h2 {
+  color: #ff66cc;
+  font-size: 2rem;
+}
+
+.join-now p {
+  color: #ddd;
+  margin: 1rem 0;
+}
+
+.join-btn {
+  background: linear-gradient(to right, #00ffcc, #00bfff);
+  color: black;
+  font-weight: bold;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.join-btn:hover {
+  transform: scale(1.05);
+}

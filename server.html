@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Minecraft server</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <div class="mc-server-page">
+    <section class="server-hero">
+      <h1>🎭 Lunimus Hide & Seek Server</h1>
+      <p>Blend in. Disguise. Run. Hide. Seek. Outplay everyone.</p>
+      <div class="server-ip">
+        <strong>Server IP:</strong> play.lunimus.dev
+        <button onclick="copyIP()">Copy IP</button>
+      </div>
+    </section>
+  
+    <section class="server-details">
+      <h2>🎮 Minigame Highlights</h2>
+      <ul>
+        <li>🔍 Fast-paced Hide & Seek mode</li>
+        <li>🧱 Unique maps with custom hiding spots</li>
+        <li>🧑‍🤝‍🧑 Play solo or in parties</li>
+        <li>⚡ Power-ups and seeker abilities</li>
+        <li>🏆 Leaderboards and rewards</li>
+      </ul>
+    </section>
+  
+    <section class="server-gallery">
+      <h2>📸 Server Gallery</h2>
+      <div class="gallery-images">
+        <img src="img/map1.png" alt="Map preview 1">
+        <img src="img/gameplay1.png" alt="In-game action">
+        <img src="img/lobby.png" alt="Lobby area">
+      </div>
+    </section>
+  
+    <section class="join-now">
+      <h2>🚪 Ready to hide?</h2>
+      <p>Join the chaos. Outsmart the seekers. Become a legend.</p>
+      <button class="join-btn" onclick="copyIP()">Copy IP & Join Now</button>
+    </section>
+  </div>
+  
+  <script>
+    function copyIP() {
+      navigator.clipboard.writeText("play.lunimus.dev");
+      alert("Copied IP to clipboard!");
+    }
+  </script>
+  
+  
+
+  <script>
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      });
+  </script>  
+</body>
+</html>
+
