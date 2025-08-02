@@ -1,47 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>about me</title>
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Me</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .about-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 12px;
+      color: #eee;
+    }
+
+    .about-container h1, .about-container h2 {
+      color: #66ffcc;
+    }
+
+    .about-container ul {
+      padding-left: 1.5rem;
+    }
+
+    .about-container li {
+      margin-bottom: 8px;
+    }
+  </style>
 </head>
 <body>
   <div id="navbar"></div>
 
-    <div class="content">
-        <h1>About Me</h1>
-        <p>Welcome to my personal page! Here you can learn more about me, my interests, and my projects.</p>
-    
-        <h2>Who I Am</h2>
-        <p>
-            I'm Ralfs and I am <span id="my-age"></span>, a passionate developer, engener always building something.
-        </p>          
-    
-        <h2>My Interests</h2>
-        <ul>
-          <li>Game Development (Minecraft games, Unity, Oneshape, etc.)</li>
-          <li>Web Development (HTML, CSS, JavaScript and learning python)</li>
-          <li>Open Source Projects</li>
-          <li>Exploring new tech, APIs and GPTs</li>
-          <li>Creating servers, bots, and weird ideas</li>
-        </ul>
-        <h2>My fucher ideas</h2>
-    
+  <main class="about-container">
+    <h1>About Me</h1>
+    <p>Welcome to my personal page! Here you can learn more about me, my interests, and my projects.</p>
+
+    <h2>👤 Who I Am</h2>
+    <p>
+      I'm Ralfs and I am <span id="my-age"></span> years old — a passionate developer and engineer, always building something.
+    </p>          
+
+    <h2>🎯 My Interests</h2>
+    <ul>
+      <li>Game Development (Minecraft games, Unity, Oneshape, etc.)</li>
+      <li>Web Development (HTML, CSS, JavaScript, and learning Python)</li>
+      <li>Open Source Projects</li>
+      <li>Exploring new tech, APIs, and GPTs</li>
+      <li>Creating servers, bots, and weird ideas</li>
+    </ul>
+
+    <h2>🚀 My Future Ideas</h2>
+    <ul>
+      <li>Build a complete minigame network on Minecraft</li>
+      <li>Launch a public open-source tool</li>
+      <li>Try machine learning projects with Python</li>
+    </ul>
+  </main>
+
+  <script>
+    // Calculate age
+    const birthYear = 2010;
+    const currentYear = new Date().getFullYear();
+    document.getElementById("my-age").textContent = currentYear - birthYear;
+
+    // Load navbar
+    fetch("navbar.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("navbar").innerHTML = data;
+      });
 
 
-        <script>
-            // Calculate age based on birth year
-            const birthYear = 2010;
-            const currentYear = new Date().getFullYear();
-            document.getElementById("my-age").textContent = currentYear - birthYear;
-            // Load the navbar
-            fetch("navbar.html")
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById("navbar").innerHTML = data;
-                });
-          </script>          
 
+  </script>
 </body>
 </html>

@@ -2,22 +2,49 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>other progets</title>
+  <title>Other Projects</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="navbar"></div>
-
-
   
 
+
+
+
+
+  <div id="cursor-line"></div>
   <script>
     fetch("navbar.html")
       .then(response => response.text())
       .then(data => {
         document.getElementById("navbar").innerHTML = data;
       });
-  </script>  
+
+    let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+
+window.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+function createTrailDot(x, y) {
+  const dot = document.createElement('div');
+  dot.className = 'cursor-trail';
+  dot.style.left = `${x}px`;
+  dot.style.top = `${y}px`;
+  document.body.appendChild(dot);
+
+  // Remove dot after animation (1 second)
+  setTimeout(() => dot.remove(), 1000);
+}
+
+// Create trail dots continuously every 100ms at last known mouse position
+setInterval(() => {
+  createTrailDot(mouseX, mouseY);
+}, 10);
+
+  </script>
 </body>
 </html>
-
