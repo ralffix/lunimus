@@ -18,14 +18,7 @@
   </style>
 </head>
 <body>
-  <nav class="topbar">
-    <a href="index.html">Home</a>
-    <a href="#">My Games</a>
-    <a href="#">Buy Games</a>
-    <a href="other progekts.html">Other Projects</a>
-    <a href="#">About Me</a>
-    <a href="#">Sign In / Log In</a>
-  </nav>
+    <div id="navbar"></div>
 
    <canvas
         id="manaPamatne" width="500" height="500" style="border: 2px solid rgb(0, 0, 0);background-color: rgb(255, 255, 255);">
@@ -39,6 +32,13 @@
     </div>
 
     <script>
+        // Load the navbar
+        fetch("navbar.html")
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("navbar").innerHTML = data;
+            });
+
         // Game settings
         let manaPamatne = document.getElementById("manaPamatne");
         let zimejums = manaPamatne.getContext("2d");
