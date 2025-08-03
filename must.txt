@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Other Projects</title>
+  <title>must</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -10,12 +10,29 @@
 
   <!-- Your page content here -->
 
+  <!-- Load Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Your Supabase keys -->
+  <script src="supabase-config.js"></script>
+
   <script>
-    // Load navbar.html into the navbar div
+    const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+    // Load navbar.html first
     fetch("navbar.html")
       .then(response => response.text())
       .then(data => {
         document.getElementById("navbar").innerHTML = data;
+
+        // Now that navbar is in the page, check auth
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session && session.user) {
+            const authLinks = document.getElementById("auth-links");
+            if (authLinks) {
+              authLinks.innerHTML = '<a href="akount.html">Account</a>';
+            }
+          }
+        });
       });
   </script>
 </body>

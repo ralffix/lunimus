@@ -100,54 +100,24 @@
   </main>
 
   <script>
-    // Put your real Supabase URL and anon key here (don't expose your service key)
-    const SUPABASE_URL = 'https://ojodoocwsgbprgxndtmp.supabase.co';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+    const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 
-    // Load the navbar HTML
+    // Load navbar.html first
     fetch("navbar.html")
       .then(response => response.text())
       .then(data => {
         document.getElementById("navbar").innerHTML = data;
-        setupAuthUI();
+
+        // Now that navbar is in the page, check auth
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session && session.user) {
+            const authLinks = document.getElementById("auth-links");
+            if (authLinks) {
+              authLinks.innerHTML = '<a href="akount.html">Account</a>';
+            }
+          }
+        });
       });
-
-    function setupAuthUI() {
-      const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-      async function updateAuthUI() {
-        const { data: { session } } = await supabase.auth.getSession();
-        const authContainer = document.getElementById('auth-container');
-
-        if (session && session.user) {
-          authContainer.innerHTML = `
-            <span>Welcome, ${session.user.email}</span>
-            <button id="logout-btn">Logout</button>
-          `;
-          document.getElementById('logout-btn').onclick = async () => {
-            await supabase.auth.signOut();
-            updateAuthUI();
-          };
-        } else {
-          authContainer.innerHTML = `
-            <button id="login-btn">Login</button>
-            <button id="register-btn">Register</button>
-          `;
-          document.getElementById('login-btn').onclick = () => {
-            window.location.href = 'login.html';
-          };
-          document.getElementById('register-btn').onclick = () => {
-            window.location.href = 'login.html';
-          };
-        }
-      }
-
-      updateAuthUI();
-
-      supabase.auth.onAuthStateChange(() => {
-        updateAuthUI();
-      });
-    }
   </script>
 </body>
 </html>

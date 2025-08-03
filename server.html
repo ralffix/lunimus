@@ -55,14 +55,25 @@
   
 
   <script>
+    const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+
+    // Load navbar.html first
     fetch("navbar.html")
       .then(response => response.text())
       .then(data => {
         document.getElementById("navbar").innerHTML = data;
-      });
-      
 
-  </script>  
+        // Now that navbar is in the page, check auth
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session && session.user) {
+            const authLinks = document.getElementById("auth-links");
+            if (authLinks) {
+              authLinks.innerHTML = '<a href="akount.html">Account</a>';
+            }
+          }
+        });
+      });
+  </script>
 </body>
 </html>
 
