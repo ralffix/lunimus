@@ -2,8 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Minecraft server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Me</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    .about-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 12px;
+      color: #eee;
+    }
+
+    .about-container h1, .about-container h2 {
+      color: #66ffcc;
+    }
+
+    .about-container ul {
+      padding-left: 1.5rem;
+    }
+
+    .about-container li {
+      margin-bottom: 8px;
+    }
+  </style>
 </head>
 <body>
   <nav class="topbar">
@@ -16,56 +39,40 @@
       <a href="login.html" id="login-link">Sign In / Log In</a>
   </nav>  
 
-  <div class="mc-server-page">
-    <section class="server-hero">
-      <h1>🎭 Lunimus Hide & Seek Server</h1>
-      <p>Blend in. Disguise. Run. Hide. Seek. Outplay everyone.</p>
-      <div class="server-ip">
-        <strong>Server IP:</strong> play.lunimus.dev
-        <button onclick="copyIP()">Copy IP</button>
-      </div>
-    </section>
-  
-    <section class="server-details">
-      <h2>🎮 Minigame Highlights</h2>
-      <ul>
-        <li>🔍 Fast-paced Hide & Seek mode</li>
-        <li>🧱 Unique maps with custom hiding spots</li>
-        <li>🧑‍🤝‍🧑 Play solo or in parties</li>
-        <li>⚡ Power-ups and seeker abilities</li>
-        <li>🏆 Leaderboards and rewards</li>
-      </ul>
-    </section>
-  
-    <section class="server-gallery">
-      <h2>📸 Server Gallery</h2>
-      <div class="gallery-images">
-        <img src="img/map1.png" alt="Map preview 1">
-        <img src="img/gameplay1.png" alt="In-game action">
-        <img src="img/lobby.png" alt="Lobby area">
-      </div>
-    </section>
-  
-    <section class="join-now">
-      <h2>🚪 Ready to hide?</h2>
-      <p>Join the chaos. Outsmart the seekers. Become a legend.</p>
-      <button class="join-btn" onclick="copyIP()">Copy IP & Join Now</button>
-    </section>
-  </div>
-  
-  <script>
-    function copyIP() {
-      navigator.clipboard.writeText("play.lunimus.dev");
-      alert("Copied IP to clipboard!");
-    }
-  </script>
-  
-  
+  <main class="about-container">
+    <h1>About Me</h1>
+    <p>Welcome to my personal page! Here you can learn more about me, my interests, and my projects.</p>
+
+    <h2>👤 Who I Am</h2>
+    <p>
+      I'm Ralfs and I am <span id="my-age"></span> years old — a passionate developer and engineer, always building something.
+    </p>
+
+    <h2>🎯 My Interests</h2>
+    <ul>
+      <li>Web Development (HTML, CSS, JavaScript, and learning Python)</li>
+      <li>Open Source Projects</li>
+      <li>Exploring new tech, APIs, and GPTs</li>
+      <li>Creating servers, bots, and weird ideas</li>
+    </ul>
+
+    <h2>🚀 My Goals</h2>
+    <ul>
+      <li>Build a complete minigame network on Minecraft</li>
+      <li>Launch a public open-source tool</li>
+      <li>Try machine learning projects with Python</li>
+    </ul>
+  </main>
 
   <script>
+    // Calculate age
+    const birthYear = 2010;
+    const currentYear = new Date().getFullYear();
+    document.getElementById("my-age").textContent = currentYear - birthYear;
+
     // Initialize Supabase client
     const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-
+  
     // Load navbar.html and then handle auth-based UI change
     fetch("navbar.html")
       .then(response => {
@@ -100,4 +107,3 @@
   </script>
 </body>
 </html>
-

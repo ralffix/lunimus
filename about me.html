@@ -29,7 +29,15 @@
   </style>
 </head>
 <body>
-  <div id="navbar"></div>
+  <nav class="topbar">
+    <a href="index.html">Home</a>
+    <a href="#">My Games</a>
+    <a href="#">Buy Games</a>
+    <a href="other progekts.html">Other Projects</a>
+    <a href="server.html">Minecraft Server</a>
+    <a href="about me.html">About Me</a>
+      <a href="login.html" id="login-link">Sign In / Log In</a>
+  </nav>  
 
   <main class="about-container">
     <h1>About Me</h1>
@@ -63,42 +71,40 @@
     const currentYear = new Date().getFullYear();
     document.getElementById("my-age").textContent = currentYear - birthYear;
 
-    
+    // Initialize Supabase client
+    const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  
+    // Load navbar.html and then handle auth-based UI change
+    fetch("navbar.html")
+      .then(response => {
+        if (!response.ok) throw new Error("Failed to load navbar");
+        return response.text();
+      })
+      .then(html => {
+        document.getElementById("navbar").innerHTML = html;
 
-      // Initialize Supabase client
-      const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-  
-      // Load navbar.html and then handle auth-based UI change
-      fetch("navbar.html")
-        .then(response => {
-          if (!response.ok) throw new Error("Failed to load navbar");
-          return response.text();
-        })
-        .then(html => {
-          document.getElementById("navbar").innerHTML = html;
-  
-          // Wait for the DOM to update with injected navbar
-          const checkAuthLinks = () => {
-            const authLinks = document.getElementById("auth-links");
-            if (!authLinks) {
-              // Retry a few times if the element hasn't rendered yet
-              setTimeout(checkAuthLinks, 100);
-              return;
+        // Wait for the DOM to update with injected navbar
+        const checkAuthLinks = () => {
+          const authLinks = document.getElementById("auth-links");
+          if (!authLinks) {
+            // Retry a few times if the element hasn't rendered yet
+            setTimeout(checkAuthLinks, 100);
+            return;
+          }
+
+          supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session && session.user) {
+              authLinks.innerHTML = '<a href="akount.html">Account</a>';
             }
-  
-            supabase.auth.getSession().then(({ data: { session } }) => {
-              if (session && session.user) {
-                authLinks.innerHTML = '<a href="akount.html">Account</a>';
-              }
-            });
-          };
-  
-          checkAuthLinks();
-        })
-        .catch(error => {
-          console.error("Error loading navbar or checking session:", error);
-          document.getElementById("navbar").innerHTML = "<nav>Navbar failed to load.</nav>";
-        });
+          });
+        };
+
+        checkAuthLinks();
+      })
+      .catch(error => {
+        console.error("Error loading navbar or checking session:", error);
+        document.getElementById("navbar").innerHTML = "<nav>Navbar failed to load.</nav>";
+      });
     </script>
 </body>
 </html>
