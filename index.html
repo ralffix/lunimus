@@ -107,25 +107,28 @@
     </section>
   </main>
 
-  <script>
-    // Set your actual values here:
-    window.SUPABASE_URL = "https://your-project-id.supabase.co";
-    window.SUPABASE_ANON_KEY = "your-public-anon-key";
-  </script>
+<script src="supabase-config.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const supabaseClient = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_ANON_KEY
+  );
+
+  // Use supabaseClient below
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    const loginLink = document.getElementById("login-link");
+    if (!loginLink) return;
   
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    if (session && session.user) {
+      loginLink.href = "profile.html";
+      loginLink.textContent = "Profile";
+    }
+  });
   
-  <script>
-    const supabaseClient = window.supabase.createClient(
-      window.SUPABASE_URL,
-      window.SUPABASE_ANON_KEY
-    );
-  
-    // Use supabaseClient below
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      // your logic
-    });
-  </script>
-  
+</script>
+
 </body>
 </html>

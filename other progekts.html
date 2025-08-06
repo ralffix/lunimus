@@ -77,41 +77,28 @@
 
   <div id="cursor-line"></div>
 
-  <script>
-    // Initialize Supabase client
-    const supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  <script src="supabase-config.js"></script>
 
-    // Load navbar.html and then handle auth-based UI change
-    fetch("navbar.html")
-      .then(response => {
-        if (!response.ok) throw new Error("Failed to load navbar");
-        return response.text();
-      })
-      .then(html => {
-        document.getElementById("navbar").innerHTML = html;
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        // Wait for the DOM to update with injected navbar
-        const checkAuthLinks = () => {
-          const authLinks = document.getElementById("auth-links");
-          if (!authLinks) {
-            // Retry a few times if the element hasn't rendered yet
-            setTimeout(checkAuthLinks, 100);
-            return;
-          }
+<script>
+  const supabaseClient = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_ANON_KEY
+  );
 
-          supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session && session.user) {
-              authLinks.innerHTML = '<a href="akount.html">Account</a>';
-            }
-          });
-        };
+  // Use supabaseClient below
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    const loginLink = document.getElementById("login-link");
+    if (!loginLink) return;
+  
+    if (session && session.user) {
+      loginLink.href = "profile.html";
+      loginLink.textContent = "Profile";
+    }
+  });
+  
+</script>
 
-        checkAuthLinks();
-      })
-      .catch(error => {
-        console.error("Error loading navbar or checking session:", error);
-        document.getElementById("navbar").innerHTML = "<nav>Navbar failed to load.</nav>";
-      });
-  </script>
 </body>
 </html>

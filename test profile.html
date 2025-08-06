@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profile Settings</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <a href="index.html">Home</a>
+    <a href="#">My Games</a>
+    <a href="#">Buy Games</a>
+    <a href="other progekts.html">Other Projects</a>
+    <a href="server.html">Minecraft Server</a>
+    <a href="about me.html">About Me</a>
+    <a href="login.html" id="login-link">Sign In / Log In</a>
+  </nav>  
+
+  <main class="login-container">
+    <h2>Profile Settings</h2>
+    <div id="user-email"></div>
+
+    <h3>Log Out</h3>
+    <button id="logout-btn" style="background-color: #333; color: white;">Log Out</button>
+
+    <h3>Claim a Gift Code</h3>
+    <input type="text" id="gift-code-input" placeholder="Enter your gift code" />
+    <button id="claim-gift-code-btn">Claim Code</button>
+    <div id="gift-message"></div>
+
+    <h3>Change Password</h3>
+    <input type="password" id="new-password" placeholder="New Password" />
+    <button id="change-password-btn">Change Password</button>
+
+    <h3>Add Second Email</h3>
+    <input type="email" id="second-email" placeholder="Second Email" />
+    <button id="add-email-btn">Add Email</button>
+    <div id="email-message"></div>
+
+    <h3>Delete Account</h3>
+    <button id="delete-account-btn" style="background-color: #ff4444; color: white;">
+      Delete My Account
+    </button>
+
+    <div id="message"></div>
+  </main>
+
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.SUPABASE_URL,
+      window.SUPABASE_ANON_KEY
+    );
+
+    const messageDiv = document.getElementById("message");
+
+    function showMessage(msg, isError = false) {
+      messageDiv.innerText = msg;
+      messageDiv.style.color = isError ? "red" : "lightgreen";
+    }
+
+    async function loadUser() {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const session = sessionData.session;
+
+      const loginLink = document.getElementById("login-link");
+      if (!loginLink) return;
+
+      if (session && session.user) {
+        loginLink.href = "profile.html";
+        loginLink.textContent = "Profile";
+        document.getElementById("user-email").innerText = "Logged in as: " + session.user.email;
+      } else {
+        loginLink.href = "login.html";
+        loginLink.textContent = "Sign In / Log In";
+      }
+    }
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      window.location.href = "index.html";
+    });
+
+    document.getElementById("change-password-btn").addEventListener("click", async () => {
+      const newPassword = document.getElementById("new-password").value;
+
+      const { data, error } = await supabaseClient.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        showMessage("Error: " + error.message, true);
+      } else {
+        showMessage("Password updated successfully.");
+      }
+    });
+
+    document.getElementById("add-email-btn").addEventListener("click", async () => {
+      const secondEmail = document.getElementById("second-email").value;
+      const emailMessage = document.getElementById("email-message");
+
+      if (!secondEmail.includes("@")) {
+        emailMessage.innerText = "Invalid email address.";
+        emailMessage.style.color = "red";
+        return;
+      }
+
+      const { error } = await supabaseClient.auth.updateUser({
+        email: secondEmail
+      });
+
+      if (error) {
+        emailMessage.innerText = "Failed to add second email: " + error.message;
+        emailMessage.style.color = "red";
+      } else {
+        emailMessage.innerText = "Email change request sent. Please check your inbox.";
+        emailMessage.style.color = "lightgreen";
+      }
+    });
+
+    document.getElementById("delete-account-btn").addEventListener("click", async () => {
+      showMessage("Account deletion requires backend support. Please contact support.", true);
+
+      // Optional sign out
+      // await supabaseClient.auth.signOut();
+      // window.location.href = "index.html";
+    });
+
+    document.getElementById("claim-gift-code-btn").addEventListener("click", async () => {
+      const code = document.getElementById("gift-code-input").value.trim();
+      const giftMessage = document.getElementById("gift-message");
+
+      if (!code) {
+        giftMessage.innerText = "Please enter a code.";
+        giftMessage.style.color = "red";
+        return;
+      }
+
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const user = sessionData.session?.user;
+
+      if (!user) {
+        giftMessage.innerText = "You must be logged in.";
+        giftMessage.style.color = "red";
+        return;
+      }
+
+      const { data: giftData, error: giftError } = await supabaseClient
+        .from("gift_codes")
+        .select("*")
+        .eq("code", code)
+        .eq("claimed", false)
+        .single();
+
+      if (giftError || !giftData) {
+        giftMessage.innerText = "Invalid or already claimed code.";
+        giftMessage.style.color = "red";
+        return;
+      }
+
+      const { error: updateError } = await supabaseClient
+        .from("gift_codes")
+        .update({
+          claimed: true,
+          claimed_by: user.id,
+          claimed_at: new Date().toISOString()
+        })
+        .eq("id", giftData.id);
+
+      if (updateError) {
+        giftMessage.innerText = "Failed to claim code.";
+        giftMessage.style.color = "red";
+        return;
+      }
+
+      await supabaseClient.from("owned_games").insert({
+        user_id: user.id,
+        game_id: giftData.game_id
+      });
+
+      giftMessage.innerText = "Gift claimed! Check your library.";
+      giftMessage.style.color = "lightgreen";
+    });
+
+    loadUser();
+  </script>
+</body>
+</html>
