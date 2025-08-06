@@ -278,10 +278,7 @@ body > *:not(.topbar) {
 #message {
   margin-top: 1rem;
   font-size: 0.95rem;
-  color: #ff6666;
-}
-.back-btn {
-  background-color: transparent;
+  color: #ff6666; 
   border: none;
   color: #00bfff;
   font-size: 1rem;
