@@ -10,9 +10,9 @@ html, body {
   background-image:
     linear-gradient(
       to right,
-      rgba(24, 24, 24, 0.8),
-      rgba(24, 24, 24, 0.2),
-      rgba(24, 24, 24, 0.8)
+      rgba(24, 24, 24, 0.98),
+      rgba(24, 24, 24, 0.4),
+      rgba(24, 24, 24, 0.98)
     ),
     url('background.jpeg'); /* Side-to-side gradient with brighter middle */
   background-repeat: no-repeat;
