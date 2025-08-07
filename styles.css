@@ -357,6 +357,15 @@ body > *:not(.topbar) {
   padding: 2rem;
   justify-content: center;
   color: black;
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+  box-sizing: border-box; /* Ensure padding doesn't affect width */
+  background: rgba(20, 20, 20, 0.8); /* dark translucent background */
+  border-radius: 12px;
+  margin: 2rem auto;
+  max-width: 98%; /* limit width for better readability */
+  width: 100%; /* full width within max-width */
+  padding: 1.5rem;
+
 }
 .game-card {
   background: rgba(20, 20, 20, 0.8); /* a bit darker, almost black translucent */
