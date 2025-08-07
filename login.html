@@ -5,7 +5,6 @@
   <title>Lunimus Login</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* Optional: center the login form */
     .login-container {
       max-width: 400px;
       margin: 6rem auto;
@@ -17,7 +16,7 @@
       flex-direction: column;
       gap: 1rem;
     }
-    input[type="email"], input[type="password"] {
+    input[type="email"], input[type="password"], input[type="range"] {
       padding: 10px;
       border-radius: 6px;
       border: none;
@@ -47,78 +46,139 @@
       font-weight: bold;
       text-align: center;
     }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="login-container">
     <input id="email" type="email" placeholder="Email" />
     <input id="password" type="password" placeholder="Password" />
+
+    <input id="confirm-password" type="password" placeholder="Repeat Password" class="hidden" />
+
+    <label id="age-container" class="hidden">
+      Age:
+      <input type="range" id="age" min="13" max="100" value="18" />
+      <span id="age-value">18</span>
+    </label>
+
+    <label id="agreement-label" class="hidden">
+      <input type="checkbox" id="agreement" />
+      I agree to the <a href="agreement.html" target="_blank">terms and conditions</a>
+    </label>
+
     <label>
       <input type="checkbox" id="remember-me" /> Remember Me
     </label>
+
     <button id="login-btn">Login</button>
     <button id="register-btn">Register</button>
     <button id="back-btn">Back</button>
     <div id="message"></div>
   </div>
 
-  <!-- Load Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Load secret keys (should be gitignored) -->
   <script src="supabase-config.js"></script>
 
   <script>
-    // Wait for config to load, then initialize supabase
     function init() {
       if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
-        showMessage('Supabase config missing or not loaded!', true);
+        showMessage('Supabase config missing!', true);
         return;
       }
 
-      window.supabaseClient = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // Prefill email if saved
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const confirmInput = document.getElementById('confirm-password');
+      const agreementCheckbox = document.getElementById('agreement');
+      const agreementLabel = document.getElementById('agreement-label');
+      const rememberMe = document.getElementById('remember-me');
+      const loginBtn = document.getElementById('login-btn');
+      const registerBtn = document.getElementById('register-btn');
+      const backBtn = document.getElementById('back-btn');
+      const ageSlider = document.getElementById('age');
+      const ageContainer = document.getElementById('age-container');
+      const ageValue = document.getElementById('age-value');
+
+      let registerMode = false;
+
+      // Prefill saved email
       const savedEmail = localStorage.getItem('savedEmail');
       if (savedEmail) {
-        document.getElementById('email').value = savedEmail;
-        document.getElementById('remember-me').checked = true;
+        emailInput.value = savedEmail;
+        rememberMe.checked = true;
       }
 
-      document.getElementById('register-btn').onclick = async () => {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        if (!email || !password) {
-          return showMessage('Please enter both email and password.', true);
-        }
-        const { error } = await window.supabaseClient.auth.signUp({ email, password });
-        showMessage(error ? error.message : 'Registration successful! Please check your email.');
+      ageSlider.oninput = () => {
+        ageValue.innerText = ageSlider.value;
       };
 
-      document.getElementById('login-btn').onclick = async () => {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const rememberMe = document.getElementById('remember-me').checked;
-        if (!email || !password) {
-          return showMessage('Please enter both email and password.', true);
+      registerBtn.onclick = async () => {
+        if (!registerMode) {
+          confirmInput.classList.remove("hidden");
+          agreementLabel.classList.remove("hidden");
+          ageContainer.classList.remove("hidden");
+          showMessage("Fill out password again, agree to terms, and select age");
+          registerMode = true;
+          return;
         }
 
-        const { error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const confirmPassword = confirmInput.value;
+        const age = ageSlider.value;
+
+        if (!email || !password || !confirmPassword) {
+          return showMessage("All fields are required.", true);
+        }
+
+        if (password !== confirmPassword) {
+          return showMessage("Passwords do not match.", true);
+        }
+
+        if (!agreementCheckbox.checked) {
+          return showMessage("You must agree to the terms.", true);
+        }
+
+        const { error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { age: parseInt(age) }
+          }
+        });
+
+        showMessage(error ? error.message : "Registration successful! Check your email.");
+      };
+
+      loginBtn.onclick = async () => {
+        const email = emailInput.value;
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          return showMessage("Please enter email and password.", true);
+        }
+
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
         if (error) {
           showMessage(error.message, true);
         } else {
-          showMessage('Login successful! Redirecting...');
-          if (rememberMe) {
+          showMessage("Login successful! Redirecting...");
+          if (rememberMe.checked) {
             localStorage.setItem('savedEmail', email);
           } else {
             localStorage.removeItem('savedEmail');
           }
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 1000);
+          setTimeout(() => window.location.href = "index.html", 1000);
         }
       };
 
-      document.getElementById('back-btn').onclick = () => {
+      backBtn.onclick = () => {
         window.history.back();
       };
     }
@@ -129,7 +189,6 @@
       messageDiv.style.color = isError ? 'red' : 'lightgreen';
     }
 
-    // Run init after window loads to ensure all scripts loaded
     window.onload = init;
   </script>
 </body>
