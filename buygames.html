@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Buy Games</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .games-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+    }
+    .game-card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      width: 250px;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .game-card:hover {
+      background-color: #e0e0e0;
+    }
+    .game-card img {
+      max-width: 100%;
+      border-radius: 5px;
+    }
+    .game-card h3 {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topbar">
+    <a href="index.html">Home</a>
+    <a href="mygames.html">My Games</a>
+    <a href="buygames.html">Buy Games</a>
+    <a href="other progekts.html">Other Projects</a>
+    <a href="server.html">Minecraft Server</a>
+    <a href="about me.html">About Me</a>
+    <a href="login.html" id="login-link">Sign In / Log In</a>
+  </nav>
+
+  <main>
+    <h2>Buy Games</h2>
+    <div class="games-container" id="games-container"></div>
+  </main>
+
+  <div class="game-container">
+    <!-- multiple game cards -->
+ 
+  
+  <div class="game-card" onclick="window.open('cherrytree.html', '_blank')">
+    <img src="https://via.placeholder.com/220x140/111111/00ffcc?text=Game+Cover" alt="The Curse of the Cherry Tree" />
+    <h2>The Curse of the Cherry Tree</h2>
+    <p>An atmospheric, mysterious adventure game in progress.</p>
+  </div>
+  
+
+  
+  
+
+
+
+
+</div>
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.SUPABASE_URL,
+      window.SUPABASE_ANON_KEY
+    );
+
+    const loginLink = document.getElementById("login-link");
+    const gamesContainer = document.getElementById("games-container");
+
+    async function loadGames() {
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const session = sessionData.session;
+      if (session) {
+        loginLink.href = "profile.html";
+        loginLink.textContent = "Profile";
+      }
+
+      const { data: games, error } = await supabaseClient.from("games").select("*");
+      if (error) {
+        console.error("Error loading games", error);
+        return;
+      }
+
+      games.forEach(game => {
+        const card = document.createElement("div");
+        card.className = "game-card";
+        card.onclick = () => {
+          window.open(`game.html?id=${game.id}`, '_blank');
+        };
+
+        card.innerHTML = `
+          ${game.image_url ? `<img src="${game.image_url}" alt="${game.name}">` : ""}
+          <h3>${game.name}</h3>
+          <p>Price: $${game.price}</p>
+        `;
+
+        gamesContainer.appendChild(card);
+      });
+    }
+
+    loadGames();
+  </script>
+
+</body>
+</html>

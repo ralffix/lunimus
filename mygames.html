@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Games</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <nav class="topbar">
+        <a href="index.html">Home</a>
+        <a href="mygames.html">My Games</a>
+        <a href="buygames.html">Buy Games</a>
+        <a href="other progekts.html">Other Projects</a>
+        <a href="server.html">Minecraft Server</a>
+        <a href="about me.html">About Me</a>
+          <a href="login.html" id="login-link">Sign In / Log In</a>
+      </nav>  
+
+  <div class="content">
+    <h1>My Games</h1>
+    <p id="message">Loading...</p>
+    <div id="game-grid" class="game-grid"></div>
+  </div>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.SUPABASE_URL,
+      window.SUPABASE_ANON_KEY
+    );
+
+    const messageEl = document.getElementById("message");
+    const gameGrid = document.getElementById("game-grid");
+
+    async function loadMyGames() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+
+      if (!session || !session.user) {
+        messageEl.textContent = "Please log in to view your games.";
+        return;
+      }
+
+      const userId = session.user.id;
+
+      const { data, error } = await supabaseClient
+        .from("owned_games")
+        .select("game_name, game_image_url")
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("Error loading games:", error);
+        messageEl.textContent = "Error loading your games.";
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        messageEl.innerHTML = `No games found. <a href="buygames.html">Go to Buy Games</a>`;
+        return;
+      }
+
+      messageEl.style.display = "none";
+
+      data.forEach(game => {
+        const card = document.createElement("div");
+        card.className = "game-card";
+
+        const img = document.createElement("img");
+        img.src = game.game_image_url || "default-image.png";
+        img.alt = game.game_name;
+
+        const title = document.createElement("h2");
+        title.textContent = game.game_name;
+
+        card.appendChild(img);
+        card.appendChild(title);
+        gameGrid.appendChild(card);
+      });
+    }
+
+    loadMyGames();
+  </script>
+</body>
+</html>

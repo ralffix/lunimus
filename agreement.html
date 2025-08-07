@@ -6,27 +6,51 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="terms-container">
+  <main>
+    <div class="terms-container">
     <h1>Terms and Conditions</h1>
+    <p>Welcome to Lunimus! Please read these terms carefully before using our services.</p>
 
-    <p>By accessing or using this application, you agree to be bound by these Terms and Conditions. Please read them carefully.</p>
+    <p><strong>1. Acceptance of Terms</strong><br>
+    By accessing and using Lunimus, you accept and agree to be bound by these terms.</p>
 
-    <h2>1. Account Requirements</h2>
-    <p>Users must be at least 13 years old. By creating an account, you confirm that the information provided is accurate and that you are of legal age.</p>
+    <p><strong>2. User Responsibilities</strong><br>
+    You agree to use Lunimus lawfully and not to engage in harmful behavior.</p>
 
-    <h2>2. Privacy & Data</h2>
-    <p>We respect your privacy. Data such as your email and age may be stored securely for functionality purposes. We do not sell your data to third parties.</p>
+    <p><strong>3. Privacy</strong><br>
+    Your data is protected in accordance with our privacy policy.</p>
 
-    <h2>3. User Conduct</h2>
-    <p>Harmful, abusive, or unlawful behavior is strictly prohibited. Accounts violating these rules may be terminated without notice.</p>
+    <p><strong>4. Intellectual Property</strong><br>
+    All content on Lunimus is owned by the site or its licensors.</p>
 
-    <h2>4. Changes to the Terms</h2>
-    <p>We reserve the right to update or modify these Terms at any time. Continued use of the app means you accept any changes made.</p>
+    <p><strong>5. Account Security</strong><br>
+    You are responsible for maintaining your account security.</p>
 
-    <h2>5. Contact</h2>
-    <p>If you have any concerns or questions, feel free to reach out via our official support page.</p>
+    <p><strong>6. Termination</strong><br>
+    We may suspend or terminate your account for violations of these terms.</p>
 
-    <a href="javascript:history.back()" class="back-btn">← Back</a>
-  </div>
+    <p><strong>7. Changes to Terms</strong><br>
+    We reserve the right to update these terms at any time.</p>
+
+    <p><strong>8. Age Restriction for Purchases</strong><br>
+      Users must be at least 18 years old to buy games on this platform. Accounts registered to users under 18 are not permitted to make purchases. We reserve the right to enforce this restriction to comply with legal requirements.</p>
+  
+
+    <p><strong>Contact Us</strong><br>
+    If you have any questions, please contact support at lunimus.help@gmail.com.</p>
+    <button id="back-btn">← Back</button>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById('back-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
 </body>
 </html>
