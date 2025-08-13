@@ -76,7 +76,7 @@ body > *:not(.topbar) {
   display: flex;
   flex-direction: column;
   justify-content: flex-start; /* corrected 'first baseline' */
-  height: calc(100% - 50px); /* adjust for topbar height */
+  height: calc(auto); /* adjust for topbar height */
   padding-left: 10px;
   padding-right: 10px;
   color: rgb(104, 104, 104);
