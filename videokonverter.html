@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>must be in every page</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <a href="index.html">Home</a>
+    <a href="mygames.html">My Games</a>
+    <a href="buygames.html">Buy Games</a>
+    <a href="other progekts.html">Other Projects</a>
+    <a href="server.html">Minecraft Server</a>
+    <a href="about me.html">About Me</a>
+    <a href="login.html" id="login-link">Sign In / Log In</a>
+  </nav>  
+<br>
+<main class="content">
+    <h1>Video Compressor</h1> 
+    <p>
+        I made this compressor because I hate all of the compressors that require admin permissions to download, so I made a quick compressor that compresses videos from gigabytes to megabytes, all according to what you want.
+    </p>
+    <p>
+        How to use:
+        <ol>
+          <li>Download the EXE</li>
+          <li>Download ffmpeg (I like to go to Command Prompt and write <code>winget install ffmpeg</code>)</li>
+          <li>Open the EXE and select the video(s)/file(s) you want to compress</li>
+          <li>Wait</li>
+          <li>It will make a new folder in the same folder as the video with the name "compressed" and put all the compressed videos in there</li>
+          <li>Enjoy the compressed videos!</li>
+        </ol>
+    </p>
+<div class="buttons">  
+  <a href="VideoCompressor.exe" download>
+    <button class="buy" type="button">Download VideoCompressor.exe</button>
+  </a>
+<br><br><br>
+<h1>If you want to know the prototype code, here it is:</h1>
+<pre><code>
+# Where your videos you want to compress
+$mainFolder = "F:\video"  # Video source folder
+$compressedFolderName = "compressed"
+
+Get-ChildItem -Path $mainFolder -Recurse -File -Include *.mp4 | ForEach-Object {
+    $input = $_.FullName
+    $relativePath = $input.Substring($mainFolder.Length).TrimStart("\")
+    $outputDir = Join-Path $mainFolder $compressedFolderName
+    $outputPath = Join-Path $outputDir $relativePath
+
+    # Create output folder if it doesn't exist
+    $outputPathDir = Split-Path $outputPath
+    if (-not (Test-Path $outputPathDir)) {
+        New-Item -ItemType Directory -Path $outputPathDir -Force | Out-Null
+    }
+
+    # Compress video to width 1024, preserve aspect ratio
+    ffmpeg -i "$input" -vf "scale=1024:-2" -c:v libx264 -preset veryfast -crf 28 -c:a aac -b:a 128k "$outputPath"
+    
+    Write-Host "Compressed: $input -> $outputPath"
+}
+</code></pre>
+<br>
+<h3>
+    Remember to save the code as a .ps1 file or just run it in PowerShell (this doesn't have the GUI)
+</h3>
+
+</div>
+</main>
+  <script src="supabase-config.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const supabaseClient = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_ANON_KEY
+  );
+
+  // Use supabaseClient below
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    const loginLink = document.getElementById("login-link");
+    if (!loginLink) return;
+  
+    if (session && session.user) {
+      loginLink.href = "profile.html";
+      loginLink.textContent = "Profile";
+    }
+  });
+  
+</script>
+
+</body>
+</html>
