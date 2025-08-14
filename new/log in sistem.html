@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking Form</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #beb2b2;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    max-width: 800px;
+    margin: 50px auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+}
+.progressbar {
+    display: flex;
+    margin-bottom: 30px;
+    list-style-type: none;
+    counter-reset: step;
+}
+.progressbar li {
+    flex: 1;
+    position: relative;
+    text-align: center;
+    color: #aaa;
+}
+.progressbar li:before {
+    content: counter(step);
+    counter-increment: step;
+    width: 30px;
+    height: 30px;
+    border: 2px solid #aaa;
+    display: block;
+    text-align: center;
+    margin: 0 auto 10px auto;
+    border-radius: 50%;
+    background-color: white;
+    line-height: 28px;
+}
+.progressbar li.active {
+    color: black;
+}
+.progressbar li.active:before {
+    border-color: black;
+    background-color: black;
+    color: white;
+}
+.progressbar li:not(:last-child):after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #aaa;
+    top: 15px;
+    left: 50%;
+    z-index: -1;
+}
+.progressbar li.active + li:after {
+    background: #aaa;
+}
+.form-step {
+    display: none;
+}
+.form-step.active {
+    display: block;
+}
+button {
+    background: black;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <ul class="progressbar">
+        <li class="active">1. Pakalpojums</li>
+        <li>2. Diena / Laiks</li>
+        <li>3. Detaļas</li>
+        <li>4. Apstiprinājums</li>
+        <li>5. Gatavs</li>
+    </ul>
+
+    <form id="bookingForm">
+        <div class="form-step active">
+            <label>Location</label>
+            <select name="location">
+                <option>Select location</option>
+                <option>Sigulda</option>
+                <option>Rīga</option>
+            </select><br><br>
+
+            <label>Pakalpojums</label>
+            <select name="service">
+                <option>Matų griezums (45 min)</option>
+                <option>Bērnu griezums</option>
+            </select><br><br>
+
+            <label>Meistars</label>
+            <select name="master">
+                <option>Jebkurš</option>
+                <option>Andris</option>
+            </select><br><br>
+
+            <button type="button" id="nextBtn">Tālāk</button>
+        </div>
+
+        <div class="form-step">
+            <p>Step 2 content...</p>
+            <button type="button" id="prevBtn">Atpakaļ</button>
+            <button type="button" id="nextBtn2">Tālāk</button>
+        </div>
+
+        <div class="form-step">
+            <p>Step 3 content...</p>
+            <button type="button" id="prevBtn2">Atpakaļ</button>
+            <button type="button" id="nextBtn3">Tālāk</button>
+        </div>
+
+        <!-- Add more steps similarly -->
+
+    </form>
+</div>
+
+<script>
+let currentStep = 0;
+const steps = document.querySelectorAll(".form-step");
+const progressItems = document.querySelectorAll(".progressbar li");
+
+function showStep(step) {
+    steps.forEach((s, i) => s.classList.toggle("active", i === step));
+    progressItems.forEach((p, i) => p.classList.toggle("active", i <= step));
+}
+
+document.getElementById("nextBtn").addEventListener("click", () => {
+    currentStep++;
+    showStep(currentStep);
+});
+document.getElementById("prevBtn")?.addEventListener("click", () => {
+    currentStep--;
+    showStep(currentStep);
+});
+document.getElementById("nextBtn2")?.addEventListener("click", () => {
+    currentStep++;
+    showStep(currentStep);
+});
+document.getElementById("prevBtn2")?.addEventListener("click", () => {
+    currentStep--;
+    showStep(currentStep);
+});
+</script>
+</body>
+</html>
