@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>majaslapas draugam</title>
+  <link rel="stylesheet" href="../styles.css" />
+  
+
+</head>
+<body>
+  <nav class="topbar">
+    <a href="index.html">Home</a>
+    <a href="mygames.html">My Games</a>
+    <a href="buygames.html">Buy Games</a>
+    <a href="other progekts.html">Other Projects</a>
+    <a href="server.html">Minecraft Server</a>
+    <a href="about me.html">About Me</a>
+      <a href="login.html" id="login-link">Sign In / Log In</a>
+  </nav>  
+
+  <main class="content">
+    <h1 style="text-align:center; margin-bottom: 2rem; color: #00bfff;">Frizieru lapas</h1>
+
+    <div class="project-grid">
+      
+      <a href="1.html" class="project-card">
+        <h3>Tumšs</h3>
+      </a>
+      
+      <a href="2.html" class="project-card">
+        <h3>Gaišs</h3>
+      </a>
+
+      <a href="3.html" class="project-card">
+        <h3>Silta</h3>
+      </a>
+
+      <a href="4.html" class="project-card">
+        <h3>Auksta</h3>
+      </a>
+      <a href="5.html" class="project-card">
+        <h3>Minimāls/tīrs</h3>
+      </a>
+    </div>
+  </main>
+  <script src="supabase-config.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const supabaseClient = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_ANON_KEY
+  );
+
+  // Use supabaseClient below
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    const loginLink = document.getElementById("login-link");
+    if (!loginLink) return;
+  
+    if (session && session.user) {
+      loginLink.href = "profile.html";
+      loginLink.textContent = "Profile";
+    }
+  });
+  
+</script>
+
+</body>
+</html>
