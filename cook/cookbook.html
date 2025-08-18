@@ -1,127 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Community Cookbook</title>
-  <link rel="stylesheet" href="../styles.css" />
+<meta charset="UTF-8" />
+<title>Community Cookbook</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+ul#recipe-list { list-style: none; padding:0; }
+ul#recipe-list li {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(20,20,20,0.85);
+  border-radius: 8px;
+  color: #ccc;
+  cursor: pointer;
+}
+ul#recipe-list li img {
+  max-width: 150px;
+  border-radius: 6px;
+  display: block;
+  margin-top: 5px;
+}
+.modal {
+  display:none;
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.7);
+  justify-content:center; align-items:center;
+  z-index:1000;
+}
+.modal-content {
+  background:#222;
+  padding:20px;
+  border-radius:12px;
+  max-width:600px;
+  color:#ccc;
+  position:relative;
+}
+#modal-close {
+  position:absolute;
+  top:10px; right:15px;
+  font-size:24px;
+  cursor:pointer;
+  color:#00bfff;
+}
+</style>
 </head>
 <body>
-  <nav class="topbar">
-    <a href="../index.html">Home</a>
-    <a href="../mygames.html">My Games</a>
-    <a href="../buygames.html">Buy Games</a>
-    <a href="../other progekts.html">Other Projects</a>
-    <a href="../server.html">Minecraft Server</a>
-    <a href="../about me.html">About Me</a>
-    <a href="../login.html" id="login-link">Sign In / Log In</a>
-  </nav>
+<nav class="topbar">
+  <a href="../index.html">Home</a>
+  <a href="../mygames.html">My Games</a>
+  <a href="../buygames.html">Buy Games</a>
+  <a href="../other progekts.html">Other Projects</a>
+  <a href="../server.html">Minecraft Server</a>
+  <a href="../about me.html">About Me</a>
+  <a href="../login.html" id="login-link">Sign In / Log In</a>
+</nav>
 
-  <main class="content">
-    <h1>Community Cookbook</h1>
+<main class="content">
+  <h1>Community Cookbook</h1>
 
-    <section id="actions">
-      <button onclick="window.location.href='myrecipes.html'">My Recipes</button>
-      <button onclick="window.location.href='addrecipe.html'">Add Recipe</button>
-    </section>
+  <section id="actions">
+    <button onclick="window.location.href='myrecipes.html'">My Recipes</button>
+    <button onclick="window.location.href='addrecipe.html'">Add Recipe</button>
+  </section>
 
-    <section id="search">
-      <input type="text" id="search-input" placeholder="Search by ingredients (comma separated)" />
-      <button id="search-btn">Search</button>
-    </section>
+  <section id="search">
+    <input type="text" id="search-input" placeholder="Search by ingredients (comma separated)" />
+    <button id="search-btn">Search</button>
+  </section>
 
-    <ul id="recipe-list"></ul>
-  </main>
+  <ul id="recipe-list"></ul>
+</main>
 
-  <!-- Modal -->
-  <div id="recipe-modal" class="modal">
-    <div class="modal-content">
-      <span id="modal-close">&times;</span>
-      <h2 id="modal-title"></h2>
-      <p><strong>Ingredients:</strong> <span id="modal-ingredients"></span></p>
-      <p><strong>Steps:</strong> <span id="modal-steps"></span></p>
-    </div>
+<!-- Modal -->
+<div id="recipe-modal" class="modal">
+  <div class="modal-content">
+    <span id="modal-close">&times;</span>
+    <h2 id="modal-title"></h2>
+    <img id="modal-image" src="" alt="" style="max-width:100%; border-radius:8px; margin-top:5px;">
+    <p><strong>Ingredients:</strong> <span id="modal-ingredients"></span></p>
+    <p><strong>Steps:</strong> <span id="modal-steps"></span></p>
+    <p><strong>Difficulty:</strong> <span id="modal-difficulty"></span></p>
+    <p><strong>Equipment:</strong> <span id="modal-equipment"></span></p>
   </div>
+</div>
 
-  <script src="../supabase-config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const supabaseClient = window.supabase.createClient(
-      window.SUPABASE_URL,
-      window.SUPABASE_ANON_KEY
-    );
+<script src="../supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supabaseClient = window.supabase.createClient(
+  window.SUPABASE_URL,
+  window.SUPABASE_ANON_KEY
+);
 
-    // Update login link
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      const loginLink = document.getElementById("login-link");
-      if (!loginLink) return;
-      if (session && session.user) {
-        loginLink.href = "../profile.html";
-        loginLink.textContent = "Profile";
-      }
-    });
+// Update login link
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  const loginLink = document.getElementById("login-link");
+  if (!loginLink) return;
+  if (session && session.user) {
+    loginLink.href = "../profile.html";
+    loginLink.textContent = "Profile";
+  }
+});
 
-    async function loadRecipes() {
-      let { data: recipes, error } = await supabaseClient
-        .from("recipes")
-        .select("*")
-        .eq("is_public", true)
-        .order("created_at", { ascending: false });
+async function loadRecipes() {
+  let { data: recipes, error } = await supabaseClient
+    .from("recipes")
+    .select("*")
+    .eq("is_public", true)
+    .order("created_at", { ascending: false });
 
-      if (error) {
-        alert("Error loading recipes: " + error.message);
-        return;
-      }
+  if (error) {
+    alert("Error loading recipes: " + error.message);
+    return;
+  }
 
-      displayRecipes(recipes);
-    }
+  displayRecipes(recipes);
+}
 
-    function displayRecipes(recipes) {
-      const list = document.getElementById("recipe-list");
-      list.innerHTML = "";
+function displayRecipes(recipes) {
+  const list = document.getElementById("recipe-list");
+  list.innerHTML = "";
 
-      recipes.forEach(r => {
-        const li = document.createElement("li");
-        li.textContent = r.title;
-        li.addEventListener("click", () => openModal(r));
-        list.appendChild(li);
-      });
-    }
+  recipes.forEach(r => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${r.title}</strong>
+      ${r.image ? `<img src="${r.image}" alt="${r.title}">` : ""}
+      <br>Difficulty: ${'⭐'.repeat(r.difficulty)}
+      <br>Equipment: ${r.equipment || "None"}
+    `;
+    li.addEventListener("click", () => openModal(r));
+    list.appendChild(li);
+  });
+}
 
-    async function searchRecipes() {
-      const input = document.getElementById("search-input").value;
-      const ingredients = input.split(",").map(i => i.trim()).filter(i => i);
+async function searchRecipes() {
+  const input = document.getElementById("search-input").value;
+  const ingredients = input.split(",").map(i => i.trim()).filter(i => i);
 
-      let { data: recipes, error } = await supabaseClient
-        .from("recipes")
-        .select("*")
-        .eq("is_public", true);
+  let { data: recipes, error } = await supabaseClient
+    .from("recipes")
+    .select("*")
+    .eq("is_public", true);
 
-      if (error) {
-        alert("Error: " + error.message);
-        return;
-      }
+  if (error) { alert("Error: " + error.message); return; }
 
-      if (ingredients.length > 0) {
-        recipes = recipes.filter(r => ingredients.every(i => r.ingredients.includes(i)));
-      }
+  if (ingredients.length > 0) {
+    recipes = recipes.filter(r => ingredients.every(i => r.ingredients.includes(i)));
+  }
 
-      displayRecipes(recipes);
-    }
+  displayRecipes(recipes);
+}
 
-    function openModal(recipe) {
-      document.getElementById("modal-title").textContent = recipe.title;
-      document.getElementById("modal-ingredients").textContent = recipe.ingredients.join(", ");
-      document.getElementById("modal-steps").textContent = recipe.steps || "No steps provided.";
-      document.getElementById("recipe-modal").style.display = "flex";
-    }
+function openModal(recipe) {
+  document.getElementById("modal-title").textContent = recipe.title;
+  document.getElementById("modal-ingredients").textContent = recipe.ingredients.join(", ");
+  document.getElementById("modal-steps").textContent = recipe.steps || "No steps provided.";
+  document.getElementById("modal-difficulty").textContent = '⭐'.repeat(recipe.difficulty);
+  document.getElementById("modal-equipment").textContent = recipe.equipment || "None";
+  document.getElementById("modal-image").src = recipe.image || "";
+  document.getElementById("recipe-modal").style.display = "flex";
+}
 
-    document.getElementById("modal-close").addEventListener("click", () => {
-      document.getElementById("recipe-modal").style.display = "none";
-    });
+document.getElementById("modal-close").addEventListener("click", () => {
+  document.getElementById("recipe-modal").style.display = "none";
+});
 
-    document.getElementById("search-btn").addEventListener("click", searchRecipes);
+document.getElementById("search-btn").addEventListener("click", searchRecipes);
 
-    loadRecipes();
-  </script>
+loadRecipes();
+</script>
 </body>
 </html>

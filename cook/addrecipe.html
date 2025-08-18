@@ -1,129 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Add Recipe</title>
-  <link rel="stylesheet" href="../styles.css" />
-  <style>
-    main {
-      max-width: 600px;
-      margin: 100px auto 40px;
-      background: rgba(20, 20, 20, 0.85);
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
-      color: #ccc;
-    }
-
-    h1 {
-      color: #66ffcc;
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    form input, form textarea {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 1rem;
-      border-radius: 8px;
-      border: 1px solid #333;
-      background: #1e1e1e;
-      color: #ccc;
-      font-size: 1rem;
-      resize: vertical;
-    }
-
-    form button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      font-weight: bold;
-      font-size: 1rem;
-      color: black;
-      background: linear-gradient(to right, #00ffcc, #00bfff);
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
-
-    form button:hover {
-      background: linear-gradient(to right, #00bfff, #00ffcc);
-      transform: scale(1.03);
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Add Recipe</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+main {
+  max-width: 600px;
+  margin: 100px auto 40px;
+  background: rgba(20, 20, 20, 0.85);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+  color: #ccc;
+}
+h1 {
+  color: #66ffcc;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+form input, form textarea, form select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #1e1e1e;
+  color: #ccc;
+  font-size: 1rem;
+}
+form label {
+  margin-bottom: 0.5rem;
+  display: block;
+  color: #00bfff;
+}
+form button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  color: black;
+  background: linear-gradient(to right, #00ffcc, #00bfff);
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+form button:hover {
+  background: linear-gradient(to right, #00bfff, #00ffcc);
+  transform: scale(1.03);
+}
+</style>
 </head>
 <body>
-  <nav class="topbar">
-    <a href="../index.html">Home</a>
-    <a href="../mygames.html">My Games</a>
-    <a href="../buygames.html">Buy Games</a>
-    <a href="../other progekts.html">Other Projects</a>
-    <a href="../server.html">Minecraft Server</a>
-    <a href="../about me.html">About Me</a>
-    <a href="../login.html" id="login-link">Sign In / Log In</a>
-    <a href="cookbook.html">Cookbook</a>
-    <a href="myrecipes.html">My Recipes</a>
-  </nav>
+<nav class="topbar">
+  <a href="../index.html">Home</a>
+  <a href="../mygames.html">My Games</a>
+  <a href="../buygames.html">Buy Games</a>
+  <a href="../other progekts.html">Other Projects</a>
+  <a href="../server.html">Minecraft Server</a>
+  <a href="../about me.html">About Me</a>
+  <a href="../login.html" id="login-link">Sign In / Log In</a>
+  <a href="cookbook.html">Cookbook</a>
+  <a href="myrecipes.html">My Recipes</a>
+</nav>
 
-  <main>
-    <h1>Add a New Recipe</h1>
-    <form id="recipe-form">
-      <input type="text" id="title" placeholder="Recipe title" required />
-      <textarea id="ingredients" placeholder="Ingredients (comma separated)" required></textarea>
-      <textarea id="steps" placeholder="Cooking steps"></textarea>
-      <button type="submit">Save Recipe</button>
-    </form>
-  </main>
+<main>
+  <h1>Add a New Recipe</h1>
+  <form id="recipe-form">
+    <label for="title">Recipe Title</label>
+    <input type="text" id="title" placeholder="Recipe title" required />
 
-  <script src="../supabase-config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const supabaseClient = window.supabase.createClient(
-      window.SUPABASE_URL,
-      window.SUPABASE_ANON_KEY
-    );
+    <label for="image">Recipe Image URL</label>
+    <input type="text" id="image" placeholder="https://example.com/image.jpg" />
 
-    // Update navbar login link
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      const loginLink = document.getElementById("login-link");
-      if (!loginLink) return;
-      if (session && session.user) {
-        loginLink.href = "../profile.html";
-        loginLink.textContent = "Profile";
-      }
-    });
+    <label for="ingredients">Ingredients (comma separated)</label>
+    <textarea id="ingredients" placeholder="e.g. sugar, flour, eggs" required></textarea>
 
-    const form = document.getElementById("recipe-form");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    <label for="steps">Cooking Steps</label>
+    <textarea id="steps" placeholder="Step by step instructions"></textarea>
 
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) {
-        alert("Please log in to add recipes.");
-        return;
-      }
+    <label for="difficulty">Difficulty (1 = easy, 5 = hard)</label>
+    <select id="difficulty">
+      <option value="1">1 ⭐</option>
+      <option value="2">2 ⭐⭐</option>
+      <option value="3">3 ⭐⭐⭐</option>
+      <option value="4">4 ⭐⭐⭐⭐</option>
+      <option value="5">5 ⭐⭐⭐⭐⭐</option>
+    </select>
 
-      const title = document.getElementById("title").value;
-      const ingredients = document.getElementById("ingredients").value
-        .split(",").map(i => i.trim());
-      const steps = document.getElementById("steps").value;
+    <label for="equipment">Equipment/Instrument Required</label>
+    <input type="text" id="equipment" placeholder="e.g. Blender, Oven" />
 
-      const { error } = await supabaseClient.from("recipes").insert({
-        user_id: session.user.id,
-        title,
-        ingredients,
-        steps,
-        is_public: true
-      });
+    <label>
+      <input type="checkbox" id="auto-private" /> Make recipe private automatically
+    </label>
 
-      if (error) {
-        alert("Error saving recipe: " + error.message);
-      } else {
-        alert("Recipe saved!");
-        form.reset();
-        window.location.href = "myrecipes.html";
-      }
-    });
-  </script>
+    <button type="submit">Save Recipe</button>
+  </form>
+</main>
+
+<script src="../supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supabaseClient = window.supabase.createClient(
+  window.SUPABASE_URL,
+  window.SUPABASE_ANON_KEY
+);
+
+// Update navbar login link
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  const loginLink = document.getElementById("login-link");
+  if (!loginLink) return;
+  if (session && session.user) {
+    loginLink.href = "../profile.html";
+    loginLink.textContent = "Profile";
+  }
+});
+
+const form = document.getElementById("recipe-form");
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) {
+    alert("Please log in to add recipes.");
+    return;
+  }
+
+  const title = document.getElementById("title").value;
+  const image = document.getElementById("image").value;
+  const ingredients = document.getElementById("ingredients").value.split(",").map(i => i.trim());
+  const steps = document.getElementById("steps").value;
+  const difficulty = parseInt(document.getElementById("difficulty").value);
+  const equipment = document.getElementById("equipment").value;
+  const is_private = document.getElementById("auto-private").checked;
+
+  const { error } = await supabaseClient.from("recipes").insert({
+    user_id: session.user.id,
+    title,
+    image,
+    ingredients,
+    steps,
+    difficulty,
+    equipment,
+    is_public: !is_private
+  });
+
+  if (error) {
+    alert("Error saving recipe: " + error.message);
+  } else {
+    alert("Recipe saved!");
+    form.reset();
+    window.location.href = "myrecipes.html";
+  }
+});
+</script>
 </body>
 </html>

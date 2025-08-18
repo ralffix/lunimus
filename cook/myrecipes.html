@@ -1,97 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>My Recipes</title>
-  <link rel="stylesheet" href="../styles.css" />
+<meta charset="UTF-8" />
+<title>My Recipes</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+ul#my-recipe-list { list-style: none; padding:0; }
+ul#my-recipe-list li {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(20,20,20,0.85);
+  border-radius: 8px;
+  color: #ccc;
+}
+ul#my-recipe-list li button {
+  margin-top: 5px;
+  margin-right: 5px;
+  padding: 5px 10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  color:black;
+}
+button.delete { background: #ff6666; }
+button.toggle { background: linear-gradient(to right, #00ffcc,#00bfff); }
+button.delete:hover { background: #ff3333; }
+button.toggle:hover { background: linear-gradient(to right, #00bfff,#00ffcc); }
+</style>
 </head>
 <body>
-  <nav class="topbar">
-    <a href="../index.html">Home</a>
-    <a href="../mygames.html">My Games</a>
-    <a href="../buygames.html">Buy Games</a>
-    <a href="../other progekts.html">Other Projects</a>
-    <a href="../server.html">Minecraft Server</a>
-    <a href="../about me.html">About Me</a>
-    <a href="../login.html" id="login-link">Sign In / Log In</a>
-    <a href="cookbook.html">Cookbook</a>
-    <a href="myrecipes.html">My Recipes</a>
-  </nav>
+<nav class="topbar">
+  <a href="../index.html">Home</a>
+  <a href="../mygames.html">My Games</a>
+  <a href="../buygames.html">Buy Games</a>
+  <a href="../other progekts.html">Other Projects</a>
+  <a href="../server.html">Minecraft Server</a>
+  <a href="../about me.html">About Me</a>
+  <a href="../login.html" id="login-link">Sign In / Log In</a>
+  <a href="cookbook.html">Cookbook</a>
+  <a href="myrecipes.html">My Recipes</a>
+</nav>
 
-  <main>
-    <h1>My Recipes</h1>
-    <ul id="my-recipe-list"></ul>
-  </main>
+<main>
+  <h1>My Recipes</h1>
+  <ul id="my-recipe-list"></ul>
+</main>
 
-  <!-- Supabase -->
-  <script src="../supabase-config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supabaseClient = window.supabase.createClient(
+  window.SUPABASE_URL,
+  window.SUPABASE_ANON_KEY
+);
 
-  <script>
-    const supabaseClient = window.supabase.createClient(
-      window.SUPABASE_URL,
-      window.SUPABASE_ANON_KEY
-    );
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  const loginLink = document.getElementById("login-link");
+  if (!loginLink) return;
+  if (session && session.user) {
+    loginLink.href = "../profile.html";
+    loginLink.textContent = "Profile";
+  }
+});
 
-    // Update navbar login link
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      const loginLink = document.getElementById("login-link");
-      if (!loginLink) return;
-      if (session && session.user) {
-        loginLink.href = "../profile.html";
-        loginLink.textContent = "Profile";
-      }
-    });
+async function loadMyRecipes() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) {
+    document.getElementById("my-recipe-list").innerHTML = "<li>Please log in to see your recipes.</li>";
+    return;
+  }
 
-    async function loadMyRecipes() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (!session) {
-        document.getElementById("my-recipe-list").innerHTML = "<li>Please log in to see your recipes.</li>";
-        return;
-      }
+  const { data: recipes, error } = await supabaseClient
+    .from("recipes")
+    .select("*")
+    .eq("user_id", session.user.id)
+    .order("created_at", { ascending: false });
 
-      const { data: recipes, error } = await supabaseClient
-        .from("recipes")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false });
+  if (error) { alert(error.message); return; }
 
-      if (error) {
-        alert("Error loading recipes: " + error.message);
-        return;
-      }
+  const list = document.getElementById("my-recipe-list");
+  list.innerHTML = "";
 
-      const list = document.getElementById("my-recipe-list");
-      list.innerHTML = "";
+  recipes.forEach(r => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <strong>${r.title}</strong> (${r.is_public ? "Public" : "Private"})<br>
+      Ingredients: ${r.ingredients.join(", ")}<br>
+      Steps: ${r.steps}<br>
+      Difficulty: ${r.difficulty} ⭐<br>
+      Equipment: ${r.equipment}<br>
+      ${r.image ? `<img src="${r.image}" style="max-width:200px;border-radius:8px;margin-top:5px;">` : ""}
+      <br>
+      <button class="delete" onclick="deleteRecipe('${r.id}')">Delete</button>
+      <button class="toggle" onclick="togglePublic('${r.id}', ${r.is_public})">
+        ${r.is_public ? "Make Private" : "Make Public"}
+      </button>
+    `;
+    list.appendChild(li);
+  });
+}
 
-      recipes.forEach(r => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>${r.title}</strong> (${r.is_public ? "Public" : "Private"})
-          <br>Ingredients: ${r.ingredients.join(", ")}
-          <br>Steps: ${r.steps}
-          <br>
-          <button onclick="deleteRecipe('${r.id}')">Delete</button>
-        `;
-        list.appendChild(li);
-      });
-    }
+async function deleteRecipe(id) {
+  if (!confirm("Are you sure you want to delete this recipe?")) return;
+  const { error } = await supabaseClient.from("recipes").delete().eq("id", id);
+  if (error) alert(error.message);
+  loadMyRecipes();
+}
 
-    async function deleteRecipe(id) {
-      if (!confirm("Are you sure you want to delete this recipe?")) return;
+async function togglePublic(id, current) {
+  const { error } = await supabaseClient.from("recipes").update({ is_public: !current }).eq("id", id);
+  if (error) alert(error.message);
+  loadMyRecipes();
+}
 
-      const { error } = await supabaseClient
-        .from("recipes")
-        .delete()
-        .eq("id", id);
-
-      if (error) {
-        alert("Error deleting recipe: " + error.message);
-      }
-      loadMyRecipes();
-    }
-
-    loadMyRecipes();
-  </script>
+loadMyRecipes();
+</script>
 </body>
 </html>
