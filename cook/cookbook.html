@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cookbook</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <a href="../index.html">Home</a>
+    <a href="../mygames.html">My Games</a>
+    <a href="../buygames.html">Buy Games</a>
+    <a href="../other progekts.html">Other Projects</a>
+    <a href="../server.html">Minecraft Server</a>
+    <a href="../about me.html">About Me</a>
+    <a href="../login.html" id="login-link">Sign In / Log In</a>
+    <a href="cookbook.html">Cookbook</a>
+    <a href="myrecipes.html">My Recipes</a>
+  </nav>
+
+  <main>
+    <h1>Community Cookbook</h1>
+    <section id="actions">
+        <button onclick="window.location.href='myrecipes.html'">My Recipes</button>
+        <button onclick="window.location.href='addrecipe.html'">Add Recipe</button>
+    </section>
+    <p>Welcome to the community cookbook! Here you can find and share recipes with others.</p>      
+
+    <!-- Search -->
+    <section id="search">
+      <h2>Find Recipes by Ingredients</h2>
+      <input type="text" id="search-input" placeholder="e.g. egg, flour, milk" />
+      <button id="search-btn">Search</button>
+    </section>
+
+    <!-- Results -->
+    <section id="results">
+      <h2>Recipes</h2>
+      <ul id="recipe-list"></ul>
+    </section>
+  </main>
+
+  <!-- Supabase -->
+  <script src="../supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.SUPABASE_URL,
+      window.SUPABASE_ANON_KEY
+    );
+
+    // Update navbar login link
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      const loginLink = document.getElementById("login-link");
+      if (!loginLink) return;
+      if (session && session.user) {
+        loginLink.href = "../profile.html";
+        loginLink.textContent = "Profile";
+      }
+    });
+
+    async function searchRecipes() {
+      const input = document.getElementById("search-input").value;
+      const ingredients = input.split(",").map(i => i.trim()).filter(i => i);
+
+      let { data: recipes, error } = await supabaseClient
+        .from("recipes")
+        .select("*")
+        .eq("is_public", true);
+
+      if (error) {
+        alert("Error: " + error.message);
+        return;
+      }
+
+      // Filter recipes that contain all entered ingredients
+      if (ingredients.length > 0) {
+        recipes = recipes.filter(r => ingredients.every(i => r.ingredients.includes(i)));
+      }
+
+      const list = document.getElementById("recipe-list");
+      list.innerHTML = "";
+      recipes.forEach(r => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${r.title}</strong><br>Ingredients: ${r.ingredients.join(", ")}<br>Steps: ${r.steps}`;
+        list.appendChild(li);
+      });
+    }
+
+    document.getElementById("search-btn").addEventListener("click", searchRecipes);
+
+    // Load all recipes on page load
+    searchRecipes();
+  </script>
+</body>
+</html>

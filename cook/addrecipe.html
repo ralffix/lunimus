@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Recipe</title>
+  <link rel="stylesheet" href="../styles.css" />
+</head>
+<body>
+  <nav class="topbar">
+    <a href="../index.html">Home</a>
+    <a href="../mygames.html">My Games</a>
+    <a href="../buygames.html">Buy Games</a>
+    <a href="../other progekts.html">Other Projects</a>
+    <a href="../server.html">Minecraft Server</a>
+    <a href="../about me.html">About Me</a>
+    <a href="../login.html" id="login-link">Sign In / Log In</a>
+    <a href="cookbook.html">Cookbook</a>
+    <a href="myrecipes.html">My Recipes</a>
+  </nav>
+
+  <main>
+    <h1>Add a New Recipe</h1>
+
+    <form id="recipe-form">
+      <input type="text" id="title" placeholder="Recipe title" required /><br>
+      <textarea id="ingredients" placeholder="Ingredients (comma separated)" required></textarea><br>
+      <textarea id="steps" placeholder="Cooking steps"></textarea><br>
+      <button type="submit">Save Recipe</button>
+    </form>
+  </main>
+
+  <!-- Supabase -->
+  <script src="../supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.SUPABASE_URL,
+      window.SUPABASE_ANON_KEY
+    );
+
+    // Update navbar login link
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      const loginLink = document.getElementById("login-link");
+      if (!loginLink) return;
+      if (session && session.user) {
+        loginLink.href = "../profile.html";
+        loginLink.textContent = "Profile";
+      }
+    });
+
+    // Handle adding recipe
+    const form = document.getElementById("recipe-form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        alert("Please log in to add recipes.");
+        return;
+      }
+
+      const title = document.getElementById("title").value;
+      const ingredients = document.getElementById("ingredients").value.split(",").map(i => i.trim());
+      const steps = document.getElementById("steps").value;
+
+      const { error } = await supabaseClient.from("recipes").insert({
+        user_id: session.user.id,
+        title,
+        ingredients,
+        steps,
+        is_public: true
+      });
+
+      if (error) {
+        alert("Error saving recipe: " + error.message);
+      } else {
+        alert("Recipe saved!");
+        form.reset();
+        window.location.href = "myrecipes.html"; // go to user's recipes
+      }
+    });
+  </script>
+</body>
+</html>
