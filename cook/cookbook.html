@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cookbook</title>
+  <title>Community Cookbook</title>
   <link rel="stylesheet" href="../styles.css" />
 </head>
 <body>
@@ -14,33 +14,34 @@
     <a href="../server.html">Minecraft Server</a>
     <a href="../about me.html">About Me</a>
     <a href="../login.html" id="login-link">Sign In / Log In</a>
-    <a href="cookbook.html">Cookbook</a>
-    <a href="myrecipes.html">My Recipes</a>
   </nav>
 
-  <main>
+  <main class="content">
     <h1>Community Cookbook</h1>
-    <section id="actions">
-        <button onclick="window.location.href='myrecipes.html'">My Recipes</button>
-        <button onclick="window.location.href='addrecipe.html'">Add Recipe</button>
-    </section>
-    <p>Welcome to the community cookbook! Here you can find and share recipes with others.</p>      
 
-    <!-- Search -->
+    <section id="actions">
+      <button onclick="window.location.href='myrecipes.html'">My Recipes</button>
+      <button onclick="window.location.href='addrecipe.html'">Add Recipe</button>
+    </section>
+
     <section id="search">
-      <h2>Find Recipes by Ingredients</h2>
-      <input type="text" id="search-input" placeholder="e.g. egg, flour, milk" />
+      <input type="text" id="search-input" placeholder="Search by ingredients (comma separated)" />
       <button id="search-btn">Search</button>
     </section>
 
-    <!-- Results -->
-    <section id="results">
-      <h2>Recipes</h2>
-      <ul id="recipe-list"></ul>
-    </section>
+    <ul id="recipe-list"></ul>
   </main>
 
-  <!-- Supabase -->
+  <!-- Modal -->
+  <div id="recipe-modal" class="modal">
+    <div class="modal-content">
+      <span id="modal-close">&times;</span>
+      <h2 id="modal-title"></h2>
+      <p><strong>Ingredients:</strong> <span id="modal-ingredients"></span></p>
+      <p><strong>Steps:</strong> <span id="modal-steps"></span></p>
+    </div>
+  </div>
+
   <script src="../supabase-config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -49,7 +50,7 @@
       window.SUPABASE_ANON_KEY
     );
 
-    // Update navbar login link
+    // Update login link
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       const loginLink = document.getElementById("login-link");
       if (!loginLink) return;
@@ -58,6 +59,33 @@
         loginLink.textContent = "Profile";
       }
     });
+
+    async function loadRecipes() {
+      let { data: recipes, error } = await supabaseClient
+        .from("recipes")
+        .select("*")
+        .eq("is_public", true)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        alert("Error loading recipes: " + error.message);
+        return;
+      }
+
+      displayRecipes(recipes);
+    }
+
+    function displayRecipes(recipes) {
+      const list = document.getElementById("recipe-list");
+      list.innerHTML = "";
+
+      recipes.forEach(r => {
+        const li = document.createElement("li");
+        li.textContent = r.title;
+        li.addEventListener("click", () => openModal(r));
+        list.appendChild(li);
+      });
+    }
 
     async function searchRecipes() {
       const input = document.getElementById("search-input").value;
@@ -73,24 +101,27 @@
         return;
       }
 
-      // Filter recipes that contain all entered ingredients
       if (ingredients.length > 0) {
         recipes = recipes.filter(r => ingredients.every(i => r.ingredients.includes(i)));
       }
 
-      const list = document.getElementById("recipe-list");
-      list.innerHTML = "";
-      recipes.forEach(r => {
-        const li = document.createElement("li");
-        li.innerHTML = `<strong>${r.title}</strong><br>Ingredients: ${r.ingredients.join(", ")}<br>Steps: ${r.steps}`;
-        list.appendChild(li);
-      });
+      displayRecipes(recipes);
     }
+
+    function openModal(recipe) {
+      document.getElementById("modal-title").textContent = recipe.title;
+      document.getElementById("modal-ingredients").textContent = recipe.ingredients.join(", ");
+      document.getElementById("modal-steps").textContent = recipe.steps || "No steps provided.";
+      document.getElementById("recipe-modal").style.display = "flex";
+    }
+
+    document.getElementById("modal-close").addEventListener("click", () => {
+      document.getElementById("recipe-modal").style.display = "none";
+    });
 
     document.getElementById("search-btn").addEventListener("click", searchRecipes);
 
-    // Load all recipes on page load
-    searchRecipes();
+    loadRecipes();
   </script>
 </body>
 </html>
