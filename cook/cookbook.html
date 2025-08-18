@@ -94,7 +94,7 @@ const supabaseClient = window.supabase.createClient(
   window.SUPABASE_ANON_KEY
 );
 
-// Update login link
+// Update navbar login link
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   const loginLink = document.getElementById("login-link");
   if (!loginLink) return;
@@ -129,7 +129,7 @@ function displayRecipes(recipes) {
       <strong>${r.title}</strong>
       ${r.image ? `<img src="${r.image}" alt="${r.title}">` : ""}
       <br>Difficulty: ${'⭐'.repeat(r.difficulty)}
-      <br>Equipment: ${r.equipment || "None"}
+      <br>Equipment: ${r.equipment?.join(", ") || "None"}
     `;
     li.addEventListener("click", () => openModal(r));
     list.appendChild(li);
@@ -159,7 +159,7 @@ function openModal(recipe) {
   document.getElementById("modal-ingredients").textContent = recipe.ingredients.join(", ");
   document.getElementById("modal-steps").textContent = recipe.steps || "No steps provided.";
   document.getElementById("modal-difficulty").textContent = '⭐'.repeat(recipe.difficulty);
-  document.getElementById("modal-equipment").textContent = recipe.equipment || "None";
+  document.getElementById("modal-equipment").textContent = recipe.equipment?.join(", ") || "None";
   document.getElementById("modal-image").src = recipe.image || "";
   document.getElementById("recipe-modal").style.display = "flex";
 }

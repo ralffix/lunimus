@@ -88,7 +88,7 @@ async function loadMyRecipes() {
       Ingredients: ${r.ingredients.join(", ")}<br>
       Steps: ${r.steps}<br>
       Difficulty: ${r.difficulty} ⭐<br>
-      Equipment: ${r.equipment}<br>
+      Equipment: ${r.equipment?.join(", ") || "None"}<br>
       ${r.image ? `<img src="${r.image}" style="max-width:200px;border-radius:8px;margin-top:5px;">` : ""}
       <br>
       <button class="delete" onclick="deleteRecipe('${r.id}')">Delete</button>
