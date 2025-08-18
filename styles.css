@@ -1,25 +1,78 @@
-/* styles.css */
-
 html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow-x: hidden;
   font-family: Arial, sans-serif;
-  background-color: rgb(24, 24, 24);
-  background-image:
-    linear-gradient(
-      to right,
-      rgba(24, 24, 24, 0.98),
-      rgba(24, 24, 24, 0.4),
-      rgba(24, 24, 24, 0.98)
-    ),
-    url('background.jpeg'); /* Side-to-side gradient with brighter middle */
-  background-repeat: no-repeat;
-  background-size: 80% auto;
-  background-position: top center;
-  color: rgb(104, 104, 104);
+  position: relative;
+  overflow-x: hidden;
+  color: rgb(37, 37, 37);
 }
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background-size: calc(100% - 30px) auto; /* 15px padding each side */
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-image: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0)), url('background.jpeg');
+  transition: opacity 2s ease-in-out;
+  background-color: rgba(8, 8, 8,1);
+}
+
+/* Separate images */
+body::before {
+  background-image: 
+    linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.1), rgba(0,0,0,0.8)),
+    url('background.jpeg');
+  opacity: 1;
+  background-color: rgba(8, 8, 8, 1);
+
+}
+
+body::after {
+  background-image: 
+    linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.1), rgba(0,0,0,0.8)),
+    url('background 2.jpg'); /* remove the backslash */
+  opacity: 0;
+  background-color: rgba(8, 8, 8, 1);
+
+}
+
+
+@keyframes fadeBefore {
+  0%    { opacity: 1; }
+  47.5% { opacity: 1; }   /* hold longer */
+  52.5% { opacity: 0; }   /* fade over wider range */
+  97.5% { opacity: 0; }   /* hold off longer */
+  100%  { opacity: 1; }
+}
+
+@keyframes fadeAfter {
+  0%    { opacity: 0; }
+  47.5% { opacity: 0; }
+  52.5% { opacity: 1; }
+  97.5% { opacity: 1; }
+  100%  { opacity: 0; }
+}
+
+
+body::before {
+  animation: fadeBefore 40s infinite;
+}
+
+body::after {
+  animation: fadeAfter 40s infinite;
+}
+
+
+
+
+
 
 .topbar {
   display: flex;
