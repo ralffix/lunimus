@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PrankCam</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Top navigation bar -->
+  <nav class="topbar">
+    <a href="index.html">Home</a>
+    <a href="mygames.html">My Games</a>
+    <a href="buygames.html">Buy Games</a>
+    <a href="other projects.html">Other Projects</a>
+    <a href="server.html">Minecraft Server</a>
+    <a href="about me.html">About Me</a>
+    <a href="login.html" id="login-link">Sign In / Log In</a>
+  </nav>  
+
+  <main class="content">
+    <h1>PrankCam</h1>
+    <p>
+      PrankCam is a fun Python app that lets you prank your friends during video calls! 
+      You can toggle Torch, Flashbang, RGB effects, and flip your camera.
+    </p>
+
+    <h2>How to download and use:</h2>
+    <ol>
+      <li>Download the <code>PrankCam.py</code> file from this website.</li>
+      <li>Make sure you have <a href="https://www.python.org/downloads/" target="_blank">Python installed</a> (Python 3.10+ recommended).</li>
+      <li>Open Command Prompt (Windows) or Terminal (Mac/Linux).</li>
+      <li>Install the required Python libraries by running:
+        <pre><code>pip install opencv-python numpy pyvirtualcam</code></pre>
+      </li>
+      <li>Navigate to the folder where you downloaded <code>PrankCam.py</code>.</li>
+      <li>
+        Run the app:
+        <ul>
+          <li><strong>Windows:</strong> Double-click <code>PrankCam.py</code> (if Python is installed) or run:<br><code>python PrankCam.py</code></li>
+          <li><strong>Mac/Linux:</strong> Run:<br><code>python3 PrankCam.py</code></li>
+        </ul>
+      </li>
+      <li>Grant camera permissions if prompted.</li>
+      <li><strong>Important:</strong> Before joining a video call, start your <em>OBS Virtual Camera</em>. Then in the call app, select “OBS Camera” as your video source.</li>
+      <li>Use the GUI buttons to toggle Torch, Flashbang, RGB mode, or flip your camera.</li>
+    </ol>
+
+    <div class="buttons">
+      <a href="prankCam.py" download>
+        <button class="buy" type="button">Download PrankCam.py</button>
+      </a>
+    </div>
+
+    <h3>Tips:</h3>
+    <ul>
+      <li>Flashbang mode flashes the screen on your webcam feed.</li>
+      <li>RGB mode adds colorful overlays.</li>
+      <li>Flip camera flips vertically or horizontally for funny effects.</li>
+      <li>Quit button closes the app safely.</li>
+    </ul>
+  </main>
+
+  <!-- Supabase login check -->
+  <script src="supabase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseClient = window.supabase.createClient(
+      window.SUPABASE_URL,
+      window.SUPABASE_ANON_KEY
+    );
+
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      const loginLink = document.getElementById("login-link");
+      if (!loginLink) return;
+
+      if (session && session.user) {
+        loginLink.href = "profile.html";
+        loginLink.textContent = "Profile";
+      }
+    });
+  </script>
+</body>
+</html>
