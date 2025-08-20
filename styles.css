@@ -19,7 +19,7 @@ body::after {
   background-size: calc(100% - 30px) auto; /* 15px padding each side */
   background-position: top center;
   background-repeat: no-repeat;
-  background-image: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0)), url('background.jpeg');
+  background-image: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0)), url('background.jpg');
   transition: opacity 2s ease-in-out;
   background-color: rgba(8, 8, 8,1);
 }
@@ -28,7 +28,7 @@ body::after {
 body::before {
   background-image: 
     linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.1), rgba(0,0,0,0.8)),
-    url('background.jpeg');
+    url('background.jpg');
   opacity: 1;
   background-color: rgba(8, 8, 8, 1);
 
