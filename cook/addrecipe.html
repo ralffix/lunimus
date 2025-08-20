@@ -42,6 +42,7 @@ form button:hover {
   background: linear-gradient(to right, #00bfff, #00ffcc);
   transform: scale(1.03);
 }
+label { display:block; margin: 0.5rem 0 0.2rem; color:#aaa; }
 </style>
 </head>
 <body>
@@ -60,9 +61,14 @@ form button:hover {
 <main>
 <h1>Add a New Recipe</h1>
 <form id="recipe-form">
-  <input type="text" id="title" placeholder="Recipe title" required />
-  <textarea id="ingredients" placeholder="Ingredients (comma separated)" required></textarea>
-  <textarea id="steps" placeholder="Cooking steps"></textarea>
+  <label for="title">Recipe Title</label>
+  <input type="text" id="title" required />
+
+  <label for="ingredients">Ingredients (comma separated)</label>
+  <textarea id="ingredients" required></textarea>
+
+  <label for="steps">Cooking Steps</label>
+  <textarea id="steps" required></textarea>
 
   <label for="difficulty">Difficulty (1-5 stars)</label>
   <select id="difficulty">
@@ -73,8 +79,11 @@ form button:hover {
     <option value="5">5 ⭐</option>
   </select>
 
-  <input type="text" id="equipment" placeholder="Equipment (comma separated)" />
-  <input type="text" id="image_url" placeholder="Image URL" />
+  <label for="equipment">Equipment (comma separated)</label>
+  <input type="text" id="equipment" />
+
+  <label for="image_url">Image URL (optional)</label>
+  <input type="text" id="image_url" />
 
   <label>
     <input type="checkbox" id="private-checkbox" /> Make recipe private
@@ -106,32 +115,39 @@ const form = document.getElementById("recipe-form");
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) { alert("Please log in to add recipes."); return; }
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) { alert("Please log in to add recipes."); return; }
 
-  const title = document.getElementById("title").value;
-  const ingredients = document.getElementById("ingredients").value
-    .split(",").map(i => i.trim());
-  const steps = document.getElementById("steps").value;
-  const difficulty = parseInt(document.getElementById("difficulty").value) || 1;
-  const equipment = document.getElementById("equipment").value
-    .split(",").map(i => i.trim()).filter(i => i);
-  const image = document.getElementById("image_url").value;
-  const is_public = !document.getElementById("private-checkbox").checked;
+    const title = document.getElementById("title").value.trim();
+    const ingredients = document.getElementById("ingredients").value.trim();
+    const steps = document.getElementById("steps").value.trim();
+    const difficulty = parseInt(document.getElementById("difficulty").value) || 1;
+    const equipment = document.getElementById("equipment").value.trim();
+    const image = document.getElementById("image_url").value.trim() || null;
+    const is_public = !document.getElementById("private-checkbox").checked;
 
-  const { error } = await supabaseClient.from("recipes").insert({
-    user_id: session.user.id,
-    title,
-    ingredients,
-    steps,
-    difficulty,
-    equipment,
-    image,
-    is_public
-  });
+    const { error } = await supabaseClient.from("recipes").insert({
+      user_id: session.user.id,
+      title,
+      ingredients,   // stored as plain text
+      steps,         // stored as plain text
+      difficulty,
+      equipment,     // stored as plain text
+      image,         // optional
+      is_public
+    });
 
-  if (error) alert("Error saving recipe: " + error.message);
-  else { alert("Recipe saved!"); form.reset(); window.location.href = "myrecipes.html"; }
+    if (error) throw error;
+
+    alert("Recipe saved!");
+    form.reset();
+    window.location.href = "myrecipes.html";
+
+  } catch (err) {
+    alert("Error saving recipe: " + err.message);
+    console.error(err);
+  }
 });
 </script>
 </body>

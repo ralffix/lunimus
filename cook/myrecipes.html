@@ -54,6 +54,7 @@ const supabaseClient = window.supabase.createClient(
   window.SUPABASE_ANON_KEY
 );
 
+// Update navbar login link
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   const loginLink = document.getElementById("login-link");
   if (!loginLink) return;
@@ -65,8 +66,10 @@ supabaseClient.auth.getSession().then(({ data: { session } }) => {
 
 async function loadMyRecipes() {
   const { data: { session } } = await supabaseClient.auth.getSession();
+  const list = document.getElementById("my-recipe-list");
+
   if (!session) {
-    document.getElementById("my-recipe-list").innerHTML = "<li>Please log in to see your recipes.</li>";
+    list.innerHTML = "<li>Please log in to see your recipes.</li>";
     return;
   }
 
@@ -78,17 +81,16 @@ async function loadMyRecipes() {
 
   if (error) { alert(error.message); return; }
 
-  const list = document.getElementById("my-recipe-list");
   list.innerHTML = "";
 
   recipes.forEach(r => {
     const li = document.createElement("li");
     li.innerHTML = `
       <strong>${r.title}</strong> (${r.is_public ? "Public" : "Private"})<br>
-      Ingredients: ${r.ingredients.join(", ")}<br>
-      Steps: ${r.steps}<br>
-      Difficulty: ${r.difficulty} ⭐<br>
-      Equipment: ${r.equipment?.join(", ") || "None"}<br>
+      Ingredients: ${r.ingredients || "None"}<br>
+      Steps: ${r.steps || ""}<br>
+      Difficulty: ${r.difficulty || "?"} ⭐<br>
+      Equipment: ${r.equipment || "None"}<br>
       ${r.image ? `<img src="${r.image}" style="max-width:200px;border-radius:8px;margin-top:5px;">` : ""}
       <br>
       <button class="delete" onclick="deleteRecipe('${r.id}')">Delete</button>
@@ -101,18 +103,33 @@ async function loadMyRecipes() {
 }
 
 async function deleteRecipe(id) {
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!confirm("Are you sure you want to delete this recipe?")) return;
-  const { error } = await supabaseClient.from("recipes").delete().eq("id", id);
+
+  const { error } = await supabaseClient
+    .from("recipes")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", session.user.id); // RLS safe
+
   if (error) alert(error.message);
-  loadMyRecipes();
+  else loadMyRecipes();
 }
 
 async function togglePublic(id, current) {
-  const { error } = await supabaseClient.from("recipes").update({ is_public: !current }).eq("id", id);
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  
+  const { error } = await supabaseClient
+    .from("recipes")
+    .update({ is_public: !current })
+    .eq("id", id)
+    .eq("user_id", session.user.id); // RLS safe
+
   if (error) alert(error.message);
-  loadMyRecipes();
+  else loadMyRecipes();
 }
 
+// Initial load
 loadMyRecipes();
 </script>
 </body>

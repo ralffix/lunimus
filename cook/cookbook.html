@@ -128,8 +128,8 @@ function displayRecipes(recipes) {
     li.innerHTML = `
       <strong>${r.title}</strong>
       ${r.image ? `<img src="${r.image}" alt="${r.title}">` : ""}
-      <br>Difficulty: ${'⭐'.repeat(r.difficulty)}
-      <br>Equipment: ${r.equipment?.join(", ") || "None"}
+      <br>Difficulty: ${'⭐'.repeat(r.difficulty || 1)}
+      <br>Equipment: ${r.equipment || "None"}
     `;
     li.addEventListener("click", () => openModal(r));
     list.appendChild(li);
@@ -138,7 +138,7 @@ function displayRecipes(recipes) {
 
 async function searchRecipes() {
   const input = document.getElementById("search-input").value;
-  const ingredients = input.split(",").map(i => i.trim()).filter(i => i);
+  const ingredients = input.split(",").map(i => i.trim().toLowerCase()).filter(i => i);
 
   let { data: recipes, error } = await supabaseClient
     .from("recipes")
@@ -148,18 +148,21 @@ async function searchRecipes() {
   if (error) { alert("Error: " + error.message); return; }
 
   if (ingredients.length > 0) {
-    recipes = recipes.filter(r => ingredients.every(i => r.ingredients.includes(i)));
-  }
+    recipes = recipes.filter(r => {
+      if (!r.ingredients) return false;
+      return ingredients.some(i => r.ingredients.toLowerCase().includes(i));
+    });
+  }  
 
   displayRecipes(recipes);
 }
 
 function openModal(recipe) {
   document.getElementById("modal-title").textContent = recipe.title;
-  document.getElementById("modal-ingredients").textContent = recipe.ingredients.join(", ");
+  document.getElementById("modal-ingredients").textContent = recipe.ingredients || "No ingredients provided.";
   document.getElementById("modal-steps").textContent = recipe.steps || "No steps provided.";
-  document.getElementById("modal-difficulty").textContent = '⭐'.repeat(recipe.difficulty);
-  document.getElementById("modal-equipment").textContent = recipe.equipment?.join(", ") || "None";
+  document.getElementById("modal-difficulty").textContent = '⭐'.repeat(recipe.difficulty || 1);
+  document.getElementById("modal-equipment").textContent = recipe.equipment || "None";
   document.getElementById("modal-image").src = recipe.image || "";
   document.getElementById("recipe-modal").style.display = "flex";
 }
