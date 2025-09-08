@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Other Projects</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <style>
+    /* Card container grid */
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    /* Individual cards */
+    .project-card {
+      background-color: #222;
+      border-radius: 12px;
+      padding: 20px;
+      color: #66edff;
+      box-shadow: 0 0 15px transparent;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      cursor: pointer;
+    }
+
+    .project-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px #66edff;
+    }
+
+    .project-card h3 {
+      margin-top: 0;
+      margin-bottom: 0.75rem;
+      font-size: 1.4rem;
+    }
+
+    .project-card p {
+      flex-grow: 1;
+      color: #a0d8ff;
+      font-size: 1rem;
+      line-height: 1.3;
+    }
+
+    main h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #00bfff;
+    }
+
+  </style>
+</head>
+<body>
+  <nav class="topbar">
+    <a href="../index.html">Home</a>
+    <a href="../mygames.html">My Games</a>
+    <a href="../buygames.html">Buy Games</a>
+    <a href="../other progekts.html">Other Projects</a>
+    <a href="../server.html">Minecraft Server</a>
+    <a href="../about me.html">About Me</a>
+    <a href="../login.html" id="login-link">Sign In / Log In</a>
+  </nav>  
+
+  <main class="content">
+    <h1 style="text-align:center; margin-bottom: 2rem; color: #00bfff;">Other Projects</h1>
+
+    <div class="project-grid">
+      
+      <a href="fiziks1.html" class="project-card">
+        <h3>Experiment with energs</h3>
+      </a>
+    </div>
+  </main>
+
+  <div id="cursor-line"></div>
+
+  <script src="supabase-config.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  const supabaseClient = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_ANON_KEY
+  );
+
+  // Use supabaseClient below
+  supabaseClient.auth.getSession().then(({ data: { session } }) => {
+    const loginLink = document.getElementById("login-link");
+    if (!loginLink) return;
+  
+    if (session && session.user) {
+      loginLink.href = "profile.html";
+      loginLink.textContent = "Profile";
+    }
+  });
+  
+</script>
+
+</body>
+</html>

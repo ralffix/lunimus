@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energy Conservation Demo</title>
+    <link href="../styles.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .controls {
+            width: 300px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.3);
+            outline: none;
+            border-radius: 3px;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #ff6b35;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        .value-display {
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            font-family: monospace;
+        }
+
+        .toggle-btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #ff6b35;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+        }
+
+        .toggle-btn.active {
+            background: #4CAF50;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #FF6B35, #F7931E);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255,107,53,0.4);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .simulation-area {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            width: 100%;
+            height: 500px;
+            position: relative;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .energy-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .energy-bar {
+            width: 200px;
+            height: 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .energy-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.1s ease;
+        }
+
+        .potential { background: #FF6B35; }
+        .kinetic { background: #4CAF50; }
+        .total { background: #2196F3; }
+
+        .reset-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .physics-explanation {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 300px;
+            font-size: 12px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <body>
+        <nav class="topbar">
+          <a href="../index.html">Home</a>
+          <a href="../mygames.html">My Games</a>
+          <a href="../buygames.html">Buy Games</a>
+          <a href="../other progekts.html">Other Projects</a>
+          <a href="../server.html">Minecraft Server</a>
+          <a href="../about me.html">About Me</a>
+          <a href="../login.html" id="login-link">Sign In / Log In</a>
+        </nav>  
+    <div class="header">
+        <h1>⚡ Energy Conservation Demo ⚡</h1>
+        <p>Explore how potential energy transforms into kinetic energy!</p>
+    </div>
+
+    <div class="container">
+        <div class="controls">
+            <div class="control-group">
+                <label>📏 Shelf Height (m)</label>
+                <input type="range" id="heightSlider" min="1" max="8" value="5" step="0.1">
+                <div class="value-display" id="heightDisplay">5.0 m</div>
+            </div>
+
+            <div class="control-group">
+                <label>⚖️ Object Mass (kg)</label>
+                <input type="range" id="massSlider" min="0.5" max="10" value="2" step="0.1">
+                <div class="value-display" id="massDisplay">2.0 kg</div>
+            </div>
+
+            <div class="control-group">
+                <label>🛤️ Ramp Mode</label>
+                <button class="toggle-btn" id="rampToggle">OFF - Free Fall</button>
+            </div>
+
+            <button class="start-btn" id="startBtn">🚀 Start Simulation</button>
+        </div>
+
+        <div class="simulation-area">
+            <div class="canvas-container">
+                <canvas id="canvas" width="800" height="500"></canvas>
+                
+                <div class="energy-display">
+                    <div><strong>Energy Values:</strong></div>
+                    <div>Potential: <span id="potentialValue">98.1 J</span></div>
+                    <div class="energy-bar"><div class="energy-fill potential" id="potentialBar"></div></div>
+                    
+                    <div>Kinetic: <span id="kineticValue">0.0 J</span></div>
+                    <div class="energy-bar"><div class="energy-fill kinetic" id="kineticBar"></div></div>
+                    
+                    <div>Total: <span id="totalValue">98.1 J</span></div>
+                    <div class="energy-bar"><div class="energy-fill total" id="totalBar"></div></div>
+                </div>
+
+                <div class="physics-explanation">
+                    <strong>Physics Principles:</strong><br>
+                    • Ep = mgh (Potential Energy)<br>
+                    • Ek = ½mv² (Kinetic Energy)<br>
+                    • Total Energy = Ep + Ek<br>
+                    • Energy is conserved (constant total)
+                </div>
+
+                <button class="reset-btn" id="resetBtn">🔄 Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EnergyDemo {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.g = 9.81; // gravity
+                
+                // Object properties
+                this.mass = 2.0;
+                this.height = 5.0;
+                this.hasRamp = false;
+                
+                // Animation properties
+                this.isAnimating = false;
+                this.animationId = null;
+                this.startTime = null;
+                
+                // Object position and physics
+                this.objectX = 100;
+                this.objectY = 50;
+                this.velocity = 0;
+                this.objectSize = 20;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.updateDisplay();
+                this.draw();
+            }
+            
+            initializeElements() {
+                this.heightSlider = document.getElementById('heightSlider');
+                this.massSlider = document.getElementById('massSlider');
+                this.rampToggle = document.getElementById('rampToggle');
+                this.startBtn = document.getElementById('startBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                
+                this.heightDisplay = document.getElementById('heightDisplay');
+                this.massDisplay = document.getElementById('massDisplay');
+                
+                this.potentialValue = document.getElementById('potentialValue');
+                this.kineticValue = document.getElementById('kineticValue');
+                this.totalValue = document.getElementById('totalValue');
+                
+                this.potentialBar = document.getElementById('potentialBar');
+                this.kineticBar = document.getElementById('kineticBar');
+                this.totalBar = document.getElementById('totalBar');
+            }
+            
+            setupEventListeners() {
+                this.heightSlider.addEventListener('input', () => {
+                    this.height = parseFloat(this.heightSlider.value);
+                    this.heightDisplay.textContent = `${this.height.toFixed(1)} m`;
+                    this.updateDisplay();
+                    if (!this.isAnimating) this.draw();
+                });
+                
+                this.massSlider.addEventListener('input', () => {
+                    this.mass = parseFloat(this.massSlider.value);
+                    this.massDisplay.textContent = `${this.mass.toFixed(1)} kg`;
+                    this.updateDisplay();
+                    if (!this.isAnimating) this.draw();
+                });
+                
+                this.rampToggle.addEventListener('click', () => {
+                    this.hasRamp = !this.hasRamp;
+                    this.rampToggle.textContent = this.hasRamp ? 'ON - With Ramp' : 'OFF - Free Fall';
+                    this.rampToggle.classList.toggle('active', this.hasRamp);
+                    if (!this.isAnimating) this.draw();
+                });
+                
+                this.startBtn.addEventListener('click', () => this.startAnimation());
+                this.resetBtn.addEventListener('click', () => this.reset());
+            }
+            
+            updateDisplay() {
+                const maxHeight = 8;
+                const currentHeight = this.height;
+                const potentialEnergy = this.mass * this.g * currentHeight;
+                const kineticEnergy = 0; // At rest
+                const totalEnergy = potentialEnergy + kineticEnergy;
+                
+                this.potentialValue.textContent = `${potentialEnergy.toFixed(1)} J`;
+                this.kineticValue.textContent = `${kineticEnergy.toFixed(1)} J`;
+                this.totalValue.textContent = `${totalEnergy.toFixed(1)} J`;
+                
+                const maxEnergy = 10 * this.g * maxHeight; // Max possible energy
+                this.potentialBar.style.width = `${(potentialEnergy / maxEnergy) * 100}%`;
+                this.kineticBar.style.width = '0%';
+                this.totalBar.style.width = `${(totalEnergy / maxEnergy) * 100}%`;
+            }
+            
+            updateEnergyDuringAnimation(currentHeight, velocity) {
+                const maxHeight = 8;
+                const potentialEnergy = this.mass * this.g * currentHeight;
+                const kineticEnergy = 0.5 * this.mass * velocity * velocity;
+                const initialTotalEnergy = this.mass * this.g * this.height; // Store initial total
+                
+                this.potentialValue.textContent = `${potentialEnergy.toFixed(1)} J`;
+                this.kineticValue.textContent = `${kineticEnergy.toFixed(1)} J`;
+                this.totalValue.textContent = `${initialTotalEnergy.toFixed(1)} J`; // Keep constant
+                
+                const maxEnergy = 10 * this.g * maxHeight;
+                this.potentialBar.style.width = `${(potentialEnergy / maxEnergy) * 100}%`;
+                this.kineticBar.style.width = `${(kineticEnergy / maxEnergy) * 100}%`;
+                this.totalBar.style.width = `${(initialTotalEnergy / maxEnergy) * 100}%`; // Keep constant
+            }
+            
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw ground
+                this.ctx.fillStyle = '#8B4513';
+                this.ctx.fillRect(0, this.canvas.height - 40, this.canvas.width, 40);
+                
+                // Draw shelf
+                const shelfY = this.canvas.height - 40 - (this.height / 8) * (this.canvas.height - 100);
+                this.ctx.fillStyle = '#654321';
+                this.ctx.fillRect(50, shelfY - 10, 100, 10);
+                
+                // Draw ramp if enabled
+                if (this.hasRamp) {
+                    this.ctx.fillStyle = '#888888';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(150, shelfY);
+                    this.ctx.lineTo(400, this.canvas.height - 80);
+                    this.ctx.lineTo(400, this.canvas.height - 70);
+                    this.ctx.lineTo(150, shelfY + 10);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    
+                    // Draw skateboard
+                    this.ctx.fillStyle = '#FF6B35';
+                    this.ctx.fillRect(400, this.canvas.height - 80, 60, 10);
+                    // Wheels
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.beginPath();
+                    this.ctx.arc(410, this.canvas.height - 65, 5, 0, Math.PI * 2);
+                    this.ctx.arc(450, this.canvas.height - 65, 5, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Draw object
+                this.ctx.fillStyle = '#4CAF50';
+                this.ctx.beginPath();
+                this.ctx.arc(this.objectX, this.objectY, this.objectSize, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Draw height indicator
+                this.ctx.strokeStyle = 'white';
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.beginPath();
+                this.ctx.moveTo(20, shelfY);
+                this.ctx.lineTo(20, this.canvas.height - 40);
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+                
+                // Height text
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '16px Arial';
+                this.ctx.fillText(`${this.height.toFixed(1)}m`, 25, (shelfY + this.canvas.height - 40) / 2);
+            }
+            
+            startAnimation() {
+                if (this.isAnimating) return;
+                
+                this.isAnimating = true;
+                this.startBtn.disabled = true;
+                this.startTime = Date.now();
+                
+                // Reset object position
+                const shelfY = this.canvas.height - 40 - (this.height / 8) * (this.canvas.height - 100);
+                this.objectX = 100;
+                this.objectY = shelfY - this.objectSize;
+                this.velocity = 0;
+                
+                if (this.hasRamp) {
+                    this.animateRamp();
+                } else {
+                    this.animateFreeFall();
+                }
+            }
+            
+            animateFreeFall() {
+                const animate = () => {
+                    if (!this.isAnimating) return;
+                    
+                    const elapsed = (Date.now() - this.startTime) / 1000;
+                    
+                    // Physics: y = y0 + v0*t + 0.5*g*t^2, v = v0 + g*t
+                    const initialY = this.canvas.height - 40 - (this.height / 8) * (this.canvas.height - 100) - this.objectSize;
+                    const newY = initialY + 0.5 * this.g * 10 * elapsed * elapsed; // Scale for visualization
+                    this.velocity = this.g * 10 * elapsed;
+                    
+                    if (newY >= this.canvas.height - 40 - this.objectSize) {
+                        // Hit ground
+                        this.objectY = this.canvas.height - 40 - this.objectSize;
+                        this.velocity = 0;
+                        this.isAnimating = false;
+                        this.startBtn.disabled = false;
+                    } else {
+                        this.objectY = newY;
+                        this.animationId = requestAnimationFrame(animate);
+                    }
+                    
+                    // Calculate current height for energy
+                    const currentHeight = ((this.canvas.height - 40 - this.objectY - this.objectSize) / (this.canvas.height - 100)) * 8;
+                    this.updateEnergyDuringAnimation(Math.max(0, currentHeight), this.velocity / 10);
+                    
+                    this.draw();
+                };
+                animate();
+            }
+            
+            animateRamp() {
+                const animate = () => {
+                    if (!this.isAnimating) return;
+                    
+                    const elapsed = (Date.now() - this.startTime) / 1000;
+                    
+                    // Simplified ramp physics
+                    const progress = Math.min(1, elapsed * 0.5); // Control speed
+                    
+                    if (progress >= 1) {
+                        // Reached skateboard
+                        this.objectX = 430;
+                        this.objectY = this.canvas.height - 90 - this.objectSize;
+                        // Final velocity when reaching bottom
+                        this.velocity = Math.sqrt(2 * this.g * this.height);
+                        this.isAnimating = false;
+                        this.startBtn.disabled = false;
+                    } else {
+                        // Moving down ramp
+                        const startX = 100;
+                        const endX = 400;
+                        const startY = this.canvas.height - 40 - (this.height / 8) * (this.canvas.height - 100) - this.objectSize;
+                        const endY = this.canvas.height - 90 - this.objectSize;
+                        
+                        this.objectX = startX + (endX - startX) * progress;
+                        this.objectY = startY + (endY - startY) * progress;
+                        
+                        // Calculate velocity based on energy conservation: v = sqrt(2gh)
+                        const heightDrop = this.height * progress;
+                        this.velocity = Math.sqrt(2 * this.g * heightDrop);
+                        
+                        this.animationId = requestAnimationFrame(animate);
+                    }
+                    
+                    // Update energy display
+                    const currentHeight = this.height * (1 - progress);
+                    this.updateEnergyDuringAnimation(Math.max(0, currentHeight), this.velocity);
+                    
+                    this.draw();
+                };
+                animate();
+            }
+            
+            reset() {
+                this.isAnimating = false;
+                this.startBtn.disabled = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                
+                const shelfY = this.canvas.height - 40 - (this.height / 8) * (this.canvas.height - 100);
+                this.objectX = 100;
+                this.objectY = shelfY - this.objectSize;
+                this.velocity = 0;
+                
+                this.updateDisplay();
+                this.draw();
+            }
+        }
+        
+        // Initialize the demo when page loads
+        window.addEventListener('load', () => {
+            new EnergyDemo();
+        });
+    </script>
+</body>
+</html>
