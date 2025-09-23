@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer Parkour Runner</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
+            border: 3px solid #333;
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+        }
+
+        #instructions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 14px;
+            text-align: right;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        #playerList {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        #setupScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            width: 200px;
+        }
+
+        button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .player-colors {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .color-option.selected {
+            border-color: white;
+        }
+
+        #connectionStatus {
+            position: absolute;
+            top: 60px;
+            left: 10px;
+            color: white;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+
+        #debugInfo {
+            position: absolute;
+            top: 100px;
+            left: 10px;
+            color: white;
+            font-size: 12px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    
+    <div id="ui">
+        <div>Your Score: <span id="score">0</span></div>
+        <div>Distance: <span id="distance">0</span>m</div>
+    </div>
+
+    <div id="connectionStatus">Connecting...</div>
+    <div id="debugInfo" style="display: none;"></div>
+
+    <div id="instructions">
+        SPACE: Jump<br>
+        A/D: Move Left/Right<br>
+        Hold SPACE on wall: Wall Jump<br>
+        <strong>MULTIPLAYER PARKOUR!</strong>
+    </div>
+
+    <div id="playerList">
+        <strong>Players Online:</strong>
+        <div id="playersOnline"></div>
+    </div>
+
+    <div id="setupScreen">
+        <h2>Join Multiplayer Parkour!</h2>
+        <p>Enter your name and pick a color:</p>
+        <input type="text" id="playerName" placeholder="Enter your name" maxlength="12">
+        <div class="player-colors">
+            <div class="color-option selected" style="background: #FF6B6B" data-color="#FF6B6B"></div>
+            <div class="color-option" style="background: #4ECDC4" data-color="#4ECDC4"></div>
+            <div class="color-option" style="background: #45B7D1" data-color="#45B7D1"></div>
+            <div class="color-option" style="background: #96CEB4" data-color="#96CEB4"></div>
+            <div class="color-option" style="background: #FFEAA7" data-color="#FFEAA7"></div>
+            <div class="color-option" style="background: #DDA0DD" data-color="#DDA0DD"></div>
+            <div class="color-option" style="background: #98D8C8" data-color="#98D8C8"></div>
+            <div class="color-option" style="background: #F7DC6F" data-color="#F7DC6F"></div>
+        </div>
+        <button id="joinButton">Join Game!</button>
+        <button id="debugButton" style="background: #666; font-size: 12px; padding: 8px 16px;">Toggle Debug</button>
+        <div style="margin-top: 15px; font-size: 12px; opacity: 0.8;">
+            <p id="firebaseStatus">🔄 Connecting to Firebase...</p>
+            <p>Ready for multiplayer parkour racing!</p>
+        </div>
+    </div>
+
+    <div id="gameOver">
+        <h2>Game Over!</h2>
+        <p>Final Score: <span id="finalScore">0</span></p>
+        <p>Distance Traveled: <span id="finalDistance">0</span>m</p>
+        <button id="restartButton">Respawn</button>
+    </div>
+
+    <script type="module">
+        // Import Firebase v9+ modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, set, update, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAAlnfXovd_4PLCnat_VKiR-ywMe5pG_qk",
+            authDomain: "test-lan-game.firebaseapp.com",
+            databaseURL: "https://test-lan-game-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "test-lan-game",
+            storageBucket: "test-lan-game.firebasestorage.app",
+            messagingSenderId: "489978657092",
+            appId: "1:489978657092:web:60f47dbc9937c985c8ff11",
+            measurementId: "G-7R09D6VJ1S"
+        };
+
+        // Initialize Firebase with error handling
+        let app, database;
+        try {
+            app = initializeApp(firebaseConfig);
+            database = getDatabase(app);
+            
+            document.getElementById('connectionStatus').textContent = '🟢 Connected to Firebase';
+            document.getElementById('firebaseStatus').textContent = '✅ Firebase Connected!';
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            document.getElementById('connectionStatus').textContent = '🔴 Firebase Connection Failed';
+            document.getElementById('firebaseStatus').textContent = '❌ Firebase Connection Failed';
+        }
+
+        // Make Firebase functions globally available
+        window.firebaseDB = {
+            database,
+            ref,
+            set,
+            update,
+            onValue,
+            onDisconnect,
+            remove
+        };
+        
+        // Initialize game after Firebase is ready
+        window.initGame();
+    </script>
+
+    <script>
+        // Global variables
+        let debugMode = false;
+
+        // Game will be initialized after Firebase loads
+        window.initGame = function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Game state
+            let gameRunning = false;
+            let gameStarted = false;
+            let score = 0;
+            let distance = 0;
+            let camera = { x: 0, y: 0 };
+            let playerId = null;
+            let playerName = '';
+            let selectedColor = '#FF6B6B';
+            let gameLoopId = null;
+            let lastSyncTime = 0;
+
+            // Players data
+            let players = {};
+            let myPlayer = null;
+
+            // Global helper functions
+            function toggleDebug() {
+                debugMode = !debugMode;
+                const debugDiv = document.getElementById('debugInfo');
+                debugDiv.style.display = debugMode ? 'block' : 'none';
+            }
+
+            function updateDebugInfo(info) {
+                if (debugMode) {
+                    document.getElementById('debugInfo').innerHTML = info;
+                }
+            }
+
+            // Color selection
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedColor = option.dataset.color;
+                });
+            });
+
+            // Player object constructor
+            function createPlayer(name, color, id) {
+                return {
+                    id: id,
+                    name: name,
+                    x: 100,
+                    y: 300,
+                    width: 20,
+                    height: 30,
+                    velX: 0,
+                    velY: 0,
+                    speed: 5,
+                    jumpPower: 15,
+                    onGround: false,
+                    onWall: false,
+                    wallSide: 0,
+                    color: color,
+                    score: 0,
+                    distance: 0,
+                    alive: true,
+                    lastUpdate: Date.now()
+                };
+            }
+
+            // Input handling
+            const keys = {};
+            window.addEventListener('keydown', (e) => {
+                keys[e.code] = true;
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keys[e.code] = false;
+            });
+
+            // Platforms and obstacles
+            let platforms = [];
+            let obstacles = [];
+
+            // Initialize level
+            function initLevel() {
+                platforms = [
+                    {x: 0, y: 350, width: 200, height: 50, color: '#8B4513'},
+                    {x: 250, y: 370, width: 100, height: 30, color: '#8B4513'},
+                    {x: 400, y: 320, width: 120, height: 20, color: '#8B4513'},
+                    {x: 600, y: 280, width: 80, height: 20, color: '#8B4513'},
+                    {x: 750, y: 240, width: 100, height: 20, color: '#8B4513'},
+                    {x: 900, y: 300, width: 150, height: 20, color: '#8B4513'},
+                    {x: 1100, y: 200, width: 80, height: 20, color: '#8B4513'},
+                    {x: 1250, y: 350, width: 120, height: 50, color: '#8B4513'},
+                    {x: 1400, y: 180, width: 60, height: 20, color: '#8B4513'},
+                    {x: 1550, y: 220, width: 100, height: 20, color: '#8B4513'},
+                    {x: 1700, y: 300, width: 80, height: 20, color: '#8B4513'},
+                    {x: 1900, y: 180, width: 100, height: 20, color: '#8B4513'},
+                    {x: 2100, y: 250, width: 80, height: 20, color: '#8B4513'},
+                    {x: 2300, y: 320, width: 120, height: 20, color: '#8B4513'},
+                    
+                    // Walls for wall jumping
+                    {x: 520, y: 150, width: 20, height: 170, color: '#654321'},
+                    {x: 1000, y: 100, width: 20, height: 200, color: '#654321'},
+                    {x: 1600, y: 80, width: 20, height: 140, color: '#654321'},
+                    {x: 2000, y: 50, width: 20, height: 130, color: '#654321'},
+                ];
+
+                obstacles = [
+                    {x: 300, y: 340, width: 20, height: 30, color: '#FF4444', type: 'spike'},
+                    {x: 450, y: 290, width: 20, height: 30, color: '#FF4444', type: 'spike'},
+                    {x: 800, y: 210, width: 20, height: 30, color: '#FF4444', type: 'spike'},
+                    {x: 1300, y: 320, width: 20, height: 30, color: '#FF4444', type: 'spike'},
+                    {x: 1650, y: 190, width: 20, height: 30, color: '#FF4444', type: 'spike'},
+                    {x: 2050, y: 150, width: 20, height: 30, color: '#FF4444', type: 'spike'},
+                    {x: 2350, y: 290, width: 20, height: 30, color: '#FF4444', type: 'spike'},
+                ];
+            }
+
+            // Join game function
+            function joinGame() {
+                try {
+                    const nameInput = document.getElementById('playerName');
+                    playerName = nameInput.value.trim() || 'Player';
+
+                    playerId = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                    myPlayer = createPlayer(playerName, selectedColor, playerId);
+
+                    // Hide setup screen FIRST
+                    const setupScreen = document.getElementById('setupScreen');
+                    setupScreen.style.display = 'none';
+                    
+                    // Set game state
+                    gameStarted = true;
+                    gameRunning = true;
+                    
+                    // Initialize level regardless of Firebase status
+                    initLevel();
+                    
+                    console.log('Game started with player:', playerName, 'ID:', playerId);
+
+                    // Try Firebase connection but don't block game start
+                    if (!window.firebaseDB || !window.firebaseDB.database) {
+                        console.warn('Firebase not initialized - playing in offline mode');
+                        return;
+                    }
+
+                    const { database, ref, set, onValue, onDisconnect, remove } = window.firebaseDB;
+
+                    // Add player to Firebase
+                    const playerRef = ref(database, 'players/' + playerId);
+                    set(playerRef, {
+                        name: playerName,
+                        color: selectedColor,
+                        x: myPlayer.x,
+                        y: myPlayer.y,
+                        score: 0,
+                        distance: 0,
+                        alive: true,
+                        lastUpdate: Date.now()
+                    }).then(() => {
+                        console.log('Player added to Firebase successfully');
+                    }).catch((error) => {
+                        console.error('Error adding player to Firebase:', error);
+                    });
+
+                    // Listen for other players
+                    const playersRef = ref(database, 'players');
+                    onValue(playersRef, (snapshot) => {
+                        try {
+                            const data = snapshot.val() || {};
+                            players = {};
+                            
+                            Object.keys(data).forEach(id => {
+                                if (id !== playerId) {
+                                    players[id] = {
+                                        ...data[id],
+                                        id: id
+                                    };
+                                }
+                            });
+                            
+                            updatePlayersList();
+                        } catch (error) {
+                            console.error('Error processing players data:', error);
+                        }
+                    }, (error) => {
+                        console.error('Firebase listener error:', error);
+                    });
+
+                    // Clean up on disconnect
+                    const disconnectRef = onDisconnect(playerRef);
+                    disconnectRef.remove();
+
+                    initLevel();
+                    
+                } catch (error) {
+                    console.error('Error joining game:', error);
+                    alert('Error joining game. Playing in offline mode.');
+                    initLevel();
+                }
+            }
+
+            // Update players list UI
+            function updatePlayersList() {
+                try {
+                    const playersDiv = document.getElementById('playersOnline');
+                    let html = '';
+                    
+                    // Add yourself
+                    if (myPlayer) {
+                        html += `<div style="color: ${myPlayer.color}">${playerName} (You): ${score}pts</div>`;
+                    }
+                    
+                    // Add other players
+                    Object.keys(players).forEach(id => {
+                        const player = players[id];
+                        if (player && player.name) {
+                            const status = player.alive ? `${Math.floor(player.distance || 0)}m` : '💀';
+                            html += `<div style="color: ${player.color || '#FFF'}">${player.name}: ${status}</div>`;
+                        }
+                    });
+                    
+                    playersDiv.innerHTML = html;
+
+                    // Debug info
+                    if (debugMode) {
+                        updateDebugInfo(`
+                            Players: ${Object.keys(players).length + 1}<br>
+                            My Position: ${Math.floor(myPlayer ? myPlayer.x : 0)}, ${Math.floor(myPlayer ? myPlayer.y : 0)}<br>
+                            Alive: ${myPlayer ? myPlayer.alive : false}<br>
+                            Game Running: ${gameRunning}<br>
+                            Last Sync: ${Date.now() - lastSyncTime}ms ago
+                        `);
+                    }
+                } catch (error) {
+                    console.error('Error updating players list:', error);
+                }
+            }
+
+            // Collision detection
+            function checkCollision(rect1, rect2) {
+                return rect1.x < rect2.x + rect2.width &&
+                       rect1.x + rect1.width > rect2.x &&
+                       rect1.y < rect2.y + rect2.height &&
+                       rect1.y + rect1.height > rect2.y;
+            }
+
+            // Update player physics
+            function updatePlayer() {
+                if (!gameRunning || !myPlayer || !myPlayer.alive) return;
+
+                // Horizontal movement
+                if (keys['KeyA'] || keys['ArrowLeft']) {
+                    myPlayer.velX = -myPlayer.speed;
+                } else if (keys['KeyD'] || keys['ArrowRight']) {
+                    myPlayer.velX = myPlayer.speed;
+                } else {
+                    myPlayer.velX *= 0.8;
+                }
+
+                // Jumping
+                if (keys['Space']) {
+                    if (myPlayer.onGround) {
+                        myPlayer.velY = -myPlayer.jumpPower;
+                        myPlayer.onGround = false;
+                    } else if (myPlayer.onWall && !myPlayer.onGround) {
+                        myPlayer.velY = -myPlayer.jumpPower * 0.8;
+                        myPlayer.velX = -myPlayer.wallSide * myPlayer.speed * 1.5;
+                        myPlayer.onWall = false;
+                    }
+                }
+
+                // Apply gravity
+                myPlayer.velY += 0.8;
+
+                // Update position
+                myPlayer.x += myPlayer.velX;
+                myPlayer.y += myPlayer.velY;
+
+                // Reset collision flags
+                myPlayer.onGround = false;
+                myPlayer.onWall = false;
+                myPlayer.wallSide = 0;
+
+                // Platform collisions
+                platforms.forEach(platform => {
+                    if (checkCollision(myPlayer, platform)) {
+                        if (myPlayer.velY > 0 && myPlayer.y < platform.y) {
+                            myPlayer.y = platform.y - myPlayer.height;
+                            myPlayer.velY = 0;
+                            myPlayer.onGround = true;
+                        } else if (myPlayer.velY < 0 && myPlayer.y > platform.y) {
+                            myPlayer.y = platform.y + platform.height;
+                            myPlayer.velY = 0;
+                        } else if (Math.abs(myPlayer.velX) > 0) {
+                            if (myPlayer.x < platform.x) {
+                                myPlayer.x = platform.x - myPlayer.width;
+                                myPlayer.onWall = true;
+                                myPlayer.wallSide = -1;
+                                myPlayer.velY *= 0.9;
+                            } else {
+                                myPlayer.x = platform.x + platform.width;
+                                myPlayer.onWall = true;
+                                myPlayer.wallSide = 1;
+                                myPlayer.velY *= 0.9;
+                            }
+                            myPlayer.velX = 0;
+                        }
+                    }
+                });
+
+                // Obstacle collisions
+                obstacles.forEach(obstacle => {
+                    if (checkCollision(myPlayer, obstacle)) {
+                        gameOver();
+                        return;
+                    }
+                });
+
+                // Bounds checking
+                if (myPlayer.x < 0) myPlayer.x = 0;
+                if (myPlayer.y > canvas.height) {
+                    gameOver();
+                    return;
+                }
+
+                // Update camera
+                camera.x = myPlayer.x - canvas.width / 3;
+
+                // Update score and distance
+                distance = Math.floor(myPlayer.x / 10);
+                score = distance;
+                myPlayer.score = score;
+                myPlayer.distance = distance;
+
+                // Update Firebase with player position (throttled to every 50ms)
+                const now = Date.now();
+                if (window.firebaseDB && window.firebaseDB.database && (now - lastSyncTime) > 50) {
+                    try {
+                        const { database, ref, update } = window.firebaseDB;
+                        const playerRef = ref(database, 'players/' + playerId);
+                        update(playerRef, {
+                            x: Math.floor(myPlayer.x),
+                            y: Math.floor(myPlayer.y),
+                            score: score,
+                            distance: distance,
+                            alive: myPlayer.alive,
+                            lastUpdate: now
+                        }).catch((error) => {
+                            console.error('Firebase update error:', error);
+                        });
+                        lastSyncTime = now;
+                    } catch (error) {
+                        console.error('Error updating Firebase:', error);
+                    }
+                }
+            }
+
+            // Draw player function
+            function drawPlayer(player, isMe = false) {
+                const x = Math.floor(player.x - camera.x);
+                const y = Math.floor(player.y - camera.y);
+                
+                // Only draw if player is visible on screen
+                if (x < -50 || x > canvas.width + 50 || y < -50 || y > canvas.height + 50) {
+                    return;
+                }
+
+                ctx.fillStyle = player.color || '#FF6B6B';
+                ctx.fillRect(x, y, 20, 30);
+                
+                // Player outline
+                ctx.strokeStyle = isMe ? '#fff' : '#333';
+                ctx.lineWidth = isMe ? 3 : 2;
+                ctx.strokeRect(x, y, 20, 30);
+
+                // Eyes
+                ctx.fillStyle = 'white';
+                ctx.fillRect(x + 3, y + 5, 4, 4);
+                ctx.fillRect(x + 13, y + 5, 4, 4);
+                ctx.fillStyle = 'black';
+                ctx.fillRect(x + 4, y + 6, 2, 2);
+                ctx.fillRect(x + 14, y + 6, 2, 2);
+
+                // Name tag
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(x - 10, y - 25, 40, 15);
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText((player.name || 'Player').substring(0, 8), x + 10, y - 15);
+            }
+
+            // Render everything
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (!gameStarted) return;
+
+                // Draw platforms (only visible ones)
+                platforms.forEach(platform => {
+                    const x = platform.x - camera.x;
+                    const y = platform.y - camera.y;
+                    
+                    if (x < canvas.width + 50 && x + platform.width > -50 && 
+                        y < canvas.height + 50 && y + platform.height > -50) {
+                        
+                        ctx.fillStyle = platform.color;
+                        ctx.fillRect(x, y, platform.width, platform.height);
+                        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                        ctx.fillRect(x, y + platform.height - 5, platform.width, 5);
+                    }
+                });
+
+                // Draw obstacles (only visible ones)
+                obstacles.forEach(obstacle => {
+                    const x = obstacle.x - camera.x;
+                    const y = obstacle.y - camera.y;
+                    
+                    if (x < canvas.width + 50 && x + obstacle.width > -50 && 
+                        y < canvas.height + 50 && y + obstacle.height > -50) {
+                        
+                        ctx.fillStyle = obstacle.color;
+                        if (obstacle.type === 'spike') {
+                            ctx.beginPath();
+                            ctx.moveTo(x + obstacle.width/2, y);
+                            ctx.lineTo(x, y + obstacle.height);
+                            ctx.lineTo(x + obstacle.width, y + obstacle.height);
+                            ctx.closePath();
+                            ctx.fill();
+                        }
+                    }
+                });
+
+                // Draw other players
+                Object.keys(players).forEach(id => {
+                    const player = players[id];
+                    if (player && player.alive && player.x !== undefined && player.y !== undefined) {
+                        drawPlayer(player, false);
+                    }
+                });
+
+                // Draw my player
+                if (myPlayer && myPlayer.alive) {
+                    drawPlayer(myPlayer, true);
+                }
+
+                // Update UI
+                document.getElementById('score').textContent = score;
+                document.getElementById('distance').textContent = distance;
+            }
+
+            // Game over
+            function gameOver() {
+                if (!myPlayer || !myPlayer.alive) return;
+                
+                console.log('Game Over!');
+                myPlayer.alive = false;
+                gameRunning = false;
+                
+                document.getElementById('finalScore').textContent = score;
+                document.getElementById('finalDistance').textContent = distance;
+                document.getElementById('gameOver').style.display = 'block';
+                
+                if (window.firebaseDB && window.firebaseDB.database && playerId) {
+                    try {
+                        const { database, ref, update } = window.firebaseDB;
+                        const playerRef = ref(database, 'players/' + playerId);
+                        update(playerRef, {
+                            alive: false,
+                            lastUpdate: Date.now()
+                        }).catch((error) => {
+                            console.error('Error updating game over state:', error);
+                        });
+                    } catch (error) {
+                        console.error('Error in gameOver function:', error);
+                    }
+                }
+            }
+
+            // Restart game
+            function restartGame() {
+                console.log('Restarting game...');
+                gameRunning = true;
+                score = 0;
+                distance = 0;
+                
+                if (myPlayer) {
+                    myPlayer.x = 100;
+                    myPlayer.y = 300;
+                    myPlayer.velX = 0;
+                    myPlayer.velY = 0;
+                    myPlayer.onGround = false;
+                    myPlayer.onWall = false;
+                    myPlayer.alive = true;
+                    myPlayer.score = 0;
+                    myPlayer.distance = 0;
+                }
+                
+                camera.x = 0;
+                camera.y = 0;
+                
+                document.getElementById('gameOver').style.display = 'none';
+                
+                if (window.firebaseDB && window.firebaseDB.database && playerId) {
+                    try {
+                        const { database, ref, update } = window.firebaseDB;
+                        const playerRef = ref(database, 'players/' + playerId);
+                        update(playerRef, {
+                            x: myPlayer.x,
+                            y: myPlayer.y,
+                            score: 0,
+                            distance: 0,
+                            alive: true,
+                            lastUpdate: Date.now()
+                        }).catch((error) => {
+                            console.error('Error updating restart state:', error);
+                        });
+                    } catch (error) {
+                        console.error('Error in restartGame function:', error);
+                    }
+                }
+            }
+
+            // Game loop
+            function gameLoop() {
+                try {
+                    if (gameRunning) {
+                        updatePlayer();
+                    }
+                    render();
+                    updatePlayersList();
+                    
+                    gameLoopId = requestAnimationFrame(gameLoop);
+                } catch (error) {
+                    console.error('Game loop error:', error);
+                    gameLoopId = requestAnimationFrame(gameLoop);
+                }
+            }
+
+            // Start the game loop when page loads
+            gameLoop();
+
+            // Set up event listeners for buttons
+            document.getElementById('joinButton').addEventListener('click', joinGame);
+            document.getElementById('debugButton').addEventListener('click', toggleDebug);
+            document.getElementById('restartButton').addEventListener('click', restartGame);
+
+            // Allow Enter key to join game
+            document.getElementById('playerName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    joinGame();
+                }
+            });
+        }; // End of initGame function
+    </script>
+</body>
+</html>
