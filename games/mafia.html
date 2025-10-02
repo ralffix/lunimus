@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mafia Party Game - Online Multiplayer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            color: #e94560;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #aaa;
+            font-size: 0.9em;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560 0%, #d63447 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1em;
+        }
+        
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        .room-code {
+            background: rgba(233, 69, 96, 0.2);
+            border: 2px solid #e94560;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .room-code h2 {
+            font-size: 2em;
+            letter-spacing: 5px;
+            color: #e94560;
+        }
+        
+        .player-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .player-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .role-card {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            border: 3px solid #e94560;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .role-card h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #e94560;
+        }
+        
+        .role-card p {
+            line-height: 1.6;
+            color: #ddd;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .badge-host {
+            background: #e94560;
+        }
+        
+        .badge-alive {
+            background: #4caf50;
+        }
+        
+        .badge-dead {
+            background: #666;
+        }
+        
+        .info-box {
+            background: rgba(233, 69, 96, 0.2);
+            border-left: 4px solid #e94560;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .voting-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .vote-btn {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .vote-btn:hover {
+            background: rgba(233, 69, 96, 0.3);
+            border-color: #e94560;
+        }
+        
+        .vote-btn.selected {
+            background: #e94560;
+            border-color: #e94560;
+        }
+        
+        .vote-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .connection-status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        .status-connecting {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        .status-connected {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+
+        .game-log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            border-left: 3px solid #e94560;
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Mafia</h1>
+        <p class="subtitle">Online Multiplayer Party Game</p>
+        
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen active">
+            <div id="connectionStatus" class="connection-status status-connecting">
+                Connecting to server...
+            </div>
+            <button class="btn btn-primary" onclick="showHostScreen()" id="hostBtn" disabled>Host Game</button>
+            <button class="btn btn-secondary" onclick="showJoinScreen()" id="joinBtn" disabled>Join Game</button>
+            <div class="info-box" style="margin-top: 30px;">
+                <strong>How to Play:</strong>
+                <p style="margin-top: 10px; line-height: 1.6;">
+                    One player hosts a game and shares the room code with friends. Everyone joins using the code from ANY device with internet!
+                    Works on phones, tablets, and computers - completely FREE!
+                </p>
+            </div>
+        </div>
+        
+        <!-- Host Setup Screen -->
+        <div id="hostScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">Host a Game</h2>
+            <input type="text" id="hostName" placeholder="Your Name" maxlength="20">
+            <button class="btn btn-primary" onclick="createRoom()">Create Room</button>
+            <button class="btn btn-secondary" onclick="showHome()">Back</button>
+        </div>
+        
+        <!-- Join Screen -->
+        <div id="joinScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">Join a Game</h2>
+            <input type="text" id="playerName" placeholder="Your Name" maxlength="20">
+            <input type="text" id="roomCodeInput" placeholder="Room Code (6 characters)" maxlength="6" style="text-transform: uppercase;">
+            <button class="btn btn-primary" onclick="joinRoom()">Join Room</button>
+            <button class="btn btn-secondary" onclick="showHome()">Back</button>
+        </div>
+        
+        <!-- Lobby Screen -->
+        <div id="lobbyScreen" class="screen">
+            <div class="room-code">
+                <p style="margin-bottom: 5px; color: #ddd;">Share This Code</p>
+                <h2 id="displayRoomCode">XXXX</h2>
+                <p style="margin-top: 5px; font-size: 0.9em; color: #ddd;">Players join from any device!</p>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px 0;">Players (<span id="playerCount">0</span>)</h3>
+            <div class="player-list" id="playerList"></div>
+            
+            <div id="hostControls" style="display: none;">
+                <div class="info-box">
+                    Need at least 4 players to start
+                </div>
+                <button class="btn btn-primary" onclick="startGame()" id="startGameBtn">Start Game</button>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="leaveRoom()">Leave Room</button>
+        </div>
+        
+        <!-- Role Reveal Screen -->
+        <div id="roleScreen" class="screen">
+            <div class="role-card">
+                <h2 id="roleName">Your Role</h2>
+                <p id="roleDescription"></p>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #aaa;" id="roleExtra"></p>
+            </div>
+            <button class="btn btn-primary" onclick="acknowledgeRole()">I Understand - Continue</button>
+        </div>
+        
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="info-box">
+                <strong>Phase: <span id="currentPhase">Day</span></strong>
+                <p style="margin-top: 5px;">Your Role: <span id="yourRole">Villager</span></p>
+                <p style="margin-top: 5px;" id="phaseInfo"></p>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px 0;">Players</h3>
+            <div class="player-list" id="gamePlayerList"></div>
+            
+            <div id="votingSection" style="display: none;">
+                <h3 style="margin: 20px 0 10px 0;"><span id="voteTitle">Vote to Eliminate</span></h3>
+                <div class="voting-grid" id="votingGrid"></div>
+                <button class="btn btn-primary" onclick="submitVote()" id="voteBtn">Submit Vote</button>
+            </div>
+
+            <div id="waitingSection" style="display: none;">
+                <div class="info-box" style="text-align: center;">
+                    <p>⏳ Waiting for other players to vote...</p>
+                    <p style="margin-top: 10px; font-size: 0.9em;">Votes: <span id="voteProgress">0/0</span></p>
+                </div>
+            </div>
+            
+            <div class="game-log" id="gameLog"></div>
+            
+            <div id="hostGameControls" style="display: none; margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="endGame()">End Game</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // PeerJS connection
+        let peer = null;
+        let connections = {};
+        
+        // Game state
+        let gameState = {
+            roomCode: '',
+            playerName: '',
+            peerId: '',
+            isHost: false,
+            hostPeerId: '',
+            players: {},
+            myRole: '',
+            phase: 'lobby',
+            votes: {},
+            hasVoted: false,
+            gameStarted: false,
+            eliminated: []
+        };
+
+        // Initialize PeerJS
+        function initPeer() {
+            peer = new Peer({
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                }
+            });
+
+            peer.on('open', (id) => {
+                gameState.peerId = id;
+                updateConnectionStatus('Connected! Ready to play', 'connected');
+                document.getElementById('hostBtn').disabled = false;
+                document.getElementById('joinBtn').disabled = false;
+            });
+
+            peer.on('connection', (conn) => {
+                handleConnection(conn);
+            });
+
+            peer.on('error', (err) => {
+                console.error('PeerJS error:', err);
+                updateConnectionStatus('Connection error. Please refresh.', 'error');
+            });
+        }
+
+        function updateConnectionStatus(message, status) {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.textContent = message;
+            statusEl.className = `connection-status status-${status}`;
+        }
+
+        // Handle incoming connections
+        function handleConnection(conn) {
+            conn.on('open', () => {
+                connections[conn.peer] = conn;
+                
+                conn.on('data', (data) => {
+                    handleMessage(data, conn);
+                });
+
+                conn.on('close', () => {
+                    handlePlayerDisconnect(conn.peer);
+                });
+            });
+        }
+
+        // Message handling
+        function handleMessage(data, conn) {
+            switch(data.type) {
+                case 'join_request':
+                    handleJoinRequest(data, conn);
+                    break;
+                case 'player_joined':
+                    handlePlayerJoined(data);
+                    break;
+                case 'player_list':
+                    handlePlayerList(data);
+                    break;
+                case 'game_start':
+                    handleGameStart(data);
+                    break;
+                case 'vote':
+                    handleVote(data);
+                    break;
+                case 'phase_change':
+                    handlePhaseChange(data);
+                    break;
+                case 'game_end':
+                    handleGameEnd(data);
+                    break;
+                case 'player_left':
+                    handlePlayerLeft(data);
+                    break;
+            }
+        }
+
+        // Create room (Host)
+        function createRoom() {
+            const hostName = document.getElementById('hostName').value.trim();
+            if (!hostName) {
+                alert('Please enter your name!');
+                return;
+            }
+
+            gameState.roomCode = generateRoomCode();
+            gameState.playerName = hostName;
+            gameState.isHost = true;
+            gameState.hostPeerId = gameState.peerId;
+            
+            gameState.players[gameState.peerId] = {
+                name: hostName,
+                peerId: gameState.peerId,
+                isHost: true,
+                role: null,
+                alive: true,
+                connected: true
+            };
+
+            document.getElementById('displayRoomCode').textContent = gameState.roomCode;
+            updatePlayerList();
+            showScreen('lobbyScreen');
+            document.getElementById('hostControls').style.display = 'block';
+            addLog(`Room created! Code: ${gameState.roomCode}`);
+        }
+
+        // Join room
+        function joinRoom() {
+            const playerName = document.getElementById('playerName').value.trim();
+            const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            
+            if (!playerName || !roomCode) {
+                alert('Please enter your name and room code!');
+                return;
+            }
+
+            if (roomCode.length !== 6) {
+                alert('Room code must be 6 characters!');
+                return;
+            }
+
+            gameState.roomCode = roomCode;
+            gameState.playerName = playerName;
+            gameState.hostPeerId = roomCode;
+
+            // Connect to host
+            const conn = peer.connect(roomCode);
+            
+            conn.on('open', () => {
+                connections[roomCode] = conn;
+                
+                // Send join request
+                conn.send({
+                    type: 'join_request',
+                    playerName: playerName,
+                    peerId: gameState.peerId
+                });
+
+                conn.on('data', (data) => {
+                    handleMessage(data, conn);
+                });
+
+                conn.on('close', () => {
+                    alert('Connection to host lost!');
+                    showHome();
+                });
+            });
+
+            conn.on('error', (err) => {
+                alert('Could not connect to room. Check the code and try again!');
+                console.error(err);
+            });
+        }
+
+        // Handle join request (Host only)
+        function handleJoinRequest(data, conn) {
+            if (!gameState.isHost) return;
+
+            if (gameState.gameStarted) {
+                conn.send({ type: 'error', message: 'Game already started!' });
+                return;
+            }
+
+            // Add player
+            gameState.players[data.peerId] = {
+                name: data.playerName,
+                peerId: data.peerId,
+                isHost: false,
+                role: null,
+                alive: true,
+                connected: true
+            };
+
+            // Send player list to new player
+            conn.send({
+                type: 'player_list',
+                players: gameState.players,
+                hostPeerId: gameState.hostPeerId
+            });
+
+            // Broadcast new player to everyone
+            broadcast({
+                type: 'player_joined',
+                player: gameState.players[data.peerId]
+            });
+
+            updatePlayerList();
+            addLog(`${data.playerName} joined!`);
+        }
+
+        // Handle player joined
+        function handlePlayerJoined(data) {
+            gameState.players[data.player.peerId] = data.player;
+            updatePlayerList();
+            addLog(`${data.player.name} joined!`);
+        }
+
+        // Handle player list
+        function handlePlayerList(data) {
+            gameState.players = data.players;
+            gameState.hostPeerId = data.hostPeerId;
+            document.getElementById('displayRoomCode').textContent = gameState.roomCode;
+            updatePlayerList();
+            showScreen('lobbyScreen');
+            addLog('Joined room successfully!');
+        }
+
+        // Update player list UI
+        function updatePlayerList() {
+            const list = document.getElementById('playerList');
+            const count = document.getElementById('playerCount');
+            
+            const playerArray = Object.values(gameState.players);
+            list.innerHTML = '';
+            count.textContent = playerArray.length;
+            
+            playerArray.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>${player.name}</span>
+                    ${player.isHost ? '<span class="status-badge badge-host">HOST</span>' : ''}
+                `;
+                list.appendChild(div);
+            });
+
+            // Update start button
+            if (gameState.isHost) {
+                const startBtn = document.getElementById('startGameBtn');
+                if (startBtn) {
+                    startBtn.disabled = playerArray.length < 4;
+                }
+            }
+        }
+
+        // Start game (Host only)
+        function startGame() {
+            if (!gameState.isHost) return;
+            
+            const playerArray = Object.values(gameState.players);
+            if (playerArray.length < 4) {
+                alert('Need at least 4 players to start!');
+                return;
+            }
+
+            gameState.gameStarted = true;
+
+            // Assign roles
+            const numMafia = Math.floor(playerArray.length / 3);
+            const roles = [];
+            
+            for (let i = 0; i < numMafia; i++) roles.push('Mafia');
+            while (roles.length < playerArray.length) roles.push('Villager');
+            
+            // Shuffle roles
+            for (let i = roles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [roles[i], roles[j]] = [roles[j], roles[i]];
+            }
+            
+            playerArray.forEach((player, i) => {
+                player.role = roles[i];
+                gameState.players[player.peerId].role = roles[i];
+            });
+
+            // Send game start to all players
+            broadcast({
+                type: 'game_start',
+                players: gameState.players
+            });
+
+            // Show own role
+            const myPlayer = gameState.players[gameState.peerId];
+            gameState.myRole = myPlayer.role;
+            showRoleScreen(myPlayer.role);
+        }
+
+        // Handle game start
+        function handleGameStart(data) {
+            gameState.players = data.players;
+            gameState.gameStarted = true;
+            
+            const myPlayer = gameState.players[gameState.peerId];
+            gameState.myRole = myPlayer.role;
+            showRoleScreen(myPlayer.role);
+        }
+
+        // Show role screen
+        function showRoleScreen(role) {
+            const roleName = document.getElementById('roleName');
+            const roleDesc = document.getElementById('roleDescription');
+            const roleExtra = document.getElementById('roleExtra');
+            
+            if (role === 'Mafia') {
+                roleName.textContent = '🔪 MAFIA';
+                roleDesc.textContent = 'You are part of the Mafia! Work together to eliminate villagers during night phases. During the day, blend in and vote strategically.';
+                
+                // Show other mafia members
+                const mafiaMembers = Object.values(gameState.players)
+                    .filter(p => p.role === 'Mafia' && p.peerId !== gameState.peerId)
+                    .map(p => p.name);
+                
+                if (mafiaMembers.length > 0) {
+                    roleExtra.textContent = `Your fellow Mafia: ${mafiaMembers.join(', ')}`;
+                } else {
+                    roleExtra.textContent = 'You are the only Mafia member.';
+                }
+            } else {
+                roleName.textContent = '👨‍🌾 VILLAGER';
+                roleDesc.textContent = 'You are a Villager! Use discussion and voting during the day to identify and eliminate the Mafia. Work together to find them!';
+                roleExtra.textContent = 'Trust no one. Watch behavior carefully.';
+            }
+            
+            showScreen('roleScreen');
+        }
+
+        // Acknowledge role
+        function acknowledgeRole() {
+            gameState.phase = 'day';
+            showGameScreen();
+        }
+
+        // Show game screen
+        function showGameScreen() {
+            document.getElementById('yourRole').textContent = gameState.myRole;
+            updateGameScreen();
+            
+            if (gameState.isHost) {
+                document.getElementById('hostGameControls').style.display = 'block';
+            }
+            
+            showScreen('gameScreen');
+        }
+
+        // Update game screen
+        function updateGameScreen() {
+            const phaseEl = document.getElementById('currentPhase');
+            const phaseInfo = document.getElementById('phaseInfo');
+            
+            if (gameState.phase === 'day') {
+                phaseEl.textContent = 'Day - Discussion & Voting';
+                phaseInfo.textContent = 'Discuss and vote to eliminate a suspected Mafia member';
+                if (!gameState.hasVoted) {
+                    showVoting();
+                }
+            } else if (gameState.phase === 'night') {
+                phaseEl.textContent = 'Night - Mafia Decides';
+                phaseInfo.textContent = 'Mafia chooses their target...';
+                if (gameState.myRole === 'Mafia' && !gameState.hasVoted) {
+                    showVoting();
+                }
+            }
+            
+            updateGamePlayerList();
+        }
+
+        // Update game player list
+        function updateGamePlayerList() {
+            const list = document.getElementById('gamePlayerList');
+            list.innerHTML = '';
+            
+            Object.values(gameState.players).forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>${player.name}</span>
+                    <span class="status-badge ${player.alive ? 'badge-alive' : 'badge-dead'}">
+                        ${player.alive ? 'ALIVE' : 'ELIMINATED'}
+                    </span>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // Show voting interface
+        function showVoting() {
+            document.getElementById('votingSection').style.display = 'block';
+            document.getElementById('waitingSection').style.display = 'none';
+            
+            const grid = document.getElementById('votingGrid');
+            const voteTitle = document.getElementById('voteTitle');
+            grid.innerHTML = '';
+            
+            if (gameState.phase === 'night' && gameState.myRole === 'Mafia') {
+                voteTitle.textContent = 'Choose Target to Eliminate';
+            } else {
+                voteTitle.textContent = 'Vote to Eliminate';
+            }
+            
+            Object.values(gameState.players)
+                .filter(p => p.alive && p.peerId !== gameState.peerId)
+                .forEach(player => {
+                    const btn = document.createElement('button');
+                    btn.className = 'vote-btn';
+                    btn.textContent = player.name;
+                    btn.onclick = () => selectVote(player.peerId, btn);
+                    grid.appendChild(btn);
+                });
+        }
+
+        // Select vote
+        let selectedVote = null;
+        function selectVote(peerId, btn) {
+            document.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedVote = peerId;
+        }
+
+        // Submit vote
+        function submitVote() {
+            if (!selectedVote) {
+                alert('Please select someone to vote for!');
+                return;
+            }
+            
+            gameState.hasVoted = true;
+            
+            // Send vote to host
+            const voteData = {
+                type: 'vote',
+                voterPeerId: gameState.peerId,
+                targetPeerId: selectedVote,
+                phase: gameState.phase
+            };
+            
+            if (gameState.isHost) {
+                handleVote(voteData);
+            } else {
+                connections[gameState.hostPeerId].send(voteData);
+            }
+            
+            document.getElementById('votingSection').style.display = 'none';
+            document.getElementById('waitingSection').style.display = 'block';
+            addLog('Vote submitted!');
+            
+            selectedVote = null;
+        }
+
+        // Handle vote (Host only)
+        function handleVote(data) {
+            if (!gameState.isHost) return;
+            
+            gameState.votes[data.voterPeerId] = data.targetPeerId;
+            
+            // Update vote progress
+            const alivePlayers = Object.values(gameState.players).filter(p => p.alive);
+            const votesNeeded = gameState.phase === 'night' 
+                ? Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length
+                : alivePlayers.length;
+            
+            const votesReceived = Object.keys(gameState.votes).length;
+            
+            // Broadcast vote progress
+            broadcast({
+                type: 'vote_progress',
+                votes: votesReceived,
+                needed: votesNeeded
+            });
+            
+            // Check if all votes are in
+            if (votesReceived >= votesNeeded) {
+                processVotes();
+            }
+        }
+
+        // Process votes (Host only)
+        function processVotes() {
+            // Count votes
+            const voteCounts = {};
+            Object.values(gameState.votes).forEach(targetId => {
+                voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
+            });
+            
+            // Find player with most votes
+            let maxVotes = 0;
+            let eliminatedId = null;
+            
+            Object.entries(voteCounts).forEach(([peerId, count]) => {
+                if (count > maxVotes) {
+                    maxVotes = count;
+                    eliminatedId = peerId;
+                }
+            });
+            
+            if (eliminatedId) {
+                gameState.players[eliminatedId].alive = false;
+                gameState.eliminated.push(eliminatedId);
+                
+                const eliminatedPlayer = gameState.players[eliminatedId];
+                
+                // Check win condition
+                const aliveMafia = Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length;
+                const aliveVillagers = Object.values(gameState.players).filter(p => p.alive && p.role === 'Villager').length;
+                
+                if (aliveMafia === 0) {
+                    broadcast({
+                        type: 'game_end',
+                        winner: 'Villagers',
+                        message: '🎉 Villagers Win! All Mafia have been eliminated!',
+                        eliminated: eliminatedPlayer.name
+                    });
+                    return;
+                } else if (aliveMafia >= aliveVillagers) {
+                    broadcast({
+                        type: 'game_end',
+                        winner: 'Mafia',
+                        message: '💀 Mafia Wins! They outnumber the villagers!',
+                        eliminated: eliminatedPlayer.name
+                    });
+                    return;
+                }
+                
+                // Continue to next phase
+                gameState.votes = {};
+                const nextPhase = gameState.phase === 'day' ? 'night' : 'day';
+                
+                broadcast({
+                    type: 'phase_change',
+                    phase: nextPhase,
+                    players: gameState.players,
+                    eliminated: eliminatedPlayer.name,
+                    eliminatedRole: eliminatedPlayer.role
+                });
+                
+                gameState.phase = nextPhase;
+                gameState.hasVoted = false;
+                updateGameScreen();
+            }
+        }
+
+        // Handle phase change
+        function handlePhaseChange(data) {
+            gameState.players = data.players;
+            gameState.phase = data.phase;
+            gameState.hasVoted = false;
+            
+            addLog(`${data.eliminated} was eliminated! They were a ${data.eliminatedRole}.`);
+            
+            if (data.phase === 'night') {
+                addLog('🌙 Night falls... Mafia is deciding...');
+            } else {
+                addLog('☀️ Day breaks! Time to discuss and vote.');
+            }
+            
+            updateGameScreen();
+        }
+
+        // Handle game end
+        function handleGameEnd(data) {
+            addLog(`${data.eliminated} was eliminated!`);
+            addLog(data.message);
+            
+            setTimeout(() => {
+                alert(data.message);
+                showHome();
+            }, 1000);
+        }
+
+        // Broadcast message to all players (Host only)
+        function broadcast(message) {
+            Object.values(connections).forEach(conn => {
+                try {
+                    conn.send(message);
+                } catch (e) {
+                    console.error('Failed to send to connection:', e);
+                }
+            });
+        }
+
+        // Handle player disconnect
+        function handlePlayerDisconnect(peerId) {
+            if (gameState.players[peerId]) {
+                const playerName = gameState.players[peerId].name;
+                delete gameState.players[peerId];
+                delete connections[peerId];
+                
+                if (gameState.isHost) {
+                    broadcast({
+                        type: 'player_left',
+                        peerId: peerId,
+                        playerName: playerName
+                    });
+                }
+                
+                updatePlayerList();
+                addLog(`${playerName} disconnected`);
+            }
+        }
+
+        // Handle player left message
+        function handlePlayerLeft(data) {
+            if (gameState.players[data.peerId]) {
+                delete gameState.players[data.peerId];
+                updatePlayerList();
+                addLog(`${data.playerName} left the game`);
+            }
+        }
+
+        // Generate random room code
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // Screen navigation
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function showHome() {
+            // Clean up connections
+            Object.values(connections).forEach(conn => {
+                try {
+                    conn.close();
+                } catch (e) {}
+            });
+            
+            connections = {};
+            gameState = {
+                roomCode: '',
+                playerName: '',
+                peerId: gameState.peerId,
+                isHost: false,
+                hostPeerId: '',
+                players: {},
+                myRole: '',
+                phase: 'lobby',
+                votes: {},
+                hasVoted: false,
+                gameStarted: false,
+                eliminated: []
+            };
+            
+            showScreen('homeScreen');
+        }
+
+        function showHostScreen() {
+            showScreen('hostScreen');
+        }
+
+        function showJoinScreen() {
+            showScreen('joinScreen');
+        }
+
+        // Leave/End game
+        function leaveRoom() {
+            if (confirm('Are you sure you want to leave?')) {
+                if (gameState.isHost) {
+                    broadcast({ type: 'game_end', message: 'Host ended the game', winner: null });
+                }
+                showHome();
+            }
+        }
+
+        function endGame() {
+            if (confirm('End game for everyone?')) {
+                broadcast({ type: 'game_end', message: 'Host ended the game', winner: null });
+                showHome();
+            }
+        }
+
+        // Add log entry
+        function addLog(message) {
+            const log = document.getElementById('gameLog');
+            if (!log) return;
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initPeer();
+        });
+    </script>
+</body>
+</html>
