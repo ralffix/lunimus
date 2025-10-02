@@ -284,14 +284,14 @@
         <!-- Home Screen -->
         <div id="homeScreen" class="screen active">
             <div id="connectionStatus" class="connection-status status-connecting">
-                Connecting to server...
+                Initializing...
             </div>
             <button class="btn btn-primary" onclick="showHostScreen()" id="hostBtn" disabled>Host Game</button>
             <button class="btn btn-secondary" onclick="showJoinScreen()" id="joinBtn" disabled>Join Game</button>
             <div class="info-box" style="margin-top: 30px;">
                 <strong>How to Play:</strong>
                 <p style="margin-top: 10px; line-height: 1.6;">
-                    One player hosts a game and shares the room code with friends. Everyone joins using the code from ANY device with internet!
+                    Host creates a room and gets a 6-character code. Players join using ONLY that code!
                     Works on phones, tablets, and computers - completely FREE!
                 </p>
             </div>
@@ -317,10 +317,10 @@
         <!-- Lobby Screen -->
         <div id="lobbyScreen" class="screen">
             <div class="room-code">
-                <p style="margin-bottom: 5px; color: #ddd;">Share This Code</p>
+                <p style="margin-bottom: 5px; color: #ddd;">Room Code</p>
                 <h2 id="displayRoomCode">XXXX</h2>
                 <p style="margin-top: 10px; font-size: 0.9em; color: #ddd;">
-                    Players must use the EXACT same code!
+                    Share this code with your friends!
                 </p>
                 <button class="btn btn-secondary" onclick="copyRoomCode()" style="margin-top: 10px; padding: 10px; font-size: 0.9em;">
                     📋 Copy Code
@@ -383,11 +383,9 @@
     </div>
 
     <script>
-        // PeerJS connection
         let peer = null;
         let connections = {};
         
-        // Game state
         let gameState = {
             roomCode: '',
             playerName: '',
@@ -403,24 +401,27 @@
             eliminated: []
         };
 
-        // Store room codes mapping
-        let roomCodes = {};
-
-        // Initialize PeerJS
-        function initPeer() {
-            peer = new Peer({
+        // Initialize PeerJS with custom ID for hosts
+        function initPeer(customId = null) {
+            const config = {
                 config: {
                     iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
                         { urls: 'stun:stun1.l.google.com:19302' }
                     ]
                 }
-            });
+            };
+            
+            if (customId) {
+                config.id = customId;
+            }
+            
+            peer = new Peer(config);
 
             peer.on('open', (id) => {
                 gameState.peerId = id;
-                console.log('My peer ID:', id);
-                updateConnectionStatus('Connected! Ready to play', 'connected');
+                console.log('Connected! Peer ID:', id);
+                updateConnectionStatus('Ready to play!', 'connected');
                 document.getElementById('hostBtn').disabled = false;
                 document.getElementById('joinBtn').disabled = false;
             });
@@ -431,7 +432,12 @@
 
             peer.on('error', (err) => {
                 console.error('PeerJS error:', err);
-                updateConnectionStatus('Connection error. Please refresh.', 'error');
+                if (err.type === 'unavailable-id') {
+                    updateConnectionStatus('Room code already in use! Try again.', 'error');
+                    setTimeout(() => showHome(), 2000);
+                } else {
+                    updateConnectionStatus('Connection error. Please refresh.', 'error');
+                }
             });
         }
 
@@ -441,7 +447,6 @@
             statusEl.className = `connection-status status-${status}`;
         }
 
-        // Handle incoming connections
         function handleConnection(conn) {
             conn.on('open', () => {
                 connections[conn.peer] = conn;
@@ -456,7 +461,6 @@
             });
         }
 
-        // Message handling
         function handleMessage(data, conn) {
             switch(data.type) {
                 case 'join_request':
@@ -483,10 +487,22 @@
                 case 'player_left':
                     handlePlayerLeft(data);
                     break;
+                case 'vote_progress':
+                    updateVoteProgress(data);
+                    break;
             }
         }
 
-        // Create room (Host)
+        function generateRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // Create room with custom peer ID
         function createRoom() {
             const hostName = document.getElementById('hostName').value.trim();
             if (!hostName) {
@@ -497,39 +513,44 @@
             gameState.roomCode = generateRoomCode();
             gameState.playerName = hostName;
             gameState.isHost = true;
-            gameState.hostPeerId = gameState.peerId;
             
-            // Store room code mapping
-            roomCodes[gameState.roomCode] = gameState.peerId;
+            updateConnectionStatus('Creating room...', 'connecting');
             
-            gameState.players[gameState.peerId] = {
-                name: hostName,
-                peerId: gameState.peerId,
-                isHost: true,
-                role: null,
-                alive: true,
-                connected: true
-            };
+            // Destroy existing peer and create new one with room code as ID
+            if (peer) {
+                peer.destroy();
+            }
+            
+            const hostPeerId = 'mafia-' + gameState.roomCode.toLowerCase();
+            initPeer(hostPeerId);
+            
+            // Wait for connection
+            const checkConnection = setInterval(() => {
+                if (gameState.peerId) {
+                    clearInterval(checkConnection);
+                    gameState.hostPeerId = gameState.peerId;
+                    
+                    gameState.players[gameState.peerId] = {
+                        name: hostName,
+                        peerId: gameState.peerId,
+                        isHost: true,
+                        role: null,
+                        alive: true,
+                        connected: true
+                    };
 
-            document.getElementById('displayRoomCode').textContent = gameState.roomCode;
+                    document.getElementById('displayRoomCode').textContent = gameState.roomCode;
+                    updatePlayerList();
+                    showScreen('lobbyScreen');
+                    document.getElementById('hostControls').style.display = 'block';
+                    addLog(`Room created! Share code: ${gameState.roomCode}`);
+                }
+            }, 100);
             
-            // Show full peer ID for debugging
-            const roomCodeDiv = document.querySelector('.room-code');
-            const debugInfo = document.createElement('p');
-            debugInfo.style.fontSize = '0.8em';
-            debugInfo.style.marginTop = '10px';
-            debugInfo.style.color = '#888';
-            debugInfo.innerHTML = `Host ID: ${gameState.peerId.substring(0, 8)}...`;
-            roomCodeDiv.appendChild(debugInfo);
-            
-            updatePlayerList();
-            showScreen('lobbyScreen');
-            document.getElementById('hostControls').style.display = 'block';
-            addLog(`Room created! Code: ${gameState.roomCode}`);
-            console.log('Host Peer ID:', gameState.peerId);
+            setTimeout(() => clearInterval(checkConnection), 5000);
         }
 
-        // Join room
+        // Join room using only room code
         function joinRoom() {
             const playerName = document.getElementById('playerName').value.trim();
             const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
@@ -546,27 +567,20 @@
 
             gameState.roomCode = roomCode;
             gameState.playerName = playerName;
+            gameState.hostPeerId = 'mafia-' + roomCode.toLowerCase();
             
-            // IMPORTANT: Ask host to share their Peer ID
-            const hostId = prompt(`Ask the host to share their FULL Peer ID shown below the room code.\n\nOr if testing on same device, check the console for Host Peer ID.`);
-            
-            if (!hostId) {
-                alert('Need host Peer ID to connect!');
-                return;
-            }
-            
-            gameState.hostPeerId = hostId.trim();
+            updateConnectionStatus('Connecting to room...', 'connecting');
 
-            console.log('Attempting to connect to:', gameState.hostPeerId);
-
-            // Connect to host
             const conn = peer.connect(gameState.hostPeerId);
             
+            let connected = false;
+            
             conn.on('open', () => {
+                connected = true;
                 console.log('Connected to host!');
                 connections[gameState.hostPeerId] = conn;
+                updateConnectionStatus('Connected!', 'connected');
                 
-                // Send join request
                 conn.send({
                     type: 'join_request',
                     playerName: playerName,
@@ -585,11 +599,20 @@
 
             conn.on('error', (err) => {
                 console.error('Connection error:', err);
-                alert('Could not connect to host! Make sure you have the correct Peer ID.');
+                if (!connected) {
+                    updateConnectionStatus('Room not found!', 'error');
+                    alert('Could not find room! Check the code and make sure the host has created the room.');
+                }
             });
+            
+            setTimeout(() => {
+                if (!connected) {
+                    updateConnectionStatus('Connection timeout', 'error');
+                    alert('Could not connect to room. The room may not exist or the host may be offline.');
+                }
+            }, 10000);
         }
 
-        // Handle join request (Host only)
         function handleJoinRequest(data, conn) {
             if (!gameState.isHost) return;
 
@@ -598,7 +621,6 @@
                 return;
             }
 
-            // Add player
             gameState.players[data.peerId] = {
                 name: data.playerName,
                 peerId: data.peerId,
@@ -608,14 +630,12 @@
                 connected: true
             };
 
-            // Send player list to new player
             conn.send({
                 type: 'player_list',
                 players: gameState.players,
                 hostPeerId: gameState.hostPeerId
             });
 
-            // Broadcast new player to everyone
             broadcast({
                 type: 'player_joined',
                 player: gameState.players[data.peerId]
@@ -625,14 +645,12 @@
             addLog(`${data.playerName} joined!`);
         }
 
-        // Handle player joined
         function handlePlayerJoined(data) {
             gameState.players[data.player.peerId] = data.player;
             updatePlayerList();
             addLog(`${data.player.name} joined!`);
         }
 
-        // Handle player list
         function handlePlayerList(data) {
             gameState.players = data.players;
             gameState.hostPeerId = data.hostPeerId;
@@ -642,7 +660,6 @@
             addLog('Joined room successfully!');
         }
 
-        // Update player list UI
         function updatePlayerList() {
             const list = document.getElementById('playerList');
             const count = document.getElementById('playerCount');
@@ -661,7 +678,6 @@
                 list.appendChild(div);
             });
 
-            // Update start button
             if (gameState.isHost) {
                 const startBtn = document.getElementById('startGameBtn');
                 if (startBtn) {
@@ -670,7 +686,6 @@
             }
         }
 
-        // Start game (Host only)
         function startGame() {
             if (!gameState.isHost) return;
             
@@ -682,14 +697,12 @@
 
             gameState.gameStarted = true;
 
-            // Assign roles
             const numMafia = Math.floor(playerArray.length / 3);
             const roles = [];
             
             for (let i = 0; i < numMafia; i++) roles.push('Mafia');
             while (roles.length < playerArray.length) roles.push('Villager');
             
-            // Shuffle roles
             for (let i = roles.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [roles[i], roles[j]] = [roles[j], roles[i]];
@@ -700,19 +713,16 @@
                 gameState.players[player.peerId].role = roles[i];
             });
 
-            // Send game start to all players
             broadcast({
                 type: 'game_start',
                 players: gameState.players
             });
 
-            // Show own role
             const myPlayer = gameState.players[gameState.peerId];
             gameState.myRole = myPlayer.role;
             showRoleScreen(myPlayer.role);
         }
 
-        // Handle game start
         function handleGameStart(data) {
             gameState.players = data.players;
             gameState.gameStarted = true;
@@ -722,7 +732,6 @@
             showRoleScreen(myPlayer.role);
         }
 
-        // Show role screen
         function showRoleScreen(role) {
             const roleName = document.getElementById('roleName');
             const roleDesc = document.getElementById('roleDescription');
@@ -732,7 +741,6 @@
                 roleName.textContent = '🔪 MAFIA';
                 roleDesc.textContent = 'You are part of the Mafia! Work together to eliminate villagers during night phases. During the day, blend in and vote strategically.';
                 
-                // Show other mafia members
                 const mafiaMembers = Object.values(gameState.players)
                     .filter(p => p.role === 'Mafia' && p.peerId !== gameState.peerId)
                     .map(p => p.name);
@@ -751,13 +759,11 @@
             showScreen('roleScreen');
         }
 
-        // Acknowledge role
         function acknowledgeRole() {
             gameState.phase = 'day';
             showGameScreen();
         }
 
-        // Show game screen
         function showGameScreen() {
             document.getElementById('yourRole').textContent = gameState.myRole;
             updateGameScreen();
@@ -769,7 +775,6 @@
             showScreen('gameScreen');
         }
 
-        // Update game screen
         function updateGameScreen() {
             const phaseEl = document.getElementById('currentPhase');
             const phaseInfo = document.getElementById('phaseInfo');
@@ -791,7 +796,6 @@
             updateGamePlayerList();
         }
 
-        // Update game player list
         function updateGamePlayerList() {
             const list = document.getElementById('gamePlayerList');
             list.innerHTML = '';
@@ -809,7 +813,6 @@
             });
         }
 
-        // Show voting interface
         function showVoting() {
             document.getElementById('votingSection').style.display = 'block';
             document.getElementById('waitingSection').style.display = 'none';
@@ -835,7 +838,6 @@
                 });
         }
 
-        // Select vote
         let selectedVote = null;
         function selectVote(peerId, btn) {
             document.querySelectorAll('.vote-btn').forEach(b => b.classList.remove('selected'));
@@ -843,7 +845,6 @@
             selectedVote = peerId;
         }
 
-        // Submit vote
         function submitVote() {
             if (!selectedVote) {
                 alert('Please select someone to vote for!');
@@ -852,7 +853,6 @@
             
             gameState.hasVoted = true;
             
-            // Send vote to host
             const voteData = {
                 type: 'vote',
                 voterPeerId: gameState.peerId,
@@ -873,13 +873,11 @@
             selectedVote = null;
         }
 
-        // Handle vote (Host only)
         function handleVote(data) {
             if (!gameState.isHost) return;
             
             gameState.votes[data.voterPeerId] = data.targetPeerId;
             
-            // Update vote progress
             const alivePlayers = Object.values(gameState.players).filter(p => p.alive);
             const votesNeeded = gameState.phase === 'night' 
                 ? Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length
@@ -887,28 +885,30 @@
             
             const votesReceived = Object.keys(gameState.votes).length;
             
-            // Broadcast vote progress
             broadcast({
                 type: 'vote_progress',
                 votes: votesReceived,
                 needed: votesNeeded
             });
             
-            // Check if all votes are in
             if (votesReceived >= votesNeeded) {
                 processVotes();
             }
         }
 
-        // Process votes (Host only)
+        function updateVoteProgress(data) {
+            const progressEl = document.getElementById('voteProgress');
+            if (progressEl) {
+                progressEl.textContent = `${data.votes}/${data.needed}`;
+            }
+        }
+
         function processVotes() {
-            // Count votes
             const voteCounts = {};
             Object.values(gameState.votes).forEach(targetId => {
                 voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
             });
             
-            // Find player with most votes
             let maxVotes = 0;
             let eliminatedId = null;
             
@@ -925,7 +925,6 @@
                 
                 const eliminatedPlayer = gameState.players[eliminatedId];
                 
-                // Check win condition
                 const aliveMafia = Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length;
                 const aliveVillagers = Object.values(gameState.players).filter(p => p.alive && p.role === 'Villager').length;
                 
@@ -933,7 +932,7 @@
                     broadcast({
                         type: 'game_end',
                         winner: 'Villagers',
-                        message: '🎉 Villagers Win! All Mafia have been eliminated!',
+                        message: 'Villagers Win! All Mafia have been eliminated!',
                         eliminated: eliminatedPlayer.name
                     });
                     return;
@@ -941,13 +940,12 @@
                     broadcast({
                         type: 'game_end',
                         winner: 'Mafia',
-                        message: '💀 Mafia Wins! They outnumber the villagers!',
+                        message: 'Mafia Wins! They outnumber the villagers!',
                         eliminated: eliminatedPlayer.name
                     });
                     return;
                 }
                 
-                // Continue to next phase
                 gameState.votes = {};
                 const nextPhase = gameState.phase === 'day' ? 'night' : 'day';
                 
@@ -965,7 +963,6 @@
             }
         }
 
-        // Handle phase change
         function handlePhaseChange(data) {
             gameState.players = data.players;
             gameState.phase = data.phase;
@@ -974,15 +971,14 @@
             addLog(`${data.eliminated} was eliminated! They were a ${data.eliminatedRole}.`);
             
             if (data.phase === 'night') {
-                addLog('🌙 Night falls... Mafia is deciding...');
+                addLog('Night falls... Mafia is deciding...');
             } else {
-                addLog('☀️ Day breaks! Time to discuss and vote.');
+                addLog('Day breaks! Time to discuss and vote.');
             }
             
             updateGameScreen();
         }
 
-        // Handle game end
         function handleGameEnd(data) {
             addLog(`${data.eliminated} was eliminated!`);
             addLog(data.message);
@@ -993,18 +989,16 @@
             }, 1000);
         }
 
-        // Broadcast message to all players (Host only)
         function broadcast(message) {
             Object.values(connections).forEach(conn => {
                 try {
                     conn.send(message);
                 } catch (e) {
-                    console.error('Failed to send to connection:', e);
+                    console.error('Failed to send:', e);
                 }
             });
         }
 
-        // Handle player disconnect
         function handlePlayerDisconnect(peerId) {
             if (gameState.players[peerId]) {
                 const playerName = gameState.players[peerId].name;
@@ -1024,7 +1018,6 @@
             }
         }
 
-        // Handle player left message
         function handlePlayerLeft(data) {
             if (gameState.players[data.peerId]) {
                 delete gameState.players[data.peerId];
@@ -1033,28 +1026,14 @@
             }
         }
 
-        // Generate random room code
-        function generateRoomCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let code = '';
-            for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return code;
-        }
-
-        // Screen navigation
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
         }
 
         function showHome() {
-            // Clean up connections
             Object.values(connections).forEach(conn => {
-                try {
-                    conn.close();
-                } catch (e) {}
+                try { conn.close(); } catch (e) {}
             });
             
             connections = {};
@@ -1084,7 +1063,6 @@
             showScreen('joinScreen');
         }
 
-        // Leave/End game
         function leaveRoom() {
             if (confirm('Are you sure you want to leave?')) {
                 if (gameState.isHost) {
@@ -1101,7 +1079,6 @@
             }
         }
 
-        // Add log entry
         function addLog(message) {
             const log = document.getElementById('gameLog');
             if (!log) return;
@@ -1113,19 +1090,15 @@
             log.scrollTop = log.scrollHeight;
         }
 
-        // Copy room code to clipboard
         function copyRoomCode() {
             const code = document.getElementById('displayRoomCode').textContent;
-            const fullInfo = `Room Code: ${code}\nHost ID: ${gameState.peerId}`;
-            
-            navigator.clipboard.writeText(fullInfo).then(() => {
-                alert('Room info copied! Share both the code and Host ID with players.');
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Room code copied to clipboard!');
             }).catch(() => {
-                alert(`Room Code: ${code}\nHost ID: ${gameState.peerId}\n\nShare BOTH with players!`);
+                alert(`Room Code: ${code}`);
             });
         }
 
-        // Initialize on load
         window.addEventListener('load', () => {
             initPeer();
         });
