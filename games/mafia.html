@@ -319,7 +319,12 @@
             <div class="room-code">
                 <p style="margin-bottom: 5px; color: #ddd;">Share This Code</p>
                 <h2 id="displayRoomCode">XXXX</h2>
-                <p style="margin-top: 5px; font-size: 0.9em; color: #ddd;">Players join from any device!</p>
+                <p style="margin-top: 10px; font-size: 0.9em; color: #ddd;">
+                    Players must use the EXACT same code!
+                </p>
+                <button class="btn btn-secondary" onclick="copyRoomCode()" style="margin-top: 10px; padding: 10px; font-size: 0.9em;">
+                    📋 Copy Code
+                </button>
             </div>
             
             <h3 style="margin: 20px 0 10px 0;">Players (<span id="playerCount">0</span>)</h3>
@@ -398,6 +403,9 @@
             eliminated: []
         };
 
+        // Store room codes mapping
+        let roomCodes = {};
+
         // Initialize PeerJS
         function initPeer() {
             peer = new Peer({
@@ -411,6 +419,7 @@
 
             peer.on('open', (id) => {
                 gameState.peerId = id;
+                console.log('My peer ID:', id);
                 updateConnectionStatus('Connected! Ready to play', 'connected');
                 document.getElementById('hostBtn').disabled = false;
                 document.getElementById('joinBtn').disabled = false;
@@ -490,6 +499,9 @@
             gameState.isHost = true;
             gameState.hostPeerId = gameState.peerId;
             
+            // Store room code mapping
+            roomCodes[gameState.roomCode] = gameState.peerId;
+            
             gameState.players[gameState.peerId] = {
                 name: hostName,
                 peerId: gameState.peerId,
@@ -500,10 +512,21 @@
             };
 
             document.getElementById('displayRoomCode').textContent = gameState.roomCode;
+            
+            // Show full peer ID for debugging
+            const roomCodeDiv = document.querySelector('.room-code');
+            const debugInfo = document.createElement('p');
+            debugInfo.style.fontSize = '0.8em';
+            debugInfo.style.marginTop = '10px';
+            debugInfo.style.color = '#888';
+            debugInfo.innerHTML = `Host ID: ${gameState.peerId.substring(0, 8)}...`;
+            roomCodeDiv.appendChild(debugInfo);
+            
             updatePlayerList();
             showScreen('lobbyScreen');
             document.getElementById('hostControls').style.display = 'block';
             addLog(`Room created! Code: ${gameState.roomCode}`);
+            console.log('Host Peer ID:', gameState.peerId);
         }
 
         // Join room
@@ -523,13 +546,25 @@
 
             gameState.roomCode = roomCode;
             gameState.playerName = playerName;
-            gameState.hostPeerId = roomCode;
+            
+            // IMPORTANT: Ask host to share their Peer ID
+            const hostId = prompt(`Ask the host to share their FULL Peer ID shown below the room code.\n\nOr if testing on same device, check the console for Host Peer ID.`);
+            
+            if (!hostId) {
+                alert('Need host Peer ID to connect!');
+                return;
+            }
+            
+            gameState.hostPeerId = hostId.trim();
+
+            console.log('Attempting to connect to:', gameState.hostPeerId);
 
             // Connect to host
-            const conn = peer.connect(roomCode);
+            const conn = peer.connect(gameState.hostPeerId);
             
             conn.on('open', () => {
-                connections[roomCode] = conn;
+                console.log('Connected to host!');
+                connections[gameState.hostPeerId] = conn;
                 
                 // Send join request
                 conn.send({
@@ -549,8 +584,8 @@
             });
 
             conn.on('error', (err) => {
-                alert('Could not connect to room. Check the code and try again!');
-                console.error(err);
+                console.error('Connection error:', err);
+                alert('Could not connect to host! Make sure you have the correct Peer ID.');
             });
         }
 
@@ -1076,6 +1111,18 @@
             entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
             log.appendChild(entry);
             log.scrollTop = log.scrollHeight;
+        }
+
+        // Copy room code to clipboard
+        function copyRoomCode() {
+            const code = document.getElementById('displayRoomCode').textContent;
+            const fullInfo = `Room Code: ${code}\nHost ID: ${gameState.peerId}`;
+            
+            navigator.clipboard.writeText(fullInfo).then(() => {
+                alert('Room info copied! Share both the code and Host ID with players.');
+            }).catch(() => {
+                alert(`Room Code: ${code}\nHost ID: ${gameState.peerId}\n\nShare BOTH with players!`);
+            });
         }
 
         // Initialize on load
