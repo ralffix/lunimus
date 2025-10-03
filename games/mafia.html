@@ -6,7 +6,7 @@
     <title>Mafia Party Game - Online Multiplayer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
     <style>
-        * {
+               * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -281,18 +281,22 @@
             margin-top: 10px;
             word-break: break-all;
         }
+        /* ...keep your existing CSS here... */
+        .custom-role-list { margin: 10px 0; }
+        .custom-role-item { background: #222; color: #fff; padding: 5px 10px; border-radius: 6px; margin-bottom: 5px; }
+        .role-vote-box { background: #333; color: #fff; padding: 15px; border-radius: 10px; margin: 15px 0; }
+        .role-vote-btn { margin: 5px; padding: 10px 20px; border-radius: 8px; border: none; font-weight: bold; }
+        .role-vote-yes { background: #4caf50; color: #fff; }
+        .role-vote-no { background: #e94560; color: #fff; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎭 Mafia</h1>
         <p class="subtitle">Online Multiplayer Party Game</p>
-        
         <!-- Home Screen -->
         <div id="homeScreen" class="screen active">
-            <div id="connectionStatus" class="connection-status status-connecting">
-                Connecting...
-            </div>
+            <div id="connectionStatus" class="connection-status status-connecting">Connecting...</div>
             <button class="btn btn-primary" onclick="showHostScreen()" id="hostBtn" disabled>Host Game</button>
             <button class="btn btn-secondary" onclick="showJoinScreen()" id="joinBtn" disabled>Join Game</button>
             <div class="info-box" style="margin-top: 30px;">
@@ -302,7 +306,6 @@
                 </p>
             </div>
         </div>
-        
         <!-- Host Setup Screen -->
         <div id="hostScreen" class="screen">
             <h2 style="margin-bottom: 20px;">Host a Game</h2>
@@ -310,7 +313,6 @@
             <button class="btn btn-primary" onclick="createRoom()">Create Room</button>
             <button class="btn btn-secondary" onclick="showHome()">Back</button>
         </div>
-        
         <!-- Join Screen -->
         <div id="joinScreen" class="screen">
             <h2 style="margin-bottom: 20px;">Join a Game</h2>
@@ -320,7 +322,6 @@
             <button class="btn btn-primary" onclick="joinRoom()">Join Room</button>
             <button class="btn btn-secondary" onclick="showHome()">Back</button>
         </div>
-        
         <!-- Lobby Screen -->
         <div id="lobbyScreen" class="screen">
             <div class="room-code">
@@ -337,20 +338,25 @@
                     📋 Copy Connection Info
                 </button>
             </div>
-            
             <h3 style="margin: 20px 0 10px 0;">Players (<span id="playerCount">0</span>)</h3>
             <div class="player-list" id="playerList"></div>
-            
             <div id="hostControls" style="display: none;">
-                <div class="info-box">
-                    Need at least 4 players to start
+                <div class="info-box">Need at least 4 players to start</div>
+                <!-- Custom Roles UI -->
+                <div>
+                    <h4>Add Custom Role</h4>
+                    <input type="text" id="customRoleName" placeholder="Role Name" maxlength="20">
+                    <input type="text" id="customRoleDesc" placeholder="Role Description" maxlength="60">
+                    <button class="btn btn-secondary" onclick="addCustomRole()">Add Role</button>
+                    <div class="custom-role-list" id="customRolesList"></div>
+                    <button class="btn btn-primary" onclick="proposeRoles()" id="proposeRolesBtn">Propose Roles</button>
                 </div>
                 <button class="btn btn-primary" onclick="startGame()" id="startGameBtn">Start Game</button>
             </div>
-            
+            <!-- Role Voting UI for players -->
+            <div id="roleVotingBox" style="display:none;"></div>
             <button class="btn btn-secondary" onclick="leaveRoom()">Leave Room</button>
         </div>
-        
         <!-- Role Reveal Screen -->
         <div id="roleScreen" class="screen">
             <div class="role-card">
@@ -360,7 +366,6 @@
             </div>
             <button class="btn btn-primary" onclick="acknowledgeRole()">I Understand - Continue</button>
         </div>
-        
         <!-- Game Screen -->
         <div id="gameScreen" class="screen">
             <div class="info-box">
@@ -368,35 +373,31 @@
                 <p style="margin-top: 5px;">Your Role: <span id="yourRole">Villager</span></p>
                 <p style="margin-top: 5px;" id="phaseInfo"></p>
             </div>
-            
             <h3 style="margin: 20px 0 10px 0;">Players</h3>
             <div class="player-list" id="gamePlayerList"></div>
-            
             <div id="votingSection" style="display: none;">
                 <h3 style="margin: 20px 0 10px 0;"><span id="voteTitle">Vote to Eliminate</span></h3>
                 <div class="voting-grid" id="votingGrid"></div>
                 <button class="btn btn-primary" onclick="submitVote()" id="voteBtn">Submit Vote</button>
             </div>
-
             <div id="waitingSection" style="display: none;">
                 <div class="info-box" style="text-align: center;">
                     <p>⏳ Waiting for other players to vote...</p>
                     <p style="margin-top: 10px; font-size: 0.9em;">Votes: <span id="voteProgress">0/0</span></p>
                 </div>
             </div>
-            
             <div class="game-log" id="gameLog"></div>
-            
             <div id="hostGameControls" style="display: none; margin-top: 20px;">
                 <button class="btn btn-secondary" onclick="endGame()">End Game</button>
             </div>
         </div>
     </div>
-
     <script>
         let peer = null;
         let connections = {};
-        
+        let customRoles = [];
+        let roleVotes = {};
+        let roleProposalActive = false;
         let gameState = {
             roomCode: '',
             playerName: '',
@@ -409,7 +410,8 @@
             votes: {},
             hasVoted: false,
             gameStarted: false,
-            eliminated: []
+            eliminated: [],
+            customRoles: []
         };
 
         function initPeer() {
@@ -422,21 +424,14 @@
                     ]
                 }
             });
-
             peer.on('open', (id) => {
                 gameState.peerId = id;
-                console.log('My peer ID:', id);
                 updateConnectionStatus('Ready to play!', 'connected');
                 document.getElementById('hostBtn').disabled = false;
                 document.getElementById('joinBtn').disabled = false;
             });
-
-            peer.on('connection', (conn) => {
-                handleConnection(conn);
-            });
-
+            peer.on('connection', (conn) => { handleConnection(conn); });
             peer.on('error', (err) => {
-                console.error('PeerJS error:', err);
                 updateConnectionStatus('Connection error. Please refresh.', 'error');
             });
         }
@@ -450,152 +445,78 @@
         function handleConnection(conn) {
             conn.on('open', () => {
                 connections[conn.peer] = conn;
-                console.log('New connection from:', conn.peer);
-                
-                conn.on('data', (data) => {
-                    handleMessage(data, conn);
-                });
-
-                conn.on('close', () => {
-                    handlePlayerDisconnect(conn.peer);
-                });
-
-                conn.on('error', (err) => {
-                    console.error('Connection error:', err);
-                });
+                conn.on('data', (data) => { handleMessage(data, conn); });
+                conn.on('close', () => { handlePlayerDisconnect(conn.peer); });
             });
         }
 
         function handleMessage(data, conn) {
-            console.log('Received message:', data.type);
             switch(data.type) {
-                case 'join_request':
-                    handleJoinRequest(data, conn);
-                    break;
-                case 'player_joined':
-                    handlePlayerJoined(data);
-                    break;
-                case 'player_list':
-                    handlePlayerList(data);
-                    break;
-                case 'game_start':
-                    handleGameStart(data);
-                    break;
-                case 'vote':
-                    handleVote(data);
-                    break;
-                case 'phase_change':
-                    handlePhaseChange(data);
-                    break;
-                case 'game_end':
-                    handleGameEnd(data);
-                    break;
-                case 'player_left':
-                    handlePlayerLeft(data);
-                    break;
-                case 'vote_progress':
-                    updateVoteProgress(data);
-                    break;
+                case 'join_request': handleJoinRequest(data, conn); break;
+                case 'player_joined': handlePlayerJoined(data); break;
+                case 'player_list': handlePlayerList(data); break;
+                case 'role_proposal': handleRoleProposal(data); break;
+                case 'role_vote': handleRoleVote(data); break;
+                case 'role_vote_result': handleRoleVoteResult(data); break;
+                case 'game_start': handleGameStart(data); break;
+                case 'vote': handleVote(data); break;
+                case 'phase_change': handlePhaseChange(data); break;
+                case 'game_end': handleGameEnd(data); break;
+                case 'player_left': handlePlayerLeft(data); break;
+                case 'vote_progress': updateVoteProgress(data); break;
             }
         }
 
         function generateRoomCode() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             let code = '';
-            for (let i = 0; i < 6; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+            for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
             return code;
         }
 
         function createRoom() {
             const hostName = document.getElementById('hostName').value.trim();
-            if (!hostName) {
-                alert('Please enter your name!');
-                return;
-            }
-
+            if (!hostName) return alert('Please enter your name!');
             gameState.roomCode = generateRoomCode();
             gameState.playerName = hostName;
             gameState.isHost = true;
             gameState.hostPeerId = gameState.peerId;
-            
             gameState.players[gameState.peerId] = {
-                name: hostName,
-                peerId: gameState.peerId,
-                isHost: true,
-                role: null,
-                alive: true,
-                connected: true
+                name: hostName, peerId: gameState.peerId, isHost: true, role: null, alive: true, connected: true
             };
-
             document.getElementById('displayRoomCode').textContent = gameState.roomCode;
             document.getElementById('displayPeerId').textContent = gameState.peerId;
             updatePlayerList();
             showScreen('lobbyScreen');
             document.getElementById('hostControls').style.display = 'block';
             addLog(`Room created! Code: ${gameState.roomCode}`);
-            console.log('Host ready. Peer ID:', gameState.peerId);
         }
 
         function joinRoom() {
             const playerName = document.getElementById('playerName').value.trim();
             const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
             const hostPeerId = document.getElementById('hostPeerIdInput').value.trim();
-            
-            if (!playerName || !roomCode || !hostPeerId) {
-                alert('Please enter your name, room code, and host peer ID!');
-                return;
-            }
-
+            if (!playerName || !roomCode || !hostPeerId) return alert('Please enter your name, room code, and host peer ID!');
             gameState.roomCode = roomCode;
             gameState.playerName = playerName;
             gameState.hostPeerId = hostPeerId;
-            
             updateConnectionStatus('Connecting to host...', 'connecting');
-            console.log('Connecting to host:', hostPeerId);
-
-            const conn = peer.connect(hostPeerId, {
-                reliable: true
-            });
-            
+            const conn = peer.connect(hostPeerId, { reliable: true });
             let connected = false;
-            
             conn.on('open', () => {
                 connected = true;
-                console.log('Connected to host!');
                 connections[hostPeerId] = conn;
                 updateConnectionStatus('Connected!', 'connected');
-                
-                conn.send({
-                    type: 'join_request',
-                    playerName: playerName,
-                    peerId: gameState.peerId,
-                    roomCode: roomCode
-                });
-
-                conn.on('data', (data) => {
-                    handleMessage(data, conn);
-                });
-
-                conn.on('close', () => {
-                    alert('Connection to host lost!');
-                    showHome();
-                });
-
-                conn.on('error', (err) => {
-                    console.error('Connection error:', err);
-                });
+                conn.send({ type: 'join_request', playerName, peerId: gameState.peerId, roomCode });
+                conn.on('data', (data) => { handleMessage(data, conn); });
+                conn.on('close', () => { alert('Connection to host lost!'); showHome(); });
             });
-
             conn.on('error', (err) => {
-                console.error('Connection error:', err);
                 if (!connected) {
                     updateConnectionStatus('Connection failed!', 'error');
                     alert('Could not connect to host! Make sure the Peer ID is correct and the host is online.');
                 }
             });
-            
             setTimeout(() => {
                 if (!connected) {
                     updateConnectionStatus('Connection timeout', 'error');
@@ -606,48 +527,26 @@
 
         function handleJoinRequest(data, conn) {
             if (!gameState.isHost) return;
-
-            console.log('Join request from:', data.playerName, data.peerId);
-
             if (gameState.gameStarted) {
                 conn.send({ type: 'error', message: 'Game already started!' });
                 return;
             }
-
             gameState.players[data.peerId] = {
-                name: data.playerName,
-                peerId: data.peerId,
-                isHost: false,
-                role: null,
-                alive: true,
-                connected: true
+                name: data.playerName, peerId: data.peerId, isHost: false, role: null, alive: true, connected: true
             };
-
-            conn.send({
-                type: 'player_list',
-                players: gameState.players,
-                hostPeerId: gameState.hostPeerId,
-                roomCode: gameState.roomCode
-            });
-
-            broadcast({
-                type: 'player_joined',
-                player: gameState.players[data.peerId]
-            }, data.peerId);
-
+            conn.send({ type: 'player_list', players: gameState.players, hostPeerId: gameState.hostPeerId, roomCode: gameState.roomCode });
+            broadcast({ type: 'player_joined', player: gameState.players[data.peerId] }, data.peerId);
             updatePlayerList();
             addLog(`${data.playerName} joined!`);
         }
 
         function handlePlayerJoined(data) {
-            console.log('Player joined:', data.player.name);
             gameState.players[data.player.peerId] = data.player;
             updatePlayerList();
             addLog(`${data.player.name} joined!`);
         }
 
         function handlePlayerList(data) {
-            console.log('Received player list');
             gameState.players = data.players;
             gameState.hostPeerId = data.hostPeerId;
             gameState.roomCode = data.roomCode;
@@ -660,71 +559,126 @@
         function updatePlayerList() {
             const list = document.getElementById('playerList');
             const count = document.getElementById('playerCount');
-            
             const playerArray = Object.values(gameState.players);
             list.innerHTML = '';
             count.textContent = playerArray.length;
-            
             playerArray.forEach(player => {
                 const div = document.createElement('div');
                 div.className = 'player-item';
-                div.innerHTML = `
-                    <span>${player.name}</span>
-                    ${player.isHost ? '<span class="status-badge badge-host">HOST</span>' : ''}
-                `;
+                div.innerHTML = `<span>${player.name}</span>${player.isHost ? '<span class="status-badge badge-host">HOST</span>' : ''}`;
                 list.appendChild(div);
             });
-
             if (gameState.isHost) {
-                const startBtn = document.getElementById('startGameBtn');
-                if (startBtn) {
-                    startBtn.disabled = playerArray.length < 4;
+                document.getElementById('startGameBtn').disabled = playerArray.length < 4;
+                updateCustomRolesList();
+            }
+        }
+
+        // Custom Roles UI
+        function addCustomRole() {
+            const name = document.getElementById('customRoleName').value.trim();
+            const desc = document.getElementById('customRoleDesc').value.trim();
+            if (!name || !desc) return alert('Fill both fields!');
+            customRoles.push({ name, desc });
+            updateCustomRolesList();
+            document.getElementById('customRoleName').value = '';
+            document.getElementById('customRoleDesc').value = '';
+        }
+        function updateCustomRolesList() {
+            const list = document.getElementById('customRolesList');
+            list.innerHTML = customRoles.map(r => `<div class="custom-role-item">${r.name}: ${r.desc}</div>`).join('');
+        }
+
+        // Propose roles to players for voting
+        function proposeRoles() {
+            if (customRoles.length === 0) return alert('Add at least one custom role!');
+            broadcast({ type: 'role_proposal', customRoles });
+            roleProposalActive = true;
+            addLog('Role proposal sent to players!');
+        }
+
+        // Players receive role proposal and vote
+        function handleRoleProposal(data) {
+            if (gameState.isHost) return;
+            const box = document.getElementById('roleVotingBox');
+            box.style.display = 'block';
+            box.innerHTML = `
+                <div class="role-vote-box">
+                    <h3>Host Proposes Custom Roles:</h3>
+                    ${data.customRoles.map(r => `<div>${r.name}: ${r.desc}</div>`).join('')}
+                    <p style="margin-top:10px;">Vote to approve (60% YES needed)</p>
+                    <button class="role-vote-btn role-vote-yes" onclick="voteOnRoles(true)">YES</button>
+                    <button class="role-vote-btn role-vote-no" onclick="voteOnRoles(false)">NO</button>
+                </div>
+            `;
+        }
+        function voteOnRoles(approve) {
+            connections[gameState.hostPeerId].send({ type: 'role_vote', peerId: gameState.peerId, approve });
+            document.getElementById('roleVotingBox').innerHTML = '<div class="info-box">Vote submitted!</div>';
+        }
+
+        // Host collects votes and applies roles if 60%+ YES
+        function handleRoleVote(data) {
+            if (!gameState.isHost) return;
+            roleVotes[data.peerId] = data.approve;
+            const totalVotes = Object.keys(roleVotes).length;
+            const yesVotes = Object.values(roleVotes).filter(v => v).length;
+            const playerCount = Object.keys(gameState.players).length - 1;
+            if (totalVotes >= playerCount) {
+                if (yesVotes / playerCount >= 0.6) {
+                    gameState.customRoles = customRoles.slice();
+                    broadcast({ type: 'role_vote_result', approved: true, customRoles: gameState.customRoles });
+                    addLog('Custom roles approved!');
+                } else {
+                    broadcast({ type: 'role_vote_result', approved: false });
+                    addLog('Custom roles rejected!');
                 }
+                roleVotes = {};
+                roleProposalActive = false;
+            }
+        }
+        function handleRoleVoteResult(data) {
+            document.getElementById('roleVotingBox').style.display = 'none';
+            if (data.approved) {
+                gameState.customRoles = data.customRoles;
+                addLog('Custom roles will be used!');
+            } else {
+                addLog('Custom roles rejected by players.');
             }
         }
 
         function startGame() {
             if (!gameState.isHost) return;
-            
             const playerArray = Object.values(gameState.players);
-            if (playerArray.length < 4) {
-                alert('Need at least 4 players to start!');
-                return;
-            }
-
+            if (playerArray.length < 4) return alert('Need at least 4 players to start!');
             gameState.gameStarted = true;
-
+            let roles = [];
             const numMafia = Math.floor(playerArray.length / 3);
-            const roles = [];
-            
             for (let i = 0; i < numMafia; i++) roles.push('Mafia');
             while (roles.length < playerArray.length) roles.push('Villager');
-            
+            // Add custom roles if approved
+            if (gameState.customRoles && gameState.customRoles.length) {
+                gameState.customRoles.forEach(r => roles.push(r.name));
+                while (roles.length > playerArray.length) roles = roles.filter(role => role !== 'Villager');
+            }
+            // Shuffle roles
             for (let i = roles.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [roles[i], roles[j]] = [roles[j], roles[i]];
             }
-            
             playerArray.forEach((player, i) => {
                 player.role = roles[i];
                 gameState.players[player.peerId].role = roles[i];
             });
-
-            broadcast({
-                type: 'game_start',
-                players: gameState.players
-            });
-
+            broadcast({ type: 'game_start', players: gameState.players });
             const myPlayer = gameState.players[gameState.peerId];
             gameState.myRole = myPlayer.role;
             showRoleScreen(myPlayer.role);
         }
 
         function handleGameStart(data) {
-            console.log('Game starting!');
             gameState.players = data.players;
             gameState.gameStarted = true;
-            
             const myPlayer = gameState.players[gameState.peerId];
             gameState.myRole = myPlayer.role;
             showRoleScreen(myPlayer.role);
@@ -734,26 +688,22 @@
             const roleName = document.getElementById('roleName');
             const roleDesc = document.getElementById('roleDescription');
             const roleExtra = document.getElementById('roleExtra');
-            
             if (role === 'Mafia') {
                 roleName.textContent = 'MAFIA';
                 roleDesc.textContent = 'You are part of the Mafia! Work together to eliminate villagers during night phases. During the day, blend in and vote strategically.';
-                
                 const mafiaMembers = Object.values(gameState.players)
                     .filter(p => p.role === 'Mafia' && p.peerId !== gameState.peerId)
                     .map(p => p.name);
-                
-                if (mafiaMembers.length > 0) {
-                    roleExtra.textContent = `Your fellow Mafia: ${mafiaMembers.join(', ')}`;
-                } else {
-                    roleExtra.textContent = 'You are the only Mafia member.';
-                }
+                roleExtra.textContent = mafiaMembers.length > 0 ? `Your fellow Mafia: ${mafiaMembers.join(', ')}` : 'You are the only Mafia member.';
+            } else if (gameState.customRoles && gameState.customRoles.find(r => r.name === role)) {
+                roleName.textContent = role;
+                roleDesc.textContent = gameState.customRoles.find(r => r.name === role).desc;
+                roleExtra.textContent = '';
             } else {
                 roleName.textContent = 'VILLAGER';
                 roleDesc.textContent = 'You are a Villager! Use discussion and voting during the day to identify and eliminate the Mafia. Work together to find them!';
                 roleExtra.textContent = 'Trust no one. Watch behavior carefully.';
             }
-            
             showScreen('roleScreen');
         }
 
@@ -765,48 +715,35 @@
         function showGameScreen() {
             document.getElementById('yourRole').textContent = gameState.myRole;
             updateGameScreen();
-            
-            if (gameState.isHost) {
-                document.getElementById('hostGameControls').style.display = 'block';
-            }
-            
+            if (gameState.isHost) document.getElementById('hostGameControls').style.display = 'block';
             showScreen('gameScreen');
         }
 
         function updateGameScreen() {
             const phaseEl = document.getElementById('currentPhase');
             const phaseInfo = document.getElementById('phaseInfo');
-            
             if (gameState.phase === 'day') {
                 phaseEl.textContent = 'Day - Discussion & Voting';
                 phaseInfo.textContent = 'Discuss and vote to eliminate a suspected Mafia member';
-                if (!gameState.hasVoted) {
-                    showVoting();
-                }
+                if (!gameState.hasVoted) showVoting();
             } else if (gameState.phase === 'night') {
                 phaseEl.textContent = 'Night - Mafia Decides';
                 phaseInfo.textContent = 'Mafia chooses their target...';
-                if (gameState.myRole === 'Mafia' && !gameState.hasVoted) {
-                    showVoting();
-                }
+                if (gameState.myRole === 'Mafia' && !gameState.hasVoted) showVoting();
             }
-            
             updateGamePlayerList();
         }
 
         function updateGamePlayerList() {
             const list = document.getElementById('gamePlayerList');
             list.innerHTML = '';
-            
             Object.values(gameState.players).forEach(player => {
                 const div = document.createElement('div');
                 div.className = 'player-item';
-                div.innerHTML = `
-                    <span>${player.name}</span>
+                div.innerHTML = `<span>${player.name}</span>
                     <span class="status-badge ${player.alive ? 'badge-alive' : 'badge-dead'}">
                         ${player.alive ? 'ALIVE' : 'ELIMINATED'}
-                    </span>
-                `;
+                    </span>`;
                 list.appendChild(div);
             });
         }
@@ -814,26 +751,25 @@
         function showVoting() {
             document.getElementById('votingSection').style.display = 'block';
             document.getElementById('waitingSection').style.display = 'none';
-            
             const grid = document.getElementById('votingGrid');
             const voteTitle = document.getElementById('voteTitle');
             grid.innerHTML = '';
-            
+            let candidates = Object.values(gameState.players)
+                .filter(p => p.alive && p.peerId !== gameState.peerId);
             if (gameState.phase === 'night' && gameState.myRole === 'Mafia') {
+                // Mafia can only kill non-Mafia
+                candidates = candidates.filter(p => p.role !== 'Mafia');
                 voteTitle.textContent = 'Choose Target to Eliminate';
             } else {
                 voteTitle.textContent = 'Vote to Eliminate';
             }
-            
-            Object.values(gameState.players)
-                .filter(p => p.alive && p.peerId !== gameState.peerId)
-                .forEach(player => {
-                    const btn = document.createElement('button');
-                    btn.className = 'vote-btn';
-                    btn.textContent = player.name;
-                    btn.onclick = () => selectVote(player.peerId, btn);
-                    grid.appendChild(btn);
-                });
+            candidates.forEach(player => {
+                const btn = document.createElement('button');
+                btn.className = 'vote-btn';
+                btn.textContent = player.name;
+                btn.onclick = () => selectVote(player.peerId, btn);
+                grid.appendChild(btn);
+            });
         }
 
         let selectedVote = null;
@@ -844,182 +780,97 @@
         }
 
         function submitVote() {
-            if (!selectedVote) {
-                alert('Please select someone to vote for!');
-                return;
-            }
-            
+            if (!selectedVote) return alert('Please select someone to vote for!');
             gameState.hasVoted = true;
-            
             const voteData = {
                 type: 'vote',
                 voterPeerId: gameState.peerId,
                 targetPeerId: selectedVote,
                 phase: gameState.phase
             };
-            
-            if (gameState.isHost) {
-                handleVote(voteData);
-            } else {
-                connections[gameState.hostPeerId].send(voteData);
-            }
-            
+            if (gameState.isHost) handleVote(voteData);
+            else connections[gameState.hostPeerId].send(voteData);
             document.getElementById('votingSection').style.display = 'none';
             document.getElementById('waitingSection').style.display = 'block';
             addLog('Vote submitted!');
-            
             selectedVote = null;
         }
 
         function handleVote(data) {
             if (!gameState.isHost) return;
-            
-            console.log('Vote received from:', data.voterPeerId);
             gameState.votes[data.voterPeerId] = data.targetPeerId;
-            
-            const alivePlayers = Object.values(gameState.players).filter(p => p.alive);
-            const votesNeeded = gameState.phase === 'night' 
-                ? Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length
-                : alivePlayers.length;
-            
-            const votesReceived = Object.keys(gameState.votes).length;
-            
-            broadcast({
-                type: 'vote_progress',
-                votes: votesReceived,
-                needed: votesNeeded
-            });
-            
-            console.log(`Votes: ${votesReceived}/${votesNeeded}`);
-            
-            if (votesReceived >= votesNeeded) {
-                processVotes();
+            let votesNeeded;
+            if (gameState.phase === 'night') {
+                votesNeeded = Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length;
+            } else {
+                votesNeeded = Object.values(gameState.players).filter(p => p.alive).length;
             }
+            const votesReceived = Object.keys(gameState.votes).length;
+            broadcast({ type: 'vote_progress', votes: votesReceived, needed: votesNeeded });
+            if (votesReceived >= votesNeeded) processVotes();
         }
 
         function updateVoteProgress(data) {
             const progressEl = document.getElementById('voteProgress');
-            if (progressEl) {
-                progressEl.textContent = `${data.votes}/${data.needed}`;
-            }
+            if (progressEl) progressEl.textContent = `${data.votes}/${data.needed}`;
         }
 
         function processVotes() {
-            console.log('Processing votes...');
             const voteCounts = {};
             Object.values(gameState.votes).forEach(targetId => {
                 voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
             });
-            
-            let maxVotes = 0;
-            let eliminatedId = null;
-            
+            let maxVotes = 0, eliminatedId = null;
             Object.entries(voteCounts).forEach(([peerId, count]) => {
-                if (count > maxVotes) {
-                    maxVotes = count;
-                    eliminatedId = peerId;
-                }
+                if (count > maxVotes) { maxVotes = count; eliminatedId = peerId; }
             });
-            
             if (eliminatedId) {
                 gameState.players[eliminatedId].alive = false;
                 gameState.eliminated.push(eliminatedId);
-                
                 const eliminatedPlayer = gameState.players[eliminatedId];
-                
                 const aliveMafia = Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length;
                 const aliveVillagers = Object.values(gameState.players).filter(p => p.alive && p.role === 'Villager').length;
-                
                 if (aliveMafia === 0) {
-                    broadcast({
-                        type: 'game_end',
-                        winner: 'Villagers',
-                        message: 'Villagers Win! All Mafia have been eliminated!',
-                        eliminated: eliminatedPlayer.name
-                    });
-                    handleGameEnd({
-                        winner: 'Villagers',
-                        message: 'Villagers Win! All Mafia have been eliminated!',
-                        eliminated: eliminatedPlayer.name
-                    });
+                    broadcast({ type: 'game_end', winner: 'Villagers', message: 'Villagers Win! All Mafia have been eliminated!', eliminated: eliminatedPlayer.name });
+                    handleGameEnd({ winner: 'Villagers', message: 'Villagers Win! All Mafia have been eliminated!', eliminated: eliminatedPlayer.name });
                     return;
                 } else if (aliveMafia >= aliveVillagers) {
-                    broadcast({
-                        type: 'game_end',
-                        winner: 'Mafia',
-                        message: 'Mafia Wins! They outnumber the villagers!',
-                        eliminated: eliminatedPlayer.name
-                    });
-                    handleGameEnd({
-                        winner: 'Mafia',
-                        message: 'Mafia Wins! They outnumber the villagers!',
-                        eliminated: eliminatedPlayer.name
-                    });
+                    broadcast({ type: 'game_end', winner: 'Mafia', message: 'Mafia Wins! They outnumber the villagers!', eliminated: eliminatedPlayer.name });
+                    handleGameEnd({ winner: 'Mafia', message: 'Mafia Wins! They outnumber the villagers!', eliminated: eliminatedPlayer.name });
                     return;
                 }
-                
                 gameState.votes = {};
                 const nextPhase = gameState.phase === 'day' ? 'night' : 'day';
-                
-                broadcast({
-                    type: 'phase_change',
-                    phase: nextPhase,
-                    players: gameState.players,
-                    eliminated: eliminatedPlayer.name,
-                    eliminatedRole: eliminatedPlayer.role
-                });
-                
+                broadcast({ type: 'phase_change', phase: nextPhase, players: gameState.players, eliminated: eliminatedPlayer.name, eliminatedRole: eliminatedPlayer.role });
                 gameState.phase = nextPhase;
                 gameState.hasVoted = false;
-                
                 addLog(`${eliminatedPlayer.name} was eliminated! They were a ${eliminatedPlayer.role}.`);
-                
-                if (nextPhase === 'night') {
-                    addLog('Night falls... Mafia is deciding...');
-                } else {
-                    addLog('Day breaks! Time to discuss and vote.');
-                }
-                
+                if (nextPhase === 'night') addLog('Night falls... Mafia is deciding...');
+                else addLog('Day breaks! Time to discuss and vote.');
                 updateGameScreen();
             }
         }
 
         function handlePhaseChange(data) {
-            console.log('Phase change to:', data.phase);
             gameState.players = data.players;
             gameState.phase = data.phase;
             gameState.hasVoted = false;
-            
             addLog(`${data.eliminated} was eliminated! They were a ${data.eliminatedRole}.`);
-            
-            if (data.phase === 'night') {
-                addLog('Night falls... Mafia is deciding...');
-            } else {
-                addLog('Day breaks! Time to discuss and vote.');
-            }
-            
+            if (data.phase === 'night') addLog('Night falls... Mafia is deciding...');
+            else addLog('Day breaks! Time to discuss and vote.');
             updateGameScreen();
         }
 
         function handleGameEnd(data) {
-            console.log('Game ended:', data.winner);
             addLog(`${data.eliminated} was eliminated!`);
             addLog(data.message);
-            
-            setTimeout(() => {
-                alert(data.message);
-                showHome();
-            }, 1000);
+            setTimeout(() => { alert(data.message); showHome(); }, 1000);
         }
 
         function broadcast(message, excludePeerId = null) {
             Object.entries(connections).forEach(([peerId, conn]) => {
                 if (peerId !== excludePeerId) {
-                    try {
-                        conn.send(message);
-                    } catch (e) {
-                        console.error('Failed to send to', peerId, e);
-                    }
+                    try { conn.send(message); } catch (e) {}
                 }
             });
         }
@@ -1029,15 +880,7 @@
                 const playerName = gameState.players[peerId].name;
                 delete gameState.players[peerId];
                 delete connections[peerId];
-                
-                if (gameState.isHost) {
-                    broadcast({
-                        type: 'player_left',
-                        peerId: peerId,
-                        playerName: playerName
-                    });
-                }
-                
+                if (gameState.isHost) broadcast({ type: 'player_left', peerId, playerName });
                 updatePlayerList();
                 addLog(`${playerName} disconnected`);
             }
@@ -1057,13 +900,12 @@
         }
 
         function showHome() {
-            Object.values(connections).forEach(conn => {
-                try { conn.close(); } catch (e) {}
-            });
-            
+            Object.values(connections).forEach(conn => { try { conn.close(); } catch (e) {} });
             const oldPeerId = gameState.peerId;
-            
             connections = {};
+            customRoles = [];
+            roleVotes = {};
+            roleProposalActive = false;
             gameState = {
                 roomCode: '',
                 playerName: '',
@@ -1076,25 +918,18 @@
                 votes: {},
                 hasVoted: false,
                 gameStarted: false,
-                eliminated: []
+                eliminated: [],
+                customRoles: []
             };
-            
             showScreen('homeScreen');
         }
 
-        function showHostScreen() {
-            showScreen('hostScreen');
-        }
-
-        function showJoinScreen() {
-            showScreen('joinScreen');
-        }
+        function showHostScreen() { showScreen('hostScreen'); }
+        function showJoinScreen() { showScreen('joinScreen'); }
 
         function leaveRoom() {
             if (confirm('Are you sure you want to leave?')) {
-                if (gameState.isHost) {
-                    broadcast({ type: 'game_end', message: 'Host ended the game', winner: null });
-                }
+                if (gameState.isHost) broadcast({ type: 'game_end', message: 'Host ended the game', winner: null });
                 showHome();
             }
         }
@@ -1109,7 +944,6 @@
         function addLog(message) {
             const log = document.getElementById('gameLog');
             if (!log) return;
-            
             const entry = document.createElement('div');
             entry.className = 'log-entry';
             entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
@@ -1121,17 +955,12 @@
             const code = document.getElementById('displayRoomCode').textContent;
             const peerId = document.getElementById('displayPeerId').textContent;
             const info = `Mafia Game - Join Info:\nRoom Code: ${code}\nHost Peer ID: ${peerId}\n\nPlayers need BOTH to join!`;
-            
             navigator.clipboard.writeText(info).then(() => {
                 alert('Connection info copied! Share with your friends.');
-            }).catch(() => {
-                alert(info);
-            });
+            }).catch(() => { alert(info); });
         }
 
-        window.addEventListener('load', () => {
-            initPeer();
-        });
+        window.addEventListener('load', () => { initPeer(); });
     </script>
 </body>
 </html>
