@@ -274,6 +274,13 @@
             border-left: 3px solid #e94560;
             background: rgba(255, 255, 255, 0.05);
         }
+
+        .peer-id-display {
+            font-size: 0.75em;
+            color: #888;
+            margin-top: 10px;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -284,15 +291,14 @@
         <!-- Home Screen -->
         <div id="homeScreen" class="screen active">
             <div id="connectionStatus" class="connection-status status-connecting">
-                Initializing...
+                Connecting...
             </div>
             <button class="btn btn-primary" onclick="showHostScreen()" id="hostBtn" disabled>Host Game</button>
             <button class="btn btn-secondary" onclick="showJoinScreen()" id="joinBtn" disabled>Join Game</button>
             <div class="info-box" style="margin-top: 30px;">
                 <strong>How to Play:</strong>
                 <p style="margin-top: 10px; line-height: 1.6;">
-                    Host creates a room and gets a 6-character code. Players join using ONLY that code!
-                    Works on phones, tablets, and computers - completely FREE!
+                    Host creates a room and shares BOTH the room code AND their peer ID. Players need both to connect!
                 </p>
             </div>
         </div>
@@ -310,6 +316,7 @@
             <h2 style="margin-bottom: 20px;">Join a Game</h2>
             <input type="text" id="playerName" placeholder="Your Name" maxlength="20">
             <input type="text" id="roomCodeInput" placeholder="Room Code (6 characters)" maxlength="6" style="text-transform: uppercase;">
+            <input type="text" id="hostPeerIdInput" placeholder="Host Peer ID (ask host to share)">
             <button class="btn btn-primary" onclick="joinRoom()">Join Room</button>
             <button class="btn btn-secondary" onclick="showHome()">Back</button>
         </div>
@@ -319,11 +326,15 @@
             <div class="room-code">
                 <p style="margin-bottom: 5px; color: #ddd;">Room Code</p>
                 <h2 id="displayRoomCode">XXXX</h2>
-                <p style="margin-top: 10px; font-size: 0.9em; color: #ddd;">
-                    Share this code with your friends!
+                <div class="peer-id-display">
+                    <strong>Your Peer ID:</strong><br>
+                    <span id="displayPeerId"></span>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #ddd;">
+                    Share BOTH the code and your Peer ID!
                 </p>
-                <button class="btn btn-secondary" onclick="copyRoomCode()" style="margin-top: 10px; padding: 10px; font-size: 0.9em;">
-                    📋 Copy Code
+                <button class="btn btn-secondary" onclick="copyConnectionInfo()" style="margin-top: 10px; padding: 10px; font-size: 0.9em;">
+                    📋 Copy Connection Info
                 </button>
             </div>
             
@@ -401,26 +412,20 @@
             eliminated: []
         };
 
-        // Initialize PeerJS with custom ID for hosts
-        function initPeer(customId = null) {
-            const config = {
+        function initPeer() {
+            peer = new Peer({
                 config: {
                     iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' }
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
                     ]
                 }
-            };
-            
-            if (customId) {
-                config.id = customId;
-            }
-            
-            peer = new Peer(config);
+            });
 
             peer.on('open', (id) => {
                 gameState.peerId = id;
-                console.log('Connected! Peer ID:', id);
+                console.log('My peer ID:', id);
                 updateConnectionStatus('Ready to play!', 'connected');
                 document.getElementById('hostBtn').disabled = false;
                 document.getElementById('joinBtn').disabled = false;
@@ -432,12 +437,7 @@
 
             peer.on('error', (err) => {
                 console.error('PeerJS error:', err);
-                if (err.type === 'unavailable-id') {
-                    updateConnectionStatus('Room code already in use! Try again.', 'error');
-                    setTimeout(() => showHome(), 2000);
-                } else {
-                    updateConnectionStatus('Connection error. Please refresh.', 'error');
-                }
+                updateConnectionStatus('Connection error. Please refresh.', 'error');
             });
         }
 
@@ -450,6 +450,7 @@
         function handleConnection(conn) {
             conn.on('open', () => {
                 connections[conn.peer] = conn;
+                console.log('New connection from:', conn.peer);
                 
                 conn.on('data', (data) => {
                     handleMessage(data, conn);
@@ -458,10 +459,15 @@
                 conn.on('close', () => {
                     handlePlayerDisconnect(conn.peer);
                 });
+
+                conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                });
             });
         }
 
         function handleMessage(data, conn) {
+            console.log('Received message:', data.type);
             switch(data.type) {
                 case 'join_request':
                     handleJoinRequest(data, conn);
@@ -502,7 +508,6 @@
             return code;
         }
 
-        // Create room with custom peer ID
         function createRoom() {
             const hostName = document.getElementById('hostName').value.trim();
             if (!hostName) {
@@ -513,78 +518,60 @@
             gameState.roomCode = generateRoomCode();
             gameState.playerName = hostName;
             gameState.isHost = true;
+            gameState.hostPeerId = gameState.peerId;
             
-            updateConnectionStatus('Creating room...', 'connecting');
-            
-            // Destroy existing peer and create new one with room code as ID
-            if (peer) {
-                peer.destroy();
-            }
-            
-            const hostPeerId = 'mafia-' + gameState.roomCode.toLowerCase();
-            initPeer(hostPeerId);
-            
-            // Wait for connection
-            const checkConnection = setInterval(() => {
-                if (gameState.peerId) {
-                    clearInterval(checkConnection);
-                    gameState.hostPeerId = gameState.peerId;
-                    
-                    gameState.players[gameState.peerId] = {
-                        name: hostName,
-                        peerId: gameState.peerId,
-                        isHost: true,
-                        role: null,
-                        alive: true,
-                        connected: true
-                    };
+            gameState.players[gameState.peerId] = {
+                name: hostName,
+                peerId: gameState.peerId,
+                isHost: true,
+                role: null,
+                alive: true,
+                connected: true
+            };
 
-                    document.getElementById('displayRoomCode').textContent = gameState.roomCode;
-                    updatePlayerList();
-                    showScreen('lobbyScreen');
-                    document.getElementById('hostControls').style.display = 'block';
-                    addLog(`Room created! Share code: ${gameState.roomCode}`);
-                }
-            }, 100);
-            
-            setTimeout(() => clearInterval(checkConnection), 5000);
+            document.getElementById('displayRoomCode').textContent = gameState.roomCode;
+            document.getElementById('displayPeerId').textContent = gameState.peerId;
+            updatePlayerList();
+            showScreen('lobbyScreen');
+            document.getElementById('hostControls').style.display = 'block';
+            addLog(`Room created! Code: ${gameState.roomCode}`);
+            console.log('Host ready. Peer ID:', gameState.peerId);
         }
 
-        // Join room using only room code
         function joinRoom() {
             const playerName = document.getElementById('playerName').value.trim();
             const roomCode = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+            const hostPeerId = document.getElementById('hostPeerIdInput').value.trim();
             
-            if (!playerName || !roomCode) {
-                alert('Please enter your name and room code!');
-                return;
-            }
-
-            if (roomCode.length !== 6) {
-                alert('Room code must be 6 characters!');
+            if (!playerName || !roomCode || !hostPeerId) {
+                alert('Please enter your name, room code, and host peer ID!');
                 return;
             }
 
             gameState.roomCode = roomCode;
             gameState.playerName = playerName;
-            gameState.hostPeerId = 'mafia-' + roomCode.toLowerCase();
+            gameState.hostPeerId = hostPeerId;
             
-            updateConnectionStatus('Connecting to room...', 'connecting');
+            updateConnectionStatus('Connecting to host...', 'connecting');
+            console.log('Connecting to host:', hostPeerId);
 
-            const conn = peer.connect(gameState.hostPeerId);
+            const conn = peer.connect(hostPeerId, {
+                reliable: true
+            });
             
             let connected = false;
             
             conn.on('open', () => {
                 connected = true;
                 console.log('Connected to host!');
-                connections[gameState.hostPeerId] = conn;
+                connections[hostPeerId] = conn;
                 updateConnectionStatus('Connected!', 'connected');
                 
                 conn.send({
                     type: 'join_request',
                     playerName: playerName,
-                    peerId: gameState.peerId
+                    peerId: gameState.peerId,
+                    roomCode: roomCode
                 });
 
                 conn.on('data', (data) => {
@@ -595,26 +582,32 @@
                     alert('Connection to host lost!');
                     showHome();
                 });
+
+                conn.on('error', (err) => {
+                    console.error('Connection error:', err);
+                });
             });
 
             conn.on('error', (err) => {
                 console.error('Connection error:', err);
                 if (!connected) {
-                    updateConnectionStatus('Room not found!', 'error');
-                    alert('Could not find room! Check the code and make sure the host has created the room.');
+                    updateConnectionStatus('Connection failed!', 'error');
+                    alert('Could not connect to host! Make sure the Peer ID is correct and the host is online.');
                 }
             });
             
             setTimeout(() => {
                 if (!connected) {
                     updateConnectionStatus('Connection timeout', 'error');
-                    alert('Could not connect to room. The room may not exist or the host may be offline.');
+                    alert('Connection timed out. Please check:\n1. Host Peer ID is correct\n2. Host has created the room\n3. Both have internet connection');
                 }
-            }, 10000);
+            }, 15000);
         }
 
         function handleJoinRequest(data, conn) {
             if (!gameState.isHost) return;
+
+            console.log('Join request from:', data.playerName, data.peerId);
 
             if (gameState.gameStarted) {
                 conn.send({ type: 'error', message: 'Game already started!' });
@@ -633,27 +626,31 @@
             conn.send({
                 type: 'player_list',
                 players: gameState.players,
-                hostPeerId: gameState.hostPeerId
+                hostPeerId: gameState.hostPeerId,
+                roomCode: gameState.roomCode
             });
 
             broadcast({
                 type: 'player_joined',
                 player: gameState.players[data.peerId]
-            });
+            }, data.peerId);
 
             updatePlayerList();
             addLog(`${data.playerName} joined!`);
         }
 
         function handlePlayerJoined(data) {
+            console.log('Player joined:', data.player.name);
             gameState.players[data.player.peerId] = data.player;
             updatePlayerList();
             addLog(`${data.player.name} joined!`);
         }
 
         function handlePlayerList(data) {
+            console.log('Received player list');
             gameState.players = data.players;
             gameState.hostPeerId = data.hostPeerId;
+            gameState.roomCode = data.roomCode;
             document.getElementById('displayRoomCode').textContent = gameState.roomCode;
             updatePlayerList();
             showScreen('lobbyScreen');
@@ -724,6 +721,7 @@
         }
 
         function handleGameStart(data) {
+            console.log('Game starting!');
             gameState.players = data.players;
             gameState.gameStarted = true;
             
@@ -738,7 +736,7 @@
             const roleExtra = document.getElementById('roleExtra');
             
             if (role === 'Mafia') {
-                roleName.textContent = '🔪 MAFIA';
+                roleName.textContent = 'MAFIA';
                 roleDesc.textContent = 'You are part of the Mafia! Work together to eliminate villagers during night phases. During the day, blend in and vote strategically.';
                 
                 const mafiaMembers = Object.values(gameState.players)
@@ -751,7 +749,7 @@
                     roleExtra.textContent = 'You are the only Mafia member.';
                 }
             } else {
-                roleName.textContent = '👨‍🌾 VILLAGER';
+                roleName.textContent = 'VILLAGER';
                 roleDesc.textContent = 'You are a Villager! Use discussion and voting during the day to identify and eliminate the Mafia. Work together to find them!';
                 roleExtra.textContent = 'Trust no one. Watch behavior carefully.';
             }
@@ -876,6 +874,7 @@
         function handleVote(data) {
             if (!gameState.isHost) return;
             
+            console.log('Vote received from:', data.voterPeerId);
             gameState.votes[data.voterPeerId] = data.targetPeerId;
             
             const alivePlayers = Object.values(gameState.players).filter(p => p.alive);
@@ -891,6 +890,8 @@
                 needed: votesNeeded
             });
             
+            console.log(`Votes: ${votesReceived}/${votesNeeded}`);
+            
             if (votesReceived >= votesNeeded) {
                 processVotes();
             }
@@ -904,6 +905,7 @@
         }
 
         function processVotes() {
+            console.log('Processing votes...');
             const voteCounts = {};
             Object.values(gameState.votes).forEach(targetId => {
                 voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
@@ -935,10 +937,20 @@
                         message: 'Villagers Win! All Mafia have been eliminated!',
                         eliminated: eliminatedPlayer.name
                     });
+                    handleGameEnd({
+                        winner: 'Villagers',
+                        message: 'Villagers Win! All Mafia have been eliminated!',
+                        eliminated: eliminatedPlayer.name
+                    });
                     return;
                 } else if (aliveMafia >= aliveVillagers) {
                     broadcast({
                         type: 'game_end',
+                        winner: 'Mafia',
+                        message: 'Mafia Wins! They outnumber the villagers!',
+                        eliminated: eliminatedPlayer.name
+                    });
+                    handleGameEnd({
                         winner: 'Mafia',
                         message: 'Mafia Wins! They outnumber the villagers!',
                         eliminated: eliminatedPlayer.name
@@ -959,11 +971,21 @@
                 
                 gameState.phase = nextPhase;
                 gameState.hasVoted = false;
+                
+                addLog(`${eliminatedPlayer.name} was eliminated! They were a ${eliminatedPlayer.role}.`);
+                
+                if (nextPhase === 'night') {
+                    addLog('Night falls... Mafia is deciding...');
+                } else {
+                    addLog('Day breaks! Time to discuss and vote.');
+                }
+                
                 updateGameScreen();
             }
         }
 
         function handlePhaseChange(data) {
+            console.log('Phase change to:', data.phase);
             gameState.players = data.players;
             gameState.phase = data.phase;
             gameState.hasVoted = false;
@@ -980,6 +1002,7 @@
         }
 
         function handleGameEnd(data) {
+            console.log('Game ended:', data.winner);
             addLog(`${data.eliminated} was eliminated!`);
             addLog(data.message);
             
@@ -989,12 +1012,14 @@
             }, 1000);
         }
 
-        function broadcast(message) {
-            Object.values(connections).forEach(conn => {
-                try {
-                    conn.send(message);
-                } catch (e) {
-                    console.error('Failed to send:', e);
+        function broadcast(message, excludePeerId = null) {
+            Object.entries(connections).forEach(([peerId, conn]) => {
+                if (peerId !== excludePeerId) {
+                    try {
+                        conn.send(message);
+                    } catch (e) {
+                        console.error('Failed to send to', peerId, e);
+                    }
                 }
             });
         }
@@ -1036,11 +1061,13 @@
                 try { conn.close(); } catch (e) {}
             });
             
+            const oldPeerId = gameState.peerId;
+            
             connections = {};
             gameState = {
                 roomCode: '',
                 playerName: '',
-                peerId: gameState.peerId,
+                peerId: oldPeerId,
                 isHost: false,
                 hostPeerId: '',
                 players: {},
@@ -1090,12 +1117,15 @@
             log.scrollTop = log.scrollHeight;
         }
 
-        function copyRoomCode() {
+        function copyConnectionInfo() {
             const code = document.getElementById('displayRoomCode').textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                alert('Room code copied to clipboard!');
+            const peerId = document.getElementById('displayPeerId').textContent;
+            const info = `Mafia Game - Join Info:\nRoom Code: ${code}\nHost Peer ID: ${peerId}\n\nPlayers need BOTH to join!`;
+            
+            navigator.clipboard.writeText(info).then(() => {
+                alert('Connection info copied! Share with your friends.');
             }).catch(() => {
-                alert(`Room Code: ${code}`);
+                alert(info);
             });
         }
 
