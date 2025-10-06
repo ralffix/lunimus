@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uzminēšanas Spēles Krāpšanas Lapa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .file-upload {
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .file-upload:hover {
+            background: #5568d3;
+        }
+        
+        .file-upload input {
+            display: none;
+        }
+        
+        .download-btn {
+            background: #4caf50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .download-btn:hover {
+            background: #45a049;
+        }
+        
+        .search-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .search-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .search-box.has {
+            border-color: #4caf50;
+        }
+        
+        .search-box.not-has {
+            border-color: #f44336;
+        }
+        
+        .search-box h2 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .search-box.has h2 {
+            color: #4caf50;
+        }
+        
+        .search-box.not-has h2 {
+            color: #f44336;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .results {
+            margin-top: 20px;
+        }
+        
+        .result-count {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .objects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .object-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+        
+        .object-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .object-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .tag {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        @media (max-width: 768px) {
+            .search-section {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Uzminēšanas Spēles Krāpšanas Lapa</h1>
+        
+        <div class="info">
+            <strong>ℹ️ Instrukcija:</strong> Ierakstiet iezīmes ar komatiem. Piemēram: "zaļš, dzīvs" vai "dzīvnieks, liels"
+        </div>
+        
+        <div class="controls">
+            <label class="file-upload">
+                📁 Ielādēt objektu failu (TXT)
+                <input type="file" id="fileInput" accept=".txt">
+            </label>
+            <button class="download-btn" onclick="downloadTemplate()">💾 Lejupielādēt šablonu</button>
+            <span id="fileStatus" style="color: #666;"></span>
+        </div>
+        
+        <div class="search-section">
+            <div class="search-box has">
+                <h2>✅ Objektam IR šīs iezīmes:</h2>
+                <input type="text" id="hasInput" placeholder="Ieraksti iezīmes, piemēram: zaļš, dzīvs">
+            </div>
+            
+            <div class="search-box not-has">
+                <h2>❌ Objektam NAV šīs iezīmes:</h2>
+                <input type="text" id="notHasInput" placeholder="Ieraksti iezīmes, piemēram: dzīvnieks, liels">
+            </div>
+        </div>
+        
+        <div class="results">
+            <div class="result-count">Atrasti objekti: <span id="count">0</span></div>
+            <div class="objects-grid" id="objectsGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let objects = [
+            // Dzīvnieki
+            { name: "Suns", tags: ["dzīvnieks", "mājas", "zīdītājs", "četrkājains", "riet", "draugs", "asti", "dzīvs", "mīļš", "spalvains"] },
+            { name: "Kaķis", tags: ["dzīvnieks", "mājas", "zīdītājs", "četrkājains", "ņaud", "neatkarīgs", "asti", "dzīvs", "mīļš", "spalvains"] },
+            { name: "Zirgs", tags: ["dzīvnieks", "liels", "zīdītājs", "četrkājains", "ātrs", "jāj", "asti", "dzīvs", "ferma"] },
+            { name: "Govs", tags: ["dzīvnieks", "liels", "zīdītājs", "četrkājains", "piens", "ferma", "dzīvs", "ragi"] },
+            { name: "Cūka", tags: ["dzīvnieks", "zīdītājs", "četrkājains", "rozā", "ferma", "dzīvs", "asti"] },
+            { name: "Vista", tags: ["dzīvnieks", "putns", "ferma", "olas", "spārni", "knābis", "dzīvs", "mazs"] },
+            { name: "Pīle", tags: ["dzīvnieks", "putns", "ferma", "gaļa", "spārni", "knābis", "dzīvs", "liels"] },
+            { name: "Žurka", tags: ["dzīvnieks", "grauzējs", "zīdītājs", "mazs", "asti", "dzīvs", "kaitēklis"] },
+            { name: "Pele", tags: ["dzīvnieks", "grauzējs", "zīdītājs", "mazs", "asti", "dzīvs", "kaitēklis"] },
+            { name: "Zaķis", tags: ["dzīvnieks", "grauzējs", "zīdītājs", "ausis", "ātrs", "lēkā", "dzīvs", "spalvains"] },
+            { name: "Lācis", tags: ["dzīvnieks", "liels", "zīdītājs", "meža", "bīstams", "dzīvs", "spalvains", "plēsējs"] },
+            { name: "Vilks", tags: ["dzīvnieks", "zīdītājs", "plēsējs", "meža", "bīstams", "kauls", "dzīvs", "asti"] },
+            { name: "Lapsa", tags: ["dzīvnieks", "zīdītājs", "plēsējs", "meža", "oranžs", "viltīgs", "dzīvs", "asti"] },
+            { name: "Stirna", tags: ["dzīvnieks", "zīdītājs", "meža", "ragi", "ātrs", "dzīvs", "brūns"] },
+            { name: "Vāvere", tags: ["dzīvnieks", "grauzējs", "zīdītājs", "mazs", "kokos", "asti", "dzīvs", "rieksti"] },
+            { name: "Ezis", tags: ["dzīvnieks", "zīdītājs", "mazs", "adatas", "rullējas", "dzīvs"] },
+            { name: "Sikspārnis", tags: ["dzīvnieks", "zīdītājs", "spārni", "nakts", "lidojošs", "dzīvs", "mazs"] },
+            { name: "Trusis", tags: ["dzīvnieks", "grauzējs", "zīdītājs", "ausis", "lēkā", "mājas", "dzīvs", "spalvains"] },
+            { name: "Hamsters", tags: ["dzīvnieks", "grauzējs", "zīdītājs", "mazs", "mājas", "dzīvs", "spalvains"] },
+            { name: "Jūrascūciņa", tags: ["dzīvnieks", "grauzējs", "zīdītājs", "mazs", "mājas", "dzīvs", "spalvains"] },
+            { name: "Pērtiķis", tags: ["dzīvnieks", "zīdītājs", "koku", "gudrš", "rokas", "asti", "dzīvs"] },
+            { name: "Zilonis", tags: ["dzīvnieks", "liels", "zīdītājs", "snuķis", "pelēks", "dzīvs", "stiprs"] },
+            { name: "Žirafe", tags: ["dzīvnieks", "liels", "zīdītājs", "kakls", "dzeltens", "plankumi", "dzīvs"] },
+            { name: "Lauva", tags: ["dzīvnieks", "zīdītājs", "plēsējs", "liels", "bīstams", "dzeltens", "dzīvs", "karaļs"] },
+            { name: "Tīģeris", tags: ["dzīvnieks", "zīdītājs", "plēsējs", "liels", "bīstams", "svītras", "dzīvs", "oranžs"] },
+            { name: "Zebra", tags: ["dzīvnieks", "zīdītājs", "svītras", "melnbalts", "ātrs", "dzīvs"] },
+            { name: "Krokodils", tags: ["dzīvnieks", "rāpulis", "ūdens", "liels", "bīstams", "zobi", "dzīvs", "zaļš"] },
+            { name: "Čūska", tags: ["dzīvnieks", "rāpulis", "garš", "bīstams", "bez kājām", "dzīvs"] },
+            { name: "Ķirzaka", tags: ["dzīvnieks", "rāpulis", "čaula", "lēns", "dzīvs", "zaļš", "mazs"] },
+            { name: "Bruņurupucis", tags: ["dzīvnieks", "rāpulis", "čaula", "lēns", "dzīvs", "ūdens"] },
+            { name: "Varde", tags: ["dzīvnieks", "abinieks", "zaļš", "lēkā", "ūdens", "dzīvs", "mazs"] },
+            { name: "Krupis", tags: ["dzīvnieks", "abinieks", "lēkā", "ūdens", "dzīvs", "mazs"] },
+            { name: "Zivs", tags: ["dzīvnieks", "ūdens", "spuras", "dzīvs", "peld", "žaunas"] },
+            { name: "Haizivs", tags: ["dzīvnieks", "ūdens", "liels", "bīstams", "zobi", "dzīvs", "pelēks"] },
+            { name: "Delfīns", tags: ["dzīvnieks", "zīdītājs", "ūdens", "gudrš", "draudzīgs", "dzīvs", "pelēks"] },
+            { name: "Valis", tags: ["dzīvnieks", "zīdītājs", "ūdens", "liels", "dzīvs"] },
+            { name: "Vaboļi", tags: ["dzīvnieks", "kukaiņš", "mazs", "spārni", "dzīvs", "seši kājas"] },
+            { name: "Tauriņš", tags: ["dzīvnieks", "kukaiņš", "mazs", "spārni", "krāsains", "skaists", "dzīvs", "lidojošs"] },
+            { name: "Bite", tags: ["dzīvnieks", "kukaiņš", "mazs", "spārni", "medus", "dzēliens", "dzīvs", "lidojošs"] },
+            { name: "Lapsene", tags: ["dzīvnieks", "kukaiņš", "mazs", "spārni", "dzeltens", "melnais", "dzēliens", "dzīvs"] },
+            { name: "Mušas", tags: ["dzīvnieks", "kukaiņš", "mazs", "spārni", "kaitīgs", "dzīvs", "lidojošs"] },
+            { name: "Ods", tags: ["dzīvnieks", "kukaiņš", "mazs", "spārni", "dzēliens", "asinis", "dzīvs", "kaitīgs"] },
+            { name: "Skudra", tags: ["dzīvnieks", "kukaiņš", "mazs", "seši kājas", "strādīgs", "dzīvs", "melns"] },
+            { name: "Zirneklis", tags: ["dzīvnieks", "astoņi kājas", "mazs", "tīkls", "dzīvs"] },
+            { name: "Gliemezis", tags: ["dzīvnieks", "čaula", "mazs", "lēns", "gļotas", "dzīvs"] },
+            { name: "Tārps", tags: ["dzīvnieks", "kukaiņš", "garš", "mazs", "čūska līdzīgs", "dzīvs"] },
+            { name: "Siseņi", tags: ["dzīvnieks", "kukaiņš", "mazs", "lēkā", "zaļš", "dzīvs"] },
+            { name: "Pingvīns", tags: ["dzīvnieks", "putns", "melnbalts", "ledus", "peld", "dzīvs", "nespēj lidot"] },
+            { name: "Pūce", tags: ["dzīvnieks", "putns", "nakts", "lielas acis", "dzīvs", "gudrš", "spārni"] },
+            { name: "Ērglis", tags: ["dzīvnieks", "putns", "liels", "spārni", "plēsīgs", "dzīvs", "lidojošs"] },
+            { name: "Krauklis", tags: ["dzīvnieks", "putns", "melns", "gudrš", "spārni", "dzīvs", "lidojošs"] },
+            { name: "Zvirbulis", tags: ["dzīvnieks", "putns", "mazs", "brūns", "spārni", "dzīvs", "lidojošs"] },
+            { name: "Balodis", tags: ["dzīvnieks", "putns", "pelēks", "spārni", "dzīvs", "lidojošs", "mierīgs"] },
+            { name: "Pīle", tags: ["dzīvnieks", "putns", "dzeltens", "mazs", "peld", "dzīvs", "ūdens"] },
+            { name: "Gulbis", tags: ["dzīvnieks", "putns", "balts", "skaists", "ūdens", "dzīvs", "garš kakls"] },
+            { name: "Flamingo", tags: ["dzīvnieks", "putns", "rozā", "garš kakls", "ūdens", "dzīvs", "lidojošs"] },
+            { name: "Papagailis", tags: ["dzīvnieks", "putns", "krāsains", "spārni", "runā", "dzīvs", "lidojošs"] },
+            { name: "Strauss", tags: ["dzīvnieks", "putns", "liels", "ātrs", "nespēj lidot", "dzīvs", "garš kakls"] },
+            { name: "Cālītis", tags: ["dzīvnieks", "mājas", "ferma", "piens", "mazs", "dzīvs"] },
+            
+            // Augi
+            { name: "Koks", tags: ["augs", "dabā", "zaļš", "stumbrs", "dzīvs", "augsts", "liels", "mežā", "lapas"] },
+            { name: "Priede", tags: ["augs", "koks", "zaļš", "skujas", "dzīvs", "augsts", "mežā"] },
+            { name: "Egle", tags: ["augs", "koks", "zaļš", "skujas", "dzīvs", "augsts", "mežā", "čiekuri"] },
+            { name: "Bērzs", tags: ["augs", "koks", "balts", "miza", "dzīvs", "augsts", "mežā", "lapas"] },
+            { name: "Ozols", tags: ["augs", "koks", "stiprs", "dzīvs", "augsts", "mežā", "zīles", "lapas"] },
+            { name: "Osis", tags: ["augs", "koks", "dzīvs", "augsts", "mežā", "lapas"] },
+            { name: "Liepa", tags: ["augs", "koks", "smaržīgs", "dzīvs", "augsts", "lapas"] },
+            { name: "Pīlādzis", tags: ["augs", "koks", "ogas", "sarkans", "dzīvs", "mežā"] },
+            { name: "Krūms", tags: ["augs", "dabā", "zaļš", "dzīvs", "mazs", "zari"] },
+            { name: "Zāle", tags: ["augs", "zaļš", "mazs", "laukā", "dzīvs", "mīksts"] },
+            { name: "Puķe", tags: ["augs", "skaists", "krāsains", "smarža", "dzīvs", "laistīt", "ziedēt", "mazs"] },
+            { name: "Roze", tags: ["augs", "puķe", "sarkans", "smarža", "ērkšķi", "dzīvs", "skaists"] },
+            { name: "Tulpe", tags: ["augs", "puķe", "krāsains", "pavasaris", "dzīvs", "skaists"] },
+            { name: "Narcise", tags: ["augs", "puķe", "dzeltens", "pavasaris", "dzīvs", "skaists"] },
+            { name: "Kamolīte", tags: ["augs", "puķe", "balts", "dzeltens", "dzīvs", "skaists", "mazs"] },
+            { name: "Saulespuķe", tags: ["augs", "puķe", "dzeltens", "liels", "sēklas", "dzīvs", "augsts"] },
+            { name: "Kaktuss", tags: ["augs", "zaļš", "ērkšķi", "tuksnesis", "dzīvs", "sausums"] },
+            { name: "Sūnas", tags: ["augs", "zaļš", "mīksts", "mitrums", "dzīvs", "mazs", "mežā"] },
+            { name: "Sēne", tags: ["augs", "mežā", "cepure", "kāts", "dzīvs", "dažādi"] },
+            { name: "Baravika", tags: ["augs", "sēne", "brūns", "mežā", "ēdams", "dzīvs"] },
+            { name: "Mušmire", tags: ["augs", "sēne", "sarkans", "balti punkti", "indīgs", "dzīvs", "mežā"] },
+            { name: "Mellene", tags: ["augs", "oga", "zils", "mazs", "ēdams", "mežā", "dzīvs"] },
+            { name: "Zemene", tags: ["augs", "oga", "sarkans", "saldš", "mazs", "ēdams", "dzīvs"] },
+            { name: "Avene", tags: ["augs", "oga", "sarkans", "saldš", "ēdams", "dzīvs", "ērkšķi"] },
+            { name: "Dzērvene", tags: ["augs", "oga", "sarkans", "skābs", "ēdams", "dzīvs", "purvs"] },
+            { name: "Brūklene", tags: ["augs", "oga", "sarkans", "ēdams", "dzīvs", "mežā"] },
+            { name: "Ķirsis", tags: ["augs", "auglis", "sarkans", "koks", "ēdams", "dzīvs", "kauls"] },
+            { name: "Vīnoga", tags: ["augs", "auglis", "zaļš", "violets", "vīns", "ēdams", "dzīvs"] },
+            
+            // Augļi un dārzeņi
+            { name: "Ābols", tags: ["auglis", "ēdams", "apaļš", "sarkans", "zaļš", "koks", "veselīgs", "mazs"] },
+            { name: "Bumbieris", tags: ["auglis", "ēdams", "zaļš", "dzeltens", "koks", "veselīgs", "saldš"] },
+            { name: "Apelsīns", tags: ["auglis", "ēdams", "apaļš", "oranžs", "vitamīns", "veselīgs", "sulīgs"] },
+            { name: "Banāns", tags: ["auglis", "ēdams", "dzeltens", "gars", "mīksts", "veselīgs", "saldš"] },
+            { name: "Vīnogas", tags: ["auglis", "ēdams", "apaļš", "zaļš", "violets", "mazs", "veselīgs"] },
+            { name: "Arbūzs", tags: ["auglis", "ēdams", "liels", "zaļš", "sarkans", "sulīgs", "veselīgs"] },
+            { name: "Melone", tags: ["auglis", "ēdams", "liels", "oranžs", "sulīgs", "saldš", "veselīgs"] },
+            { name: "Ananass", tags: ["auglis", "ēdams", "dzeltens", "zaļš", "sulīgs", "saldš", "veselīgs"] },
+            { name: "Persiks", tags: ["auglis", "ēdams", "oranžs", "mīksts", "sulīgs", "saldš", "veselīgs"] },
+            { name: "Burkāns", tags: ["dārzenis", "ēdams", "oranžs", "garš", "zemē", "veselīgs", "ciets"] },
+            { name: "Kartupelis", tags: ["dārzenis", "ēdams", "brūns", "apaļš", "zemē", "vārīt", "veselīgs"] },
+            { name: "Tomāts", tags: ["dārzenis", "ēdams", "sarkans", "apaļš", "sulīgs", "veselīgs"] },
+            { name: "Gurķis", tags: ["dārzenis", "ēdams", "zaļš", "garš", "sulīgs", "veselīgs"] },
+            { name: "Paprika", tags: ["dārzenis", "ēdams", "sarkans", "zaļš", "dzeltens", "veselīgs"] },
+            { name: "Kāposts", tags: ["dārzenis", "ēdams", "zaļš", "apaļš", "lapas", "veselīgs"] },
+            { name: "Salāti", tags: ["dārzenis", "ēdams", "zaļš", "lapas", "veselīgs", "svaigs"] },
+            { name: "Sīpols", tags: ["dārzenis", "ēdams", "apaļš", "balts", "asaras", "veselīgs", "ķiploks"] },
+            { name: "Ķiploks", tags: ["dārzenis", "ēdams", "balts", "mazs", "smarža", "veselīgs", "stiprs"] },
+            { name: "Biete", tags: ["dārzenis", "ēdams", "sarkans", "apaļš", "zemē", "veselīgs"] },
+            { name: "Kālis", tags: ["dārzenis", "ēdams", "zaļš", "lapas", "veselīgs"] },
+            { name: "Ziedi", tags: ["dārzenis", "ēdams", "balts", "veselīgs", "puķe līdzīgs"] },
+            { name: "Brokoļi", tags: ["dārzenis", "ēdams", "zaļš", "veselīgs", "koks līdzīgs"] },
+            { name: "Pipars", tags: ["dārzenis", "ēdams", "zaļš", "sarkans", "asais", "veselīgs"] },
+            { name: "Redīsi", tags: ["dārzenis", "ēdams", "sarkans", "mazs", "zemē", "veselīgs"] },
+            
+            // Mēbeles
+            { name: "Krēsls", tags: ["mēbele", "sēdēt", "kājas", "iekšā", "koks", "komforts"] },
+            { name: "Galds", tags: ["mēbele", "virsma", "kājas", "iekšā", "koks", "ēst", "liels"] },
+            { name: "Gulta", tags: ["mēbele", "gulēt", "liels", "iekšā", "komforts", "matracis"] },
+            { name: "Dīvāns", tags: ["mēbele", "sēdēt", "mīksts", "liels", "iekšā", "komforts"] },
+            { name: "Skapī", tags: ["mēbele", "uzglabāt", "durvis", "liels", "iekšā", "koks", "apģērbs"] },
+            { name: "Plaukts", tags: ["mēbele", "uzglabāt", "koks", "siena", "iekšā", "grāmatas"] },
+            { name: "Kumodes", tags: ["mēbele", "uzglabāt", "atvilktnes", "koks", "iekšā"] },
+            { name: "Spogulis", tags: ["mēbele", "skatīties", "stikls", "atspoguļo", "siena", "iekšā"] },
+            { name: "Lampa", tags: ["mēbele", "gaisma", "elektrika", "spuldze", "apgaismo", "mazs", "iekšā"] },
+            { name: "Paklājs", tags: ["mēbele", "grīda", "mīksts", "siltums", "iekšā", "kājas"] },
+            { name: "Matracis", tags: ["mēbele", "gulēt", "mīksts", "liels", "gulta", "komforts"] },
+            { name: "Spilvens", tags: ["mēbele", "mīksts", "gulēt", "iekšā", "balts", "audums", "komforts", "mazs"] },
+            { name: "Sega", tags: ["mēbele", "silts", "gulēt", "pārklāj", "audums", "iekšā", "liels", "mīksts"] },
+            
+            // Būves un vietas
+            { name: "Māja", tags: ["būve", "liels", "jumts", "sienas", "logs", "durvis", "cilvēki", "dzīvo"] },
+            { name: "Skola", tags: ["būve", "mācīties", "bērni", "liels", "klases", "grāmatas"] },
+            { name: "Slimnīca", tags: ["būve", "ārstēt", "ārsti", "liels", "balts", "veselība"] },
+            { name: "Veikals", tags: ["būve", "pērk", "liels", "preces", "nauda"] },
+            { name: "Baznīca", tags: ["būve", "liels", "zvani", "dievs", "augsts", "tornis"] },
+            { name: "Pils", tags: ["būve", "ļoti liels", "vēsturisks", "torņi", "karalis"] },
+            { name: "Tilts", tags: ["būve", "ceļš", "šķērso", "ūdens", "liels", "stiprs"] },
+            { name: "Tunelis", tags: ["būve", "garš", "tumšs", "ceļš", "cauri", "kalns"] },
+            { name: "Muzejs", tags: ["būve", "vēsture", "liels", "māksla", "eksponāti"] },
+            { name: "Teātris", tags: ["būve", "izrāde", "skatuve", "liels", "krēsli"] },
+            { name: "Stadions", tags: ["būve", "sports", "ļoti liels", "sēdvietas", "ārā"] },
+            { name: "Parks", tags: ["vieta", "ārā", "zaļš", "koki", "spēlēt", "atpūta", "dabā", "liels"] },
+            { name: "Mežs", tags: ["vieta", "ārā", "koki", "dzīvnieki", "dabā", "liels", "zaļš"] },
+            { name: "Pludmale", tags: ["vieta", "ārā", "smiltis", "jūra", "peldēt", "saule"] },
+            { name: "Tuksnesis", tags: ["vieta", "ārā", "sauss", "karsts", "smiltis", "liels"] },
+            { name: "Kalns", tags: ["vieta", "liels", "augsts", "akmeņi", "kāpt", "dabā", "skats"] },
+            { name: "Ala", tags: ["vieta", "tumša", "kalns", "akmeņi", "iekšā", "auksts"] },
+            { name: "Sala", tags: ["vieta", "ūdens", "apkārt", "mazs", "liels", "dabā"] },
+            
+            // Transports
+            { name: "Auto", tags: ["transports", "riteņi", "motors", "metāls", "ātrš", "ceļš", "sēdvietas"] },
+            { name: "Autobuss", tags: ["transports", "liels", "riteņi", "daudz cilvēki", "ceļš", "dzeltens"] },
+            { name: "Vilciens", tags: ["transports", "liels", "sliedes", "ātrs", "vagoni", "metāls"] },
+            { name: "Tramvajs", tags: ["transports", "riteņi", "sliedes", "elektrika", "pilsēta"] },
+            { name: "Trolejbuss", tags: ["transports", "liels", "riteņi", "elektrika", "pilsēta", "vadi"] },
+            { name: "Velosipēds", tags: ["transports", "riteņi", "pedāļi", "mazs", "ātrš", "ceļš"] },
+            { name: "Motocikls", tags: ["transports", "riteņi", "motors", "ātrš", "ceļš", "mazs"] },
+            { name: "Lidmašīna", tags: ["transports", "liels", "spārni", "ātrs", "debesis", "lidojošs", "motors"] },
+            { name: "Helikopters", tags: ["transports", "spārni", "rotē", "debesis", "lidojošs", "motors"] },
+            { name: "Kuģis", tags: ["transports", "liels", "ūdens", "buras", "peld", "metāls"] },
+            { name: "Laiva", tags: ["transports", "mazs", "ūdens", "airēt", "peld", "koks"] },
+            { name: "Jahta", tags: ["transports", "ūdens", "buras", "peld", "dārgs", "liels"] },
+            { name: "Rakete", tags: ["transports", "ļoti liels", "kosmoss", "ātrs", "lidojošs", "motors"] },
+            { name: "Snieglotājs", tags: ["transports", "sniegs", "ziema", "slēpes", "ātrš"] },
+            { name: "Kamaniņas", tags: ["transports", "sniegs", "ziema", "slīd", "mazs"] },
+            { name: "Skrejriteņis", tags: ["transports", "riteņi", "stāv", "mazs", "ātrš"] },
+            { name: "Skrituļslidās", tags: ["transports", "riteņi", "kājas", "ātrš", "sports", "mazs"] },
+            
+            // Ēdieni
+            { name: "Maize", tags: ["ēdiens", "brūns", "balts", "ceptš", "grauds", "ēdams"] },
+            { name: "Piens", tags: ["ēdiens", "balts", "šķidrs", "dzert", "govs", "ēdams"] },
+            { name: "Siers", tags: ["ēdiens", "dzeltens", "ciets", "piens", "ēdams"] },
+            { name: "Jogurts", tags: ["ēdiens", "balts", "piens", "ēdams", "krējums"] },
+            { name: "Ola", tags: ["ēdiens", "ēdams", "balts", "dzeltens", "vista", "apaļš"] },
+            { name: "Gaļa", tags: ["ēdiens", "ēdams", "dzīvnieks", "sarkans", "vārīt", "cept"] },
+            { name: "Zivs", tags: ["ēdiens", "ēdams", "ūdens", "vārīt", "cept"] },
+            { name: "Cepumi", tags: ["ēdiens", "ēdams", "saldš", "ceptš", "mazs"] },
+            { name: "Torte", tags: ["ēdiens", "ēdams", "saldš", "svētki", "krējums", "liels"] },
+            { name: "Konfekte", tags: ["ēdiens", "ēdams", "saldš", "šokolāde", "mazs"] },
+            { name: "Šokolāde", tags: ["ēdiens", "ēdams", "saldš", "brūns", "kakao"] },
+            { name: "Saldējums", tags: ["ēdiens", "ēdams", "saldš", "auksts", "mīksts", "krējums"] },
+            { name: "Pica", tags: ["ēdiens", "ēdams", "apaļš", "siers", "ceptš", "liels"] },
+            { name: "Hamburgeri", tags: ["ēdiens", "ēdams", "maize", "gaļa", "apaļš"] },
+            { name: "Zupa", tags: ["ēdiens", "ēdams", "šķidrs", "karsts", "karote"] },
+            { name: "Salāti", tags: ["ēdiens", "ēdams", "zaļš", "dārzeņi", "veselīgs", "svaigs"] },
+            { name: "Makaroni", tags: ["ēdiens", "ēdams", "vārīt", "karsts", "gari"] },
+            { name: "Rīsi", tags: ["ēdiens", "ēdams", "balts", "vārīt", "mazi"] },
+            { name: "Medus", tags: ["ēdiens", "ēdams", "saldš", "dzeltens", "lipīgs", "bites"] },
+            { name: "Ievārījums", tags: ["ēdiens", "ēdams", "saldš", "augļi", "burka"] },
+            { name: "Čipsi", tags: ["ēdiens", "ēdams", "sāļš", "kartupeļi", "kraukšķīgs"] },
+            { name: "Popkorns", tags: ["ēdiens", "ēdams", "balts", "viegls", "kino"] },
+            
+            // Dzērieni
+            { name: "Ūdens", tags: ["dzēriens", "dzert", "dzidrs", "nepieciešams", "dzīvība", "šķidrs"] },
+            { name: "Sula", tags: ["dzēriens", "dzert", "augļi", "saldš", "krāsains", "veselīgs"] },
+            { name: "Kafija", tags: ["dzēriens", "dzert", "brūns", "karsts", "modina", "rūgts"] },
+            { name: "Tēja", tags: ["dzēriens", "dzert", "karsts", "lapas", "veselīgs"] },
+            { name: "Kakao", tags: ["dzēriens", "dzert", "brūns", "saldš", "karsts", "šokolāde"] },
+            { name: "Limonāde", tags: ["dzēriens", "dzert", "saldš", "burbuļi", "auksts"] },
+            { name: "Minerālūdens", tags: ["dzēriens", "dzert", "burbuļi", "veselīgs", "dzidrs"] },
+            
+            // Apģērbs
+            { name: "Krekls", tags: ["apģērbs", "valkāt", "augšā", "audums", "pogas"] },
+            { name: "Bikses", tags: ["apģērbs", "valkāt", "kājas", "audums", "garas"] },
+            { name: "Kleita", tags: ["apģērbs", "valkāt", "sievietes", "audums", "skaists"] },
+            { name: "Svārki", tags: ["apģērbs", "valkāt", "sievietes", "audums"] },
+            { name: "Jaka", tags: ["apģērbs", "valkāt", "augšā", "silts", "ārpus"] },
+            { name: "Mētelis", tags: ["apģērbs", "valkāt", "silts", "garš", "ziema"] },
+            { name: "Kurpes", tags: ["apģērbs", "valkāt", "kājas", "iet", "āda"] },
+            { name: "Zābaki", tags: ["apģērbs", "valkāt", "kājas", "gari", "silti", "ziema"] },
+            { name: "Sandales", tags: ["apģērbs", "valkāt", "kājas", "vasara", "atvērtas"] },
+            { name: "Zeķes", tags: ["apģērbs", "valkāt", "kājas", "audums", "mazas"] },
+            { name: "Cimdi", tags: ["apģērbs", "valkāt", "rokas", "silti", "ziema"] },
+            { name: "Cepure", tags: ["apģērbs", "valkāt", "galva", "aizsargā", "audums", "mazs", "silts"] },
+            { name: "Šalle", tags: ["apģērbs", "valkāt", "kakls", "silts", "audums", "garš"] },
+            { name: "Josta", tags: ["apģērbs", "valkāt", "viduklis", "āda", "satur"] },
+            { name: "Kaklasaite", tags: ["apģērbs", "valkāt", "kakls", "vīrieši", "audums"] },
+            { name: "Peldkostīms", tags: ["apģērbs", "valkāt", "peldēt", "ūdens", "vasara"] },
+            { name: "Pidžama", tags: ["apģērbs", "valkāt", "gulēt", "audums", "mīksts"] },
+            { name: "T-krekls", tags: ["apģērbs", "valkāt", "augšā", "audums", "vasara"] },
+            { name: "Džinsi", tags: ["apģērbs", "valkāt", "kājas", "audums", "zils"] },
+            
+            // Priekšmeti mājās
+            { name: "Grāmata", tags: ["priekšmets", "papīrs", "lasīt", "vārdi", "lapas", "zināšanas", "mazs"] },
+            { name: "Pildspalva", tags: ["priekšmets", "rakstīt", "tinte", "mazs", "gars"] },
+            { name: "Zīmulis", tags: ["priekšmets", "rakstīt", "koks", "mazs", "gars", "asināt"] },
+            { name: "Dzēšgumija", tags: ["priekšmets", "dzēst", "mazs", "mīksts"] },
+            { name: "Lineāls", tags: ["priekšmets", "mērīt", "gars", "taisns", "cipari"] },
+            { name: "Šķēres", tags: ["priekšmets", "griezt", "metāls", "ass", "mazs"] },
+            { name: "Līme", tags: ["priekšmets", "līmēt", "lipīgs", "mazs", "burka"] },
+            { name: "Papīrs", tags: ["priekšmets", "rakstīt", "balts", "plāns", "lapas"] },
+            { name: "Burtnīca", tags: ["priekšmets", "rakstīt", "lapas", "mācīties", "mazs"] },
+            { name: "Telefons", tags: ["priekšmets", "tehnoloģija", "ekrāns", "zvans", "mazs", "kabatā", "internets"] },
+            { name: "Dators", tags: ["priekšmets", "tehnoloģija", "ekrāns", "tastatūra", "internets", "darbs", "liels"] },
+            { name: "Planšete", tags: ["priekšmets", "tehnoloģija", "ekrāns", "skāriens", "internets", "plāns"] },
+            { name: "Televizors", tags: ["priekšmets", "tehnoloģija", "ekrāns", "liels", "skatīties", "filmas"] },
+            { name: "Radio", tags: ["priekšmets", "tehnoloģija", "mūzika", "dzirdēt", "pogas"] },
+            { name: "Pulkstenis", tags: ["priekšmets", "laiks", "cipari", "apaļš", "noskatīties", "mazs"] },
+            { name: "Kalkulators", tags: ["priekšmets", "skaitīt", "pogas", "ekrāns", "mazs"] },
+            { name: "Fotoaparāts", tags: ["priekšmets", "fotografēt", "tehnoloģija", "attēls", "objektīvs"] },
+            { name: "Soma", tags: ["priekšmets", "nest", "lietas", "āda", "audums"] },
+            { name: "Maks", tags: ["priekšmets", "nauda", "mazs", "āda", "kabatā"] },
+            { name: "Atslēgas", tags: ["priekšmets", "atslēgt", "metāls", "mazs", "durvis"] },
+            { name: "Sveces", tags: ["priekšmets", "gaisma", "deg", "vasks", "mazs", "uguns"] },
+            { name: "Vāze", tags: ["priekšmets", "puķes", "stikls", "ūdens", "apaļš"] },
+            { name: "Glezna", tags: ["priekšmets", "māksla", "krāsas", "siena", "skaists", "taisnstūris"] },
+            { name: "Fotogrāfija", tags: ["priekšmets", "attēls", "atmiņas", "mazs", "rāmis"] },
+            { name: "Pulkstenis sienas", tags: ["priekšmets", "laiks", "siena", "apaļš", "liels", "cipari"] },
+            { name: "Termometrs", tags: ["priekšmets", "temperatūra", "mērīt", "stikls", "mazs"] },
+            { name: "Slotas", tags: ["priekšmets", "slaucīt", "gars", "tīrīt", "koks"] },
+            { name: "Spainis", tags: ["priekšmets", "ūdens", "nest", "rokturis", "apaļš"] },
+            { name: "Lupata", tags: ["priekšmets", "tīrīt", "audums", "mīksts", "mazs"] },
+            
+            // Virtuves priekšmeti
+            { name: "Karote", tags: ["virtuves", "metāls", "ēst", "mazs", "apaļš"] },
+            { name: "Dakša", tags: ["virtuves", "metāls", "ēst", "mazs", "zobeni"] },
+            { name: "Nazis", tags: ["virtuves", "metāls", "ass", "griezt", "bīstams", "mazs"] },
+            { name: "Šķīvis", tags: ["virtuves", "keramika", "apaļš", "ēst", "plakans"] },
+            { name: "Bļoda", tags: ["virtuves", "keramika", "apaļš", "dziļš", "ēst"] },
+            { name: "Krūze", tags: ["virtuves", "keramika", "dzert", "rokturis", "mazs"] },
+            { name: "Glāze", tags: ["virtuves", "stikls", "dzert", "caurspīdīgs", "trausls", "mazs"] },
+            { name: "Panna", tags: ["virtuves", "metāls", "cept", "rokturis", "apaļš"] },
+            { name: "Katls", tags: ["virtuves", "metāls", "vārīt", "liels", "rokturis"] },
+            { name: "Tējkanna", tags: ["virtuves", "tēja", "karsts", "snīpis", "rokturis"] },
+            { name: "Krājkrūze", tags: ["virtuves", "stikls", "uzglabāt", "vāks", "liels"] },
+            { name: "Maisāmkarote", tags: ["virtuves", "koks", "maisīt", "gars", "rokturis"] },
+            { name: "Sietiņš", tags: ["virtuves", "tīkls", "sijāt", "apaļš", "rokturis"] },
+            { name: "Griešanas dēlis", tags: ["virtuves", "koks", "griezt", "plakans", "liels"] },
+            { name: "Ledusskapī", tags: ["virtuves", "auksts", "tehnoloģija", "liels", "ēdiens", "durvis"] },
+            { name: "Plīts", tags: ["virtuves", "cept", "vārīt", "karsts", "tehnoloģija"] },
+            { name: "Mikroviļņu krāsns", tags: ["virtuves", "karsts", "tehnoloģija", "ātrs", "ēdiens"] },
+            { name: "Blenderis", tags: ["virtuves", "tehnoloģija", "maisīt", "asmeņi", "mazs"] },
+            { name: "Tosteris", tags: ["virtuves", "tehnoloģija", "maize", "cept", "karsts"] },
+            
+            // Dabas elementi
+            { name: "Saule", tags: ["daba", "debesis", "dzeltens", "karsts", "gaisma", "spīd", "apaļš", "liels"] },
+            { name: "Mēness", tags: ["daba", "debesis", "nakts", "pelēks", "apaļš", "spīd", "liels"] },
+            { name: "Zvaigzne", tags: ["daba", "debesis", "nakts", "spīd", "mazs", "punkts", "tālu"] },
+            { name: "Mākoņi", tags: ["daba", "debesis", "balts", "pelēks", "lidinās", "ūdens", "lietus"] },
+            { name: "Lietus", tags: ["daba", "ūdens", "pilienos", "slapjš", "krīt", "mākoņi"] },
+            { name: "Sniegs", tags: ["daba", "balts", "auksts", "ziema", "krīt", "ūdens", "pārslas"] },
+            { name: "Vējš", tags: ["daba", "gaiss", "kustība", "auksts", "pūš"] },
+            { name: "Vētra", tags: ["daba", "vējš", "lietus", "stiprs", "bīstams", "skaļš"] },
+            { name: "Pērkons", tags: ["daba", "lietus", "skaļš", "bīstams", "zibens"] },
+            { name: "Zibens", tags: ["daba", "lietus", "gaisma", "bīstams", "spīd", "ātrs"] },
+            { name: "Varavīksne", tags: ["daba", "krāsains", "lietus", "saule", "skaists", "loks"] },
+            { name: "Migla", tags: ["daba", "balts", "pelēks", "neredz", "ūdens", "mitrs"] },
+            { name: "Rasas", tags: ["daba", "ūdens", "pilienos", "rīts", "zāle", "mazi"] },
+            { name: "Ledus", tags: ["daba", "auksts", "cietš", "ūdens", "slidens", "ziema", "dzidrs"] },
+            { name: "Krusa", tags: ["daba", "ledus", "krīt", "ziema", "apaļš", "mazi"] },
+            { name: "Uguns", tags: ["daba", "karsts", "dzeltens", "sarkans", "deg", "gaisma", "bīstams", "silts"] },
+            { name: "Ceļš", tags: ["priekšmets", "asfalta", "pelēks", "garš", "transports", "braukt", "ārā"] },
+            { name: "Akmens", tags: ["daba", "cietš", "pelēks", "smags", "dažādi", "mazs", "liels"] },
+            { name: "Smiltis", tags: ["daba", "mazas daļiņas", "dzeltens", "pludmale", "berami"] },
+            { name: "Māls", tags: ["daba", "zeme", "lipīgs", "veidot", "brūns", "mitrums"] },
+            { name: "Zeme", tags: ["daba", "brūns", "augs", "melns", "mitrums"] },
+            
+            // Sports un spēles
+            { name: "Bumba", tags: ["sports", "apaļš", "spēle", "atsperu", "gumija", "dažādi"] },
+            { name: "Futbola bumba", tags: ["sports", "apaļš", "melns", "balts", "spēle", "spērt"] },
+            { name: "Basketbola bumba", tags: ["sports", "apaļš", "oranžs", "spēle", "mest"] },
+            { name: "Tenisa bumba", tags: ["sports", "apaļš", "dzeltens", "mazs", "spēle"] },
+            { name: "Hokeja nūja", tags: ["sports", "gars", "koks", "spēle", "ledus"] },
+            { name: "Hokeja ripa", tags: ["sports", "melns", "apaļš", "plakans", "ledus", "gumija"] },
+            { name: "Tenisa rakete", tags: ["sports", "tīkls", "rokturis", "spēle", "sit"] },
+            { name: "Badmintona rakete", tags: ["sports", "tīkls", "rokturis", "spēle", "viegls"] },
+            { name: "Slēpes", tags: ["sports", "ziema", "sniegs", "garas", "kājas"] },
+            { name: "Snovbords", tags: ["sports", "ziema", "sniegs", "plakans", "kājas"] },
+            { name: "Skrituļslidas", tags: ["sports", "riteņi", "kājas", "ātrš"] },
+            { name: "Slidās", tags: ["sports", "ledus", "metāls", "kājas", "ziema"] },
+            { name: "Šahs", tags: ["spēle", "galda", "figūras", "domāt", "divi spēlētāji"] },
+            { name: "Šaškis", tags: ["spēle", "galda", "figūras", "apaļš", "divi spēlētāji"] },
+            { name: "Kārtis", tags: ["spēle", "papīrs", "taisnstūris", "dažādi", "mazi"] },
+            { name: "Kauliņi", tags: ["spēle", "apaļš", "cipari", "punkti", "mazi"] },
+            { name: "Puzzle", tags: ["spēle", "gabali", "attēls", "salikt", "dažādi"] },
+            { name: "Konstruktori", tags: ["spēle", "salikt", "krāsains", "plastmasa", "daudz gabali"] },
+            { name: "Lelle", tags: ["rotaļlieta", "cilvēks", "bērni", "plastmasa", "mazs"] },
+            { name: "Mašīna rotaļu", tags: ["rotaļlieta", "riteņi", "bērni", "plastmasa", "mazs"] },
+            { name: "Lāčuks", tags: ["rotaļlieta", "dzīvnieks", "mīksts", "mīļš", "bērni"] },
+            { name: "Puzle", tags: ["spēle", "gabali", "attēls", "domāt", "salikt"] },
+            
+            // Instrumenti un rīki
+            { name: "Ķ ammieris", tags: ["rīks", "metāls", "koks", "rokturis", "sit", "naglas"] },
+            { name: "Zāģis", tags: ["rīks", "metāls", "ass", "griezt", "koks", "gars"] },
+            { name: "Skrūvgriezis", tags: ["rīks", "metāls", "rokturis", "griezt", "skrūves"] },
+            { name: "Griežamais nazis", tags: ["rīks", "metāls", "ass", "griezt", "rokturis"] },
+            { name: "Lāpsta", tags: ["rīks", "metāls", "koks", "rakt", "gars", "rokturis"] },
+            { name: "Grābeklis", tags: ["rīks", "metāls", "koks", "zobeni", "gars", "dārzs"] },
+            { name: "Cirvis", tags: ["rīks", "metāls", "koks", "ass", "rokturis", "cirst"] },
+            { name: "Pjūklis", tags: ["rīks", "metāls", "ass", "griezt", "koks", "dažādi"] },
+            { name: "Āmurs", tags: ["rīks", "metāls", "rokturis", "sit", "smags"] },
+            { name: "Knaibles", tags: ["rīks", "metāls", "satvērt", "mazs", "griezt"] },
+            { name: "Atslēga skrūvju", tags: ["rīks", "metāls", "griezt", "skrūves", "liels"] },
+            { name: "Mērlente", tags: ["rīks", "mērīt", "gars", "cipari", "rullējas"] },
+            { name: "Līmeņrādis", tags: ["rīks", "mērīt", "līdzens", "gars", "taisns"] },
+            { name: "Urbis", tags: ["rīks", "tehnoloģija", "urbj", "metāls", "elektrika"] },
+            { name: "Slīpmašīna", tags: ["rīks", "tehnoloģija", "slīpēt", "elektrika", "skaļš"] },
+            { name: "Lampa darba", tags: ["rīks", "gaisma", "apgaismo", "elektrika", "darbs"] },
+            
+            // Mūzikas instrumenti
+            { name: "Ģitāra", tags: ["instruments", "mūzika", "stīgas", "skaņa", "liels", "koks"] },
+            { name: "Klavieres", tags: ["instruments", "mūzika", "taustiņi", "skaņa", "liels", "melns", "balts"] },
+            { name: "Bungas", tags: ["instruments", "mūzika", "sit", "skaņa", "skaļš", "apaļš"] },
+            { name: "Vijole", tags: ["instruments", "mūzika", "stīgas", "skaņa", "koks", "loks"] },
+            { name: "Flautas", tags: ["instruments", "mūzika", "pūš", "skaņa", "gars", "metāls"] },
+            { name: "Trompete", tags: ["instruments", "mūzika", "pūš", "skaņa", "metāls", "skaļš"] },
+            { name: "Saksofonas", tags: ["instruments", "mūzika", "pūš", "skaņa", "metāls", "liekts"] },
+            { name: "Akordeonu", tags: ["instruments", "mūzika", "pogas", "skaņa", "taustiņi"] },
+            { name: "Sitaminstruments", tags: ["instruments", "mūzika", "sit", "skaņa", "dažādi"] },
+            { name: "Elektriskā ģitāra", tags: ["instruments", "mūzika", "stīgas", "elektrika", "skaļš"] },
+            
+            // Dabas parādības un laiks
+            { name: "Pavasaris", tags: ["laiks", "silts", "puķes", "zaļš", "sākas augt"] },
+            { name: "Vasara", tags: ["laiks", "karsts", "saule", "pludmale", "brīvlaiks"] },
+            { name: "Rudens", tags: ["laiks", "vēss", "lapas", "krīt", "dzeltens", "oranžs"] },
+            { name: "Ziema", tags: ["laiks", "auksts", "sniegs", "balts", "ledus"] },
+            { name: "Rīts", tags: ["laiks", "saule", "ceļas", "agrs", "brokastis"] },
+            { name: "Diena", tags: ["laiks", "saule", "gaišs", "darbs"] },
+            { name: "Vakars", tags: ["laiks", "tumsā", "saule", "nolaižas"] },
+            { name: "Nakts", tags: ["laiks", "tumšs", "mēness", "zvaigznes", "gulēt"] },
+            
+            // Ķermeņa daļas
+            { name: "Galva", tags: ["ķermenis", "augšā", "smadzenes", "apaļš", "liels"] },
+            { name: "Mati", tags: ["ķermenis", "galva", "gari", "dažādi krāsa", "mīksti"] },
+            { name: "Seja", tags: ["ķermenis", "galva", "acis", "deguns", "mute"] },
+            { name: "Acis", tags: ["ķermenis", "seja", "redz", "krāsains", "divi", "apaļš"] },
+            { name: "Ausis", tags: ["ķermenis", "galva", "dzird", "divi", "sāni"] },
+            { name: "Deguns", tags: ["ķermenis", "seja", "ož", "elpo", "vidū"] },
+            { name: "Mute", tags: ["ķermenis", "seja", "ēst", "runāt", "zobi"] },
+            { name: "Zobi", tags: ["ķermenis", "mute", "balts", "košļā", "daudz"] },
+            { name: "Mēle", tags: ["ķermenis", "mute", "sarkans", "garšo", "mīksts"] },
+            { name: "Kakls", tags: ["ķermenis", "galva", "ķermenis", "garš", "lokāms"] },
+            { name: "Pleci", tags: ["ķermenis", "augšā", "rokas", "divi", "stiprs"] },
+            { name: "Rokas", tags: ["ķermenis", "gari", "pirksti", "divas", "satver"] },
+            { name: "Pirksti", tags: ["ķermenis", "rokas", "gari", "daudz", "kustīgi"] },
+            { name: "Krūtis", tags: ["ķermenis", "vidus", "plaušas", "sirds", "priekšā"] },
+            { name: "Vēders", tags: ["ķermenis", "vidus", "kuņģis", "apaļš", "mīksts"] },
+            { name: "Mugura", tags: ["ķermenis", "aizmugure", "mugurkauls", "liels"] },
+            { name: "Kājas", tags: ["ķermenis", "garas", "iet", "divas", "stipras"] },
+            { name: "Pēdas", tags: ["ķermenis", "kājas", "iet", "pirksti", "divas"] },
+            { name: "Ceļi", tags: ["ķermenis", "kājas", "locītavas", "divi", "saliecas"] },
+            { name: "Sirds", tags: ["ķermenis", "iekšā", "sit", "asinis", "svarīgs"] },
+            { name: "Plaušas", tags: ["ķermenis", "iekšā", "elpo", "gaiss", "divas"] },
+            { name: "Kuņģis", tags: ["ķermenis", "iekšā", "ēdiens", "vēders"] },
+            { name: "Smadzenes", tags: ["ķermenis", "galva", "domā", "gudrš", "svarīgs"] },
+            
+            // Krāsas
+            { name: "Sarkans", tags: ["krāsa", "spilgts", "uguns", "asinis"] },
+            { name: "Zils", tags: ["krāsa", "debesis", "ūdens", "mierīgs"] },
+            { name: "Zaļš", tags: ["krāsa", "zāle", "koki", "daba"] },
+            { name: "Dzeltens", tags: ["krāsa", "saule", "spilgts", "gaišs"] },
+            { name: "Oranžs", tags: ["krāsa", "spilgts", "saule", "apelsīns"] },
+            { name: "Violets", tags: ["krāsa", "tumšs", "spilgts", "puķe"] },
+            { name: "Rozā", tags: ["krāsa", "gaišs", "mīļš", "puķe"] },
+            { name: "Brūns", tags: ["krāsa", "zeme", "koks", "tumšs"] },
+            { name: "Melns", tags: ["krāsa", "tumšs", "nakts", "nekas"] },
+            { name: "Balts", tags: ["krāsa", "gaišs", "sniegs", "tīrs"] },
+            { name: "Pelēks", tags: ["krāsa", "vidējs", "mākoņi", "akmens"] },
+            
+            // Emocijas un sajūtas
+            { name: "Laime", tags: ["emocija", "labs", "smaida", "prieks"] },
+            { name: "Skumjas", tags: ["emocija", "slikts", "raud", "bēdas"] },
+            { name: "Dusmās", tags: ["emocija", "slikts", "sarkans", "kliedziens"] },
+            { name: "Bailes", tags: ["emocija", "slikts", "bīstas", "trīc"] },
+            { name: "Pārsteigums", tags: ["emocija", "acis", "lielas", "negaidīts"] },
+            { name: "Mīlestība", tags: ["emocija", "labs", "sirds", "mīļš"] },
+            
+            // Formas
+            { name: "Aplis", tags: ["forma", "apaļš", "bez stūriem", "vienlīdzīgs"] },
+            { name: "Kvadrāts", tags: ["forma", "četri stūri", "vienāds", "taisnstūris"] },
+            { name: "Taisnstūris", tags: ["forma", "četri stūri", "garš"] },
+            { name: "Trīstūris", tags: ["forma", "trīs stūri", "trīs malas"] },
+            { name: "Ovāls", tags: ["forma", "apaļš", "garš", "ola"] },
+            { name: "Zvaigzne forma", tags: ["forma", "punkti", "stūri", "debesis"] },
+            { name: "Sirds forma", tags: ["forma", "mīlestība", "apaļš", "sarkans"] },
+            
+            // Skaitļi
+            { name: "Viens", tags: ["skaitlis", "mazs", "pirmais", "vienkāršs"] },
+            { name: "Divi", tags: ["skaitlis", "pāris", "divas reizes"] },
+            { name: "Trīs", tags: ["skaitlis", "neliels", "trīskāršs"] },
+            { name: "Desmit", tags: ["skaitlis", "apaļš", "pirksti", "vidējs"] },
+            { name: "Simts", tags: ["skaitlis", "liels", "daudz"] },
+            { name: "Nulle", tags: ["skaitlis", "nekas", "apaļš", "sākums"] },
+            
+            // Profesijas
+            { name: "Skolotājs", tags: ["profesija", "skola", "māca", "bērni", "gudrš"] },
+            { name: "Ārsts", tags: ["profesija", "slimnīca", "ārstē", "balts", "palīdz"] },
+            { name: "Policists", tags: ["profesija", "forma", "likums", "aizsargā"] },
+            { name: "Ugunsdzēsējs", tags: ["profesija", "uguns", "sarkans", "dzēš", "drosmīgs"] },
+            { name: "Pilots", tags: ["profesija", "lidmašīna", "lidojums", "forma", "debesis"] },
+            { name: "Šoferis", tags: ["profesija", "auto", "brauc", "ceļš"] },
+            { name: "Pavārs", tags: ["profesija", "virtuve", "gatavo", "ēdiens", "balts"] },
+            { name: "Būvnieks", tags: ["profesija", "būvē", "mājas", "rīki", "stiprs"] },
+            { name: "Mākslinieks", tags: ["profesija", "māksla", "glezno", "krāsas", "radošs"] },
+            { name: "Mūziķis", tags: ["profesija", "mūzika", "instruments", "spēlē", "skaņa"] },
+            
+            // Dažādi svarīgi priekšmeti
+            { name: "Nauda", tags: ["priekšmets", "pērk", "monētas", "papīrs", "svarīgs"] },
+            { name: "Monēta", tags: ["priekšmets", "nauda", "metāls", "apaļš", "mazs"] },
+            { name: "Banknote", tags: ["priekšmets", "nauda", "papīrs", "taisnstūris", "cipari"] },
+            { name: "Karogs", tags: ["priekšmets", "audums", "valsts", "krāsas", "plīvo"] },
+            { name: "Karte ģeogrāfiskā", tags: ["priekšmets", "papīrs", "pasaule", "valstis", "ceļš"] },
+            { name: "Kompuss", tags: ["priekšmets", "apaļš", "ziemeļi", "virzienu", "ceļojums"] },
+            { name: "Binoklis", tags: ["priekšmets", "skatīties", "tālu", "divas acis", "lēcas"] },
+            { name: "Lukturs", tags: ["priekšmets", "gaisma", "tumšā", "baterijas", "mazs"] },
+            { name: "Baterijas", tags: ["priekšmets", "elektrika", "enerģija", "mazs", "cilindrs"] },
+            { name: "Magnets", tags: ["priekšmets", "metāls", "pievilkt", "magnētisms", "mazs"] },
+            { name: "Balons", tags: ["priekšmets", "gaiss", "krāsains", "viegls", "lidojošs", "apaļš"] },
+            { name: "Konfettī", tags: ["priekšmets", "papīrs", "krāsains", "svētki", "mazi"] },
+            { name: "Dāvana", tags: ["priekšmets", "iepakotas", "lente", "pārsteigums", "svētki"] },
+            { name: "Vēstule", tags: ["priekšmets", "papīrs", "rakstīts", "aploksne", "sūtīt"] },
+            { name: "Marka", tags: ["priekšmets", "mazs", "papīrs", "pasts", "lipīgs"] },
+            { name: "Lietussargs", tags: ["priekšmets", "lietus", "aizsargā", "rokturis", "slapjš"] },
+            { name: "Saulesbrilles", tags: ["priekšmets", "acis", "saule", "tumšs", "aizsargā"] },
+            { name: "Cepure sauļošanai", tags: ["priekšmets", "galva", "saule", "aizsargā", "vasara"] },
+            { name: "Dvielis", tags: ["priekšmets", "žāvēt", "audums", "mīksts", "vannas"] },
+            { name: "Ziepes", tags: ["priekšmets", "mazgāt", "putoto", "smarža", "mazs"] },
+            { name: "Šampūns", tags: ["priekšmets", "mati", "mazgāt", "šķidrs", "smarža"] },
+            { name: "Zobu birste", tags: ["priekšmets", "zobi", "tīrīt", "mazs", "rokturis"] },
+            { name: "Zobu pasta", tags: ["priekšmets", "zobi", "tīrīt", "balts", "mīksts"] },
+            { name: "Ķemme", tags: ["priekšmets", "mati", "ķemmēt", "zobeni", "mazs"] },
+            { name: "Spogulis kabatas", tags: ["priekšmets", "skatīties", "stikls", "mazs", "apaļš"] },
+            { name: "Parfīms", tags: ["priekšmets", "smarža", "šķidrs", "pudele", "mazs"] },
+            { name: "Kosmētika", tags: ["priekšmets", "seja", "skaistums", "krāsas", "dažādi"] },
+            { name: "Makšķere", tags: ["priekšmets", "zivs", "ūdens", "gars", "āķis"] },
+            { name: "Tīkls zivju", tags: ["priekšmets", "zivs", "ūdens", "tīkls", "ķert"] },
+            { name: "Telts", tags: ["priekšmets", "audums", "gulēt", "kempings", "ārā"] },
+            { name: "Guļammaiss", tags: ["priekšmets", "gulēt", "silts", "ārā", "kempings"] },
+            { name: "Mugursoma", tags: ["priekšmets", "nest", "mugura", "lielas", "ceļojums"] },
+            { name: "Krekls sporta", tags: ["apģērbs", "sports", "valkāt", "audums", "ērts"] },
+            { name: "Ķivere", tags: ["apģērbs", "galva", "aizsargā", "cietš", "sports"] },
+            
+            // Ēkas daļas
+            { name: "Logs", tags: ["māja", "stikls", "caurspīdīgs", "skatīties", "gaiss", "taisnstūris"] },
+            { name: "Durvis", tags: ["māja", "ieeja", "atvērt", "aizvērt", "koks", "metāls", "rokturis"] },
+            { name: "Siena", tags: ["māja", "liels", "taisns", "aizsargā", "iekšā"] },
+            { name: "Jumts", tags: ["māja", "augšā", "aizsargā", "lietus", "sarkans"] },
+            { name: "Grīda", tags: ["māja", "apakšā", "plakans", "staigā", "iekšā"] },
+            { name: "Griestu", tags: ["māja", "augšā", "iekšā", "balts", "plakans"] },
+            { name: "Kāpnes", tags: ["māja", "augšā", "lejā", "pakāpieni", "koks"] },
+            { name: "Balkons", tags: ["māja", "ārā", "augšā", "skats", "maza platforma"] },
+            { name: "Terases", tags: ["māja", "ārā", "zeme", "sēdēt", "atpūta"] },
+            { name: "Dūmvads", tags: ["māja", "jumts", "dūmi", "cilindrs", "augsts"] },
+            { name: "Pagrabs", tags: ["māja", "zemē", "tumšs", "auksts", "uzglabāt"] },
+            { name: "Bēniņi", tags: ["māja", "jumts", "augšā", "vecas lietas", "putekļi"] },
+            { name: "Garāža", tags: ["māja", "auto", "durvis", "liels", "uzglabāt"] },
+            { name: "Žogs", tags: ["māja", "ārā", "aizsargā", "koks", "metāls", "garš"] },
+            { name: "Vārti", tags: ["māja", "ieeja", "atvērt", "žogs", "liels"] },
+            
+            // Citi svarīgi objekti
+            { name: "Uguns dzēsības aparāts", tags: ["priekšmets", "dzēš", "uguns", "sarkans", "bīstams"] },
+            { name: "Ātrās palīdzības komplekts", tags: ["priekšmets", "medicīna", "palīdz", "sarkans", "balts", "kaste"] },
+            { name: "Kompass", tags: ["priekšmets", "virziens", "ziemeļi", "ceļojums", "apaļš"] },
+            { name: "Termoss", tags: ["priekšmets", "dzēriens", "karsts", "uzglabāt", "cilindrs"] },
+            { name: "Pudele", tags: ["priekšmets", "šķidrs", "stikls", "plastmasa", "cilindrs"] },
+            { name: "Kanna", tags: ["priekšmets", "ūdens", "liels", "rokturis", "snīpis"] },
+            { name: "Trauki", tags: ["priekšmets", "ēdiens", "dažādi", "virtuve", "keramika"] },
+            { name: "Virtuves piederumi", tags: ["priekšmets", "gatavot", "dažādi", "virtuve"] },
+            { name: "Instruments dārza", tags: ["rīks", "dārzs", "augi", "zeme", "dažādi"] }
+        ];
+
+        const hasInput = document.getElementById('hasInput');
+        const notHasInput = document.getElementById('notHasInput');
+        const objectsGrid = document.getElementById('objectsGrid');
+        const countSpan = document.getElementById('count');
+        const fileInput = document.getElementById('fileInput');
+        const fileStatus = document.getElementById('fileStatus');
+
+        function normalizeLatvian(str) {
+            return str.toLowerCase()
+                .replace(/ā/g, 'a')
+                .replace(/č/g, 'c')
+                .replace(/ē/g, 'e')
+                .replace(/ģ/g, 'g')
+                .replace(/ī/g, 'i')
+                .replace(/ķ/g, 'k')
+                .replace(/ļ/g, 'l')
+                .replace(/ņ/g, 'n')
+                .replace(/š/g, 's')
+                .replace(/ū/g, 'u')
+                .replace(/ž/g, 'z');
+        }
+
+        function filterObjects() {
+            const hasTerms = hasInput.value.split(',')
+                .map(t => normalizeLatvian(t.trim()))
+                .filter(t => t.length > 0);
+            
+            const notHasTerms = notHasInput.value.split(',')
+                .map(t => normalizeLatvian(t.trim()))
+                .filter(t => t.length > 0);
+
+            const filtered = objects.filter(obj => {
+                const normalizedTags = obj.tags.map(tag => normalizeLatvian(tag));
+                
+                const hasMatch = hasTerms.length === 0 || 
+                    hasTerms.every(term => 
+                        normalizedTags.some(tag => tag.includes(term))
+                    );
+                
+                const notHasMatch = notHasTerms.length === 0 || 
+                    notHasTerms.every(term => 
+                        !normalizedTags.some(tag => tag.includes(term))
+                    );
+                
+                return hasMatch && notHasMatch;
+            });
+
+            displayObjects(filtered);
+            countSpan.textContent = filtered.length;
+        }
+
+        function displayObjects(objectsToShow) {
+            objectsGrid.innerHTML = '';
+            
+            objectsToShow.forEach(obj => {
+                const card = document.createElement('div');
+                card.className = 'object-card';
+                
+                const name = document.createElement('div');
+                name.className = 'object-name';
+                name.textContent = obj.name;
+                
+                const tags = document.createElement('div');
+                tags.className = 'tags';
+                
+                obj.tags.forEach(tag => {
+                    const tagEl = document.createElement('span');
+                    tagEl.className = 'tag';
+                    tagEl.textContent = tag;
+                    tags.appendChild(tagEl);
+                });
+                
+                card.appendChild(name);
+                card.appendChild(tags);
+                objectsGrid.appendChild(card);
+            });
+        }
+
+        function downloadTemplate() {
+            let content = '// Uzminēšanas spēles objektu fails\n';
+            content += '// Formāts: Objekta Nosaukums: iezīme1, iezīme2, iezīme3\n\n';
+            
+            objects.forEach(obj => {
+                content += `${obj.name}: ${obj.tags.join(', ')}\n`;
+            });
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'objekti.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const content = event.target.result;
+                    const lines = content.split('\n');
+                    const newObjects = [];
+                    
+                    lines.forEach(line => {
+                        line = line.trim();
+                        if (line && !line.startsWith('//')) {
+                            const parts = line.split(':');
+                            if (parts.length === 2) {
+                                const name = parts[0].trim();
+                                const tags = parts[1].split(',').map(t => t.trim()).filter(t => t);
+                                if (name && tags.length > 0) {
+                                    newObjects.push({ name, tags });
+                                }
+                            }
+                        }
+                    });
+                    
+                    if (newObjects.length > 0) {
+                        objects = newObjects;
+                        filterObjects();
+                        fileStatus.textContent = `✅ Ielādēti ${newObjects.length} objekti!`;
+                        fileStatus.style.color = '#4caf50';
+                    } else {
+                        fileStatus.textContent = '❌ Neizdevās nolasīt objektus!';
+                        fileStatus.style.color = '#f44336';
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        hasInput.addEventListener('input', filterObjects);
+        notHasInput.addEventListener('input', filterObjects);
+
+        filterObjects();
+    </script>
+</body>
+</html>
