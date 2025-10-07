@@ -316,69 +316,53 @@
             gap: 10px;
         }
 
-        .vote-proposal {
-            background: rgba(76, 175, 80, 0.2);
-            border: 2px solid #4caf50;
+        .chat-container {
+            margin: 20px 0;
+        }
+
+        .chat-log {
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             padding: 15px;
-            margin: 15px 0;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 10px;
         }
 
-        .vote-buttons {
+        .chat-input-container {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
         }
 
-        .vote-buttons button {
+        .chat-input-container input {
+            margin: 0;
             flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
         }
 
-        .vote-yes {
-            background: #4caf50;
-            color: white;
-        }
-
-        .vote-no {
-            background: #f44336;
-            color: white;
-        }
-
-        .night-action {
-            background: rgba(15, 52, 96, 0.5);
-            border: 2px solid #4a90e2;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .profession-input {
-            margin: 15px 0;
+        .chat-input-container button {
+            width: auto;
+            padding: 10px 20px;
+            margin: 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎭 Mafia</h1>
-        <p class="subtitle">Online Multiplayer Party Game</p>
+        <p class="subtitle">Online & Local Party Game</p>
         
         <!-- Home Screen -->
         <div id="homeScreen" class="screen active">
             <div id="connectionStatus" class="connection-status status-connecting">
                 Connecting...
             </div>
-            <button class="btn btn-primary" onclick="showHostScreen()" id="hostBtn" disabled>Host Game</button>
-            <button class="btn btn-secondary" onclick="showJoinScreen()" id="joinBtn" disabled>Join Game</button>
+            <button class="btn btn-primary" onclick="showHostScreen()" id="hostBtn" disabled>Host Online Game</button>
+            <button class="btn btn-secondary" onclick="showJoinScreen()" id="joinBtn" disabled>Join Online Game</button>
+            <button class="btn btn-secondary" onclick="startLocalGame()">Local Game (One Device)</button>
             <div class="info-box" style="margin-top: 30px;">
                 <strong>How to Play:</strong>
                 <p style="margin-top: 10px; line-height: 1.6;">
-                    Host creates room and shares connection info. Players vote on roles, then try to find the Mafia!
+                    Online: Host creates room and shares info. Local: Pass device around. Find the Mafia!
                 </p>
             </div>
         </div>
@@ -417,25 +401,22 @@
             
             <h3 style="margin: 20px 0 10px 0;">Players (<span id="playerCount">0</span>)</h3>
             <div class="player-list" id="playerList"></div>
-
-            <div id="roleVoting" style="display: none;"></div>
             
             <div id="hostControls" style="display: none;">
                 <h3 style="margin: 20px 0 10px 0;">Game Settings</h3>
                 <div class="role-config">
                     <div class="role-option">
                         <label>
-                            <input type="checkbox" id="enableInspector" onchange="updateRoleSettings()">
+                            <input type="checkbox" id="enableInspector">
                             <span>Inspector (min 7 players)</span>
                         </label>
                     </div>
                     <div class="role-option">
                         <label>
-                            <input type="checkbox" id="enableGuardian" onchange="updateRoleSettings()">
+                            <input type="checkbox" id="enableGuardian">
                             <span>Guardian Angel (min 13 players)</span>
                         </label>
                     </div>
-                    <button class="btn btn-secondary" onclick="proposeRoles()">Propose Roles to Players</button>
                 </div>
                 <div class="info-box">
                     Need at least 5 players to start
@@ -470,7 +451,7 @@
 
         <!-- First Night Screen -->
         <div id="firstNightScreen" class="screen">
-            <div class="night-action">
+            <div class="role-card" style="background: #000;">
                 <h2>🌙 First Night</h2>
                 <p style="margin: 15px 0;">Close your eyes and wait...</p>
                 <p id="firstNightInfo" style="font-size: 0.9em; color: #aaa;"></p>
@@ -510,12 +491,120 @@
                     <p style="margin-top: 10px; font-size: 0.9em;">Progress: <span id="voteProgress">0/0</span></p>
                 </div>
             </div>
+
+            <div id="chatSection" class="chat-container" style="display: none;">
+                <h3 style="margin-bottom: 10px;">Chat</h3>
+                <div class="chat-log" id="chatLog"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" placeholder="Type message...">
+                    <button class="btn btn-primary" onclick="sendChat()">Send</button>
+                </div>
+            </div>
             
             <div class="game-log" id="gameLog"></div>
             
             <div id="hostGameControls" style="display: none; margin-top: 20px;">
                 <button class="btn btn-secondary" onclick="endGame()">End Game</button>
             </div>
+        </div>
+
+        <!-- End Game Screen -->
+        <div id="endGameScreen" class="screen">
+            <div class="role-card">
+                <h2 id="endGameTitle">Game Over!</h2>
+                <p id="endGameMessage" style="font-size: 1.5em; margin: 20px 0;"></p>
+                <div id="finalRoles"></div>
+            </div>
+            <button class="btn btn-primary" onclick="playAgain()">Play Again</button>
+            <button class="btn btn-secondary" onclick="showHome()">Leave Game</button>
+        </div>
+
+        <!-- Local Game Setup -->
+        <div id="localSetupScreen" class="screen">
+            <h2 style="margin-bottom: 20px;">Local Game Setup</h2>
+            <div class="info-box">
+                <p>Pass device around. Each player enters their name.</p>
+            </div>
+            <input type="text" id="localPlayerName" placeholder="Player Name" maxlength="20">
+            <button class="btn btn-primary" onclick="addLocalPlayer()">Add Player</button>
+            
+            <h3 style="margin: 20px 0 10px 0;">Players (<span id="localPlayerCount">0</span>)</h3>
+            <div class="player-list" id="localPlayerList"></div>
+
+            <div id="localRoleConfig" style="display: none;">
+                <h3 style="margin: 20px 0 10px 0;">Game Settings</h3>
+                <div class="role-config">
+                    <div class="role-option">
+                        <label>
+                            <input type="checkbox" id="localEnableInspector">
+                            <span>Inspector (min 7 players)</span>
+                        </label>
+                    </div>
+                    <div class="role-option">
+                        <label>
+                            <input type="checkbox" id="localEnableGuardian">
+                            <span>Guardian Angel (min 13 players)</span>
+                        </label>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="startLocalGameRoles()" id="localStartBtn">Start Game</button>
+            </div>
+
+            <button class="btn btn-secondary" onclick="showHome()">Back</button>
+        </div>
+
+        <!-- Privacy Screen -->
+        <div id="privacyScreen" class="screen">
+            <div class="role-card" style="background: #000;">
+                <h2 style="font-size: 3em;">👀</h2>
+                <p style="font-size: 1.5em; margin: 20px 0;">Privacy Screen</p>
+                <p id="privacyMessage">Pass to next player...</p>
+                <button class="btn btn-primary" onclick="continueFromPrivacy()" style="margin-top: 30px;">I'm Ready</button>
+            </div>
+        </div>
+
+        <!-- Local Role Screen -->
+        <div id="localRoleScreen" class="screen">
+            <div class="role-card">
+                <p style="margin-bottom: 10px; color: #aaa;">Player: <span id="localCurrentPlayer"></span></p>
+                <h2 id="localRoleName">Your Role</h2>
+                <p id="localRoleDescription"></p>
+                <p style="margin-top: 15px; font-size: 0.9em; color: #aaa;" id="localRoleExtra"></p>
+            </div>
+            <button class="btn btn-primary" onclick="acknowledgeLocalRole()">I Understand</button>
+        </div>
+
+        <!-- Local Profession Screen -->
+        <div id="localProfessionScreen" class="screen">
+            <div class="role-card">
+                <p style="margin-bottom: 10px; color: #aaa;">Player: <span id="localProfessionPlayer"></span></p>
+                <h2>Choose Your Profession</h2>
+                <p style="margin: 15px 0;">Choose a profession to introduce yourself</p>
+                <div class="profession-input">
+                    <input type="text" id="localProfessionInput" placeholder="e.g., Doctor, Teacher, Chef..." maxlength="30">
+                </div>
+                <button class="btn btn-primary" onclick="submitLocalProfession()">Continue</button>
+            </div>
+        </div>
+
+        <!-- Local Game Play Screen -->
+        <div id="localGameScreen" class="screen">
+            <div class="info-box">
+                <strong>Phase: <span id="localCurrentPhase">Day</span></strong>
+                <p style="margin-top: 5px;" id="localPhaseInfo"></p>
+            </div>
+            
+            <h3 style="margin: 20px 0 10px 0;">Players</h3>
+            <div class="player-list" id="localGamePlayerList"></div>
+            
+            <div id="localVotingSection" style="display: none;">
+                <h3 style="margin: 20px 0 10px 0;"><span id="localVoteTitle">Vote to Eliminate</span></h3>
+                <p style="margin-bottom: 10px; color: #aaa;">Current Player: <span id="localVotingPlayer"></span></p>
+                <div class="voting-grid" id="localVotingGrid"></div>
+                <button class="btn btn-primary" onclick="submitLocalVote()" id="localVoteBtn">Submit Vote</button>
+            </div>
+            
+            <div class="game-log" id="localGameLog"></div>
         </div>
     </div>
 
@@ -536,15 +625,15 @@
             votes: {},
             hasVoted: false,
             gameStarted: false,
-            eliminated: [],
-            roleVotes: {},
-            roleProposal: null,
-            enableInspector: false,
-            enableGuardian: false,
             nightActions: {},
-            protected: null
+            isLocalGame: false,
+            localPlayers: [],
+            localCurrentPlayerIndex: 0,
+            localVotes: {},
+            localNightActions: {}
         };
 
+        // Initialize PeerJS
         function initPeer() {
             peer = new Peer({
                 config: {
@@ -574,8 +663,10 @@
 
         function updateConnectionStatus(message, status) {
             const statusEl = document.getElementById('connectionStatus');
-            statusEl.textContent = message;
-            statusEl.className = `connection-status status-${status}`;
+            if (statusEl) {
+                statusEl.textContent = message;
+                statusEl.className = `connection-status status-${status}`;
+            }
         }
 
         function handleConnection(conn) {
@@ -602,15 +693,6 @@
                     break;
                 case 'player_list':
                     handlePlayerList(data);
-                    break;
-                case 'role_proposal':
-                    handleRoleProposal(data);
-                    break;
-                case 'role_vote':
-                    handleRoleVote(data);
-                    break;
-                case 'role_vote_result':
-                    handleRoleVoteResult(data);
                     break;
                 case 'game_start':
                     handleGameStart(data);
@@ -642,9 +724,63 @@
                 case 'vote_progress':
                     updateVoteProgress(data);
                     break;
+                case 'chat_message':
+                    handleChatMessage(data);
+                    break;
+                case 'return_to_lobby':
+                    handleReturnToLobby();
+                    break;
             }
         }
 
+        // Screen management
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const screen = document.getElementById(screenId);
+            if (screen) screen.classList.add('active');
+        }
+
+        function showHome() {
+            Object.values(connections).forEach(conn => {
+                try { conn.close(); } catch (e) {}
+            });
+            
+            const oldPeerId = gameState.peerId;
+            
+            connections = {};
+            gameState = {
+                roomCode: '',
+                playerName: '',
+                peerId: oldPeerId,
+                isHost: false,
+                hostPeerId: '',
+                players: {},
+                myRole: '',
+                myProfession: '',
+                phase: 'lobby',
+                votes: {},
+                hasVoted: false,
+                gameStarted: false,
+                nightActions: {},
+                isLocalGame: false,
+                localPlayers: [],
+                localCurrentPlayerIndex: 0,
+                localVotes: {},
+                localNightActions: {}
+            };
+            
+            showScreen('homeScreen');
+        }
+
+        function showHostScreen() {
+            showScreen('hostScreen');
+        }
+
+        function showJoinScreen() {
+            showScreen('joinScreen');
+        }
+
+        // Room management
         function generateRoomCode() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             let code = '';
@@ -802,118 +938,44 @@
                 if (startBtn) {
                     startBtn.disabled = playerArray.length < 5;
                 }
-                updateRoleSettings();
-            }
-        }
-
-        function updateRoleSettings() {
-            const playerCount = Object.keys(gameState.players).length;
-            const inspectorCheckbox = document.getElementById('enableInspector');
-            const guardianCheckbox = document.getElementById('enableGuardian');
-            
-            if (inspectorCheckbox) {
-                inspectorCheckbox.disabled = playerCount < 7;
-                if (playerCount < 7) inspectorCheckbox.checked = false;
-            }
-            
-            if (guardianCheckbox) {
-                guardianCheckbox.disabled = playerCount < 13;
-                if (playerCount < 13) guardianCheckbox.checked = false;
-            }
-        }
-
-        function proposeRoles() {
-            const enableInspector = document.getElementById('enableInspector').checked;
-            const enableGuardian = document.getElementById('enableGuardian').checked;
-            
-            gameState.roleVotes = {};
-            
-            broadcast({
-                type: 'role_proposal',
-                enableInspector,
-                enableGuardian
-            });
-            
-            addLog('Role proposal sent to players!');
-        }
-
-        function handleRoleProposal(data) {
-            gameState.roleProposal = data;
-            
-            const votingDiv = document.getElementById('roleVoting');
-            votingDiv.style.display = 'block';
-            votingDiv.innerHTML = `
-                <div class="vote-proposal">
-                    <h3>Host Proposes:</h3>
-                    <p>${data.enableInspector ? '✓ Inspector role' : '✗ No Inspector'}</p>
-                    <p>${data.enableGuardian ? '✓ Guardian Angel role' : '✗ No Guardian'}</p>
-                    <p style="margin-top: 10px; font-size: 0.9em;">Vote to approve (60% needed)</p>
-                    <div class="vote-buttons">
-                        <button class="vote-yes" onclick="voteOnRoles(true)">YES</button>
-                        <button class="vote-no" onclick="voteOnRoles(false)">NO</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function voteOnRoles(approve) {
-            connections[gameState.hostPeerId].send({
-                type: 'role_vote',
-                peerId: gameState.peerId,
-                approve: approve
-            });
-            
-            document.getElementById('roleVoting').innerHTML = '<div class="info-box">Vote submitted!</div>';
-        }
-
-        function handleRoleVote(data) {
-            if (!gameState.isHost) return;
-            
-            gameState.roleVotes[data.peerId] = data.approve;
-            
-            const totalVotes = Object.keys(gameState.roleVotes).length;
-            const playerCount = Object.keys(gameState.players).length - 1;
-            
-            if (totalVotes >= playerCount) {
-                const approveCount = Object.values(gameState.roleVotes).filter(v => v).length;
-                const approvalRate = approveCount / totalVotes;
                 
-                const approved = approvalRate >= 0.6;
+                const inspectorCheckbox = document.getElementById('enableInspector');
+                const guardianCheckbox = document.getElementById('enableGuardian');
                 
-                if (approved) {
-                    gameState.enableInspector = gameState.roleProposal.enableInspector;
-                    gameState.enableGuardian = gameState.roleProposal.enableGuardian;
+                if (inspectorCheckbox) {
+                    inspectorCheckbox.disabled = playerArray.length < 7;
+                    if (playerArray.length < 7) inspectorCheckbox.checked = false;
                 }
                 
-                broadcast({
-                    type: 'role_vote_result',
-                    approved: approved,
-                    approvalRate: Math.round(approvalRate * 100),
-                    enableInspector: approved ? gameState.enableInspector : false,
-                    enableGuardian: approved ? gameState.enableGuardian : false
-                });
-                
-                addLog(`Role vote: ${approved ? 'APPROVED' : 'REJECTED'} (${Math.round(approvalRate * 100)}%)`);
+                if (guardianCheckbox) {
+                    guardianCheckbox.disabled = playerArray.length < 13;
+                    if (playerArray.length < 13) guardianCheckbox.checked = false;
+                }
             }
         }
 
-        function handleRoleVoteResult(data) {
-            gameState.enableInspector = data.enableInspector;
-            gameState.enableGuardian = data.enableGuardian;
-            
-            const votingDiv = document.getElementById('roleVoting');
-            votingDiv.innerHTML = `
-                <div class="info-box">
-                    <strong>Vote Result: ${data.approved ? 'APPROVED' : 'REJECTED'}</strong>
-                    <p>Approval: ${data.approvalRate}%</p>
-                    ${data.approved ? `
-                        <p>Inspector: ${data.enableInspector ? 'YES' : 'NO'}</p>
-                        <p>Guardian: ${data.enableGuardian ? 'YES' : 'NO'}</p>
-                    ` : '<p>Default roles will be used</p>'}
-                </div>
-            `;
+        function leaveRoom() {
+            if (confirm('Leave game?')) {
+                if (gameState.isHost) {
+                    broadcast({ type: 'game_end', message: 'Host ended game', winner: null });
+                }
+                showHome();
+            }
         }
 
+        function copyConnectionInfo() {
+            const code = document.getElementById('displayRoomCode').textContent;
+            const peerId = document.getElementById('displayPeerId').textContent;
+            const info = `Mafia Game\nRoom: ${code}\nPeer ID: ${peerId}`;
+            
+            navigator.clipboard.writeText(info).then(() => {
+                alert('Copied!');
+            }).catch(() => {
+                alert(info);
+            });
+        }
+
+        // Game start
         function startGame() {
             if (!gameState.isHost) return;
             
@@ -926,37 +988,27 @@
             gameState.gameStarted = true;
             const playerCount = playerArray.length;
             
-            // Calculate Mafia count based on rules
             let mafiaCount;
             if (playerCount <= 10) mafiaCount = 2;
             else if (playerCount <= 15) mafiaCount = 3;
             else mafiaCount = 4;
             
             const roles = [];
-            
-            // Add mafia
             for (let i = 0; i < mafiaCount; i++) roles.push('Mafia');
             
-            // Add special roles
-            if (gameState.enableInspector && playerCount >= 7) {
-                roles.push('Inspector');
-            }
-            if (gameState.enableGuardian && playerCount >= 13) {
-                roles.push('Guardian');
-            }
+            const enableInspector = document.getElementById('enableInspector').checked;
+            const enableGuardian = document.getElementById('enableGuardian').checked;
             
-            // Fill rest with villagers
-            while (roles.length < playerCount) {
-                roles.push('Villager');
-            }
+            if (enableInspector && playerCount >= 7) roles.push('Inspector');
+            if (enableGuardian && playerCount >= 13) roles.push('Guardian');
             
-            // Shuffle
+            while (roles.length < playerCount) roles.push('Villager');
+            
             for (let i = roles.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [roles[i], roles[j]] = [roles[j], roles[i]];
             }
             
-            // Assign roles
             playerArray.forEach((player, i) => {
                 player.role = roles[i];
                 gameState.players[player.peerId].role = roles[i];
@@ -1100,10 +1152,17 @@
         }
 
         function startDayPhase() {
-            if (gameState.isHost) {
-                broadcast({ type: 'start_day' });
+            if (gameState.isLocalGame) {
+                gameState.phase = 'day';
+                gameState.localCurrentPlayerIndex = 0;
+                gameState.localVotes = {};
+                startLocalDayPhase();
+            } else {
+                if (gameState.isHost) {
+                    broadcast({ type: 'start_day' });
+                }
+                handleStartDay();
             }
-            handleStartDay();
         }
 
         function handleStartDay() {
@@ -1113,6 +1172,7 @@
 
         function showGameScreen() {
             document.getElementById('yourRole').textContent = gameState.myRole;
+            document.getElementById('chatSection').style.display = 'block';
             updateGameScreen();
             
             if (gameState.isHost) {
@@ -1130,17 +1190,18 @@
                 phaseEl.textContent = 'Day - Discussion & Voting';
                 phaseInfo.textContent = 'Vote to eliminate a suspected Mafia';
                 
-                // Guardian cannot vote
                 if (gameState.myRole !== 'Guardian' && !gameState.hasVoted) {
                     showVoting();
                 } else if (gameState.myRole === 'Guardian') {
                     phaseInfo.textContent = 'You cannot participate in voting (Guardian)';
+                    document.getElementById('votingSection').style.display = 'none';
+                    document.getElementById('waitingSection').style.display = 'block';
                 }
             } else if (gameState.phase === 'night') {
                 phaseEl.textContent = 'Night';
                 
                 if (gameState.myRole === 'Mafia') {
-                    phaseInfo.textContent = 'Choose target to eli   ate';
+                    phaseInfo.textContent = 'Choose target to eliminate';
                     if (!gameState.hasVoted) showVoting();
                 } else if (gameState.myRole === 'Inspector') {
                     phaseInfo.textContent = 'Choose player to investigate';
@@ -1241,7 +1302,7 @@
             
             document.getElementById('votingSection').style.display = 'none';
             document.getElementById('waitingSection').style.display = 'block';
-            addLog('Submitted!');
+            addLog('Vote submitted!');
             
             selectedVote = null;
         }
@@ -1252,9 +1313,8 @@
             gameState.votes[data.voterPeerId] = data.targetPeerId;
             
             const alivePlayers = Object.values(gameState.players).filter(p => p.alive);
-            const votesNeeded = gameState.myRole === 'Guardian' 
-                ? alivePlayers.length - 1 
-                : alivePlayers.length;
+            const guardianAlive = alivePlayers.some(p => p.role === 'Guardian');
+            const votesNeeded = guardianAlive ? alivePlayers.length - 1 : alivePlayers.length;
             
             const votesReceived = Object.keys(gameState.votes).length;
             
@@ -1298,106 +1358,6 @@
             }
         }
 
-        function processNightActions() {
-            // Find mafia target
-            const mafiaActions = Object.values(gameState.nightActions).filter(a => a.action === 'Mafia');
-            const mafiaVotes = {};
-            mafiaActions.forEach(a => {
-                mafiaVotes[a.target] = (mafiaVotes[a.target] || 0) + 1;
-            });
-            
-            let mafiaTarget = null;
-            let maxVotes = 0;
-            Object.entries(mafiaVotes).forEach(([peerId, count]) => {
-                if (count > maxVotes) {
-                    maxVotes = count;
-                    mafiaTarget = peerId;
-                }
-            });
-            
-            // Find inspector target
-            const inspectorAction = Object.values(gameState.nightActions).find(a => a.action === 'Inspector');
-            let inspectorResult = null;
-            if (inspectorAction) {
-                const target = gameState.players[inspectorAction.target];
-                if (target && target.role === 'Mafia') {
-                    inspectorResult = inspectorAction.target;
-                }
-            }
-            
-            // Find guardian protection
-            const guardianAction = Object.values(gameState.nightActions).find(a => a.action === 'Guardian');
-            const protected = guardianAction ? guardianAction.target : null;
-            
-            // Process results
-            let eliminated = [];
-            
-            // Inspector caught mafia
-            if (inspectorResult) {
-                gameState.players[inspectorResult].alive = false;
-                eliminated.push({
-                    peerId: inspectorResult,
-                    name: gameState.players[inspectorResult].name,
-                    reason: 'Inspector'
-                });
-            }
-            
-            // Mafia killed someone (unless protected)
-            if (mafiaTarget && mafiaTarget !== protected) {
-                gameState.players[mafiaTarget].alive = false;
-                eliminated.push({
-                    peerId: mafiaTarget,
-                    name: gameState.players[mafiaTarget].name,
-                    reason: 'Mafia'
-                });
-            } else if (mafiaTarget === protected) {
-                eliminated.push({
-                    peerId: null,
-                    name: 'No one',
-                    reason: 'Protected'
-                });
-            }
-            
-            // Check win condition
-            const aliveMafia = Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length;
-            const aliveVillagers = Object.values(gameState.players).filter(p => p.alive && p.role !== 'Mafia').length;
-            
-            if (aliveMafia === 0) {
-                broadcast({
-                    type: 'game_end',
-                    winner: 'Villagers',
-                    message: 'Villagers Win!',
-                    eliminated: eliminated
-                });
-                handleGameEnd({winner: 'Villagers', message: 'Villagers Win!', eliminated});
-                return;
-            } else if (aliveMafia >= aliveVillagers) {
-                broadcast({
-                    type: 'game_end',
-                    winner: 'Mafia',
-                    message: 'Mafia Wins!',
-                    eliminated: eliminated
-                });
-                handleGameEnd({winner: 'Mafia', message: 'Mafia Wins!', eliminated});
-                return;
-            }
-            
-            // Continue to day
-            gameState.nightActions = {};
-            gameState.votes = {};
-            gameState.phase = 'day';
-            gameState.hasVoted = false;
-            
-            broadcast({
-                type: 'phase_change',
-                phase: 'day',
-                players: gameState.players,
-                eliminated: eliminated
-            });
-            
-            handlePhaseChange({phase: 'day', players: gameState.players, eliminated});
-        }
-
         function processVotes() {
             const voteCounts = {};
             Object.values(gameState.votes).forEach(targetId => {
@@ -1426,18 +1386,20 @@
                         type: 'game_end',
                         winner: 'Villagers',
                         message: 'Villagers Win!',
-                        eliminated: [{name: eliminatedPlayer.name, reason: 'Voted'}]
+                        eliminated: [{name: eliminatedPlayer.name, reason: 'Voted'}],
+                        players: gameState.players
                     });
-                    handleGameEnd({winner: 'Villagers', message: 'Villagers Win!', eliminated: [{name: eliminatedPlayer.name}]});
+                    handleGameEnd({winner: 'Villagers', message: 'Villagers Win!', eliminated: [{name: eliminatedPlayer.name}], players: gameState.players});
                     return;
                 } else if (aliveMafia >= aliveVillagers) {
                     broadcast({
                         type: 'game_end',
                         winner: 'Mafia',
                         message: 'Mafia Wins!',
-                        eliminated: [{name: eliminatedPlayer.name, reason: 'Voted'}]
+                        eliminated: [{name: eliminatedPlayer.name, reason: 'Voted'}],
+                        players: gameState.players
                     });
-                    handleGameEnd({winner: 'Mafia', message: 'Mafia Wins!', eliminated: [{name: eliminatedPlayer.name}]});
+                    handleGameEnd({winner: 'Mafia', message: 'Mafia Wins!', eliminated: [{name: eliminatedPlayer.name}], players: gameState.players});
                     return;
                 }
                 
@@ -1459,6 +1421,100 @@
                     eliminated: [{name: eliminatedPlayer.name, role: eliminatedPlayer.role, reason: 'Voted'}]
                 });
             }
+        }
+
+        function processNightActions() {
+            const mafiaActions = Object.values(gameState.nightActions).filter(a => a.action === 'Mafia');
+            const mafiaVotes = {};
+            mafiaActions.forEach(a => {
+                mafiaVotes[a.target] = (mafiaVotes[a.target] || 0) + 1;
+            });
+            
+            let mafiaTarget = null;
+            let maxVotes = 0;
+            Object.entries(mafiaVotes).forEach(([peerId, count]) => {
+                if (count > maxVotes) {
+                    maxVotes = count;
+                    mafiaTarget = peerId;
+                }
+            });
+            
+            const inspectorAction = Object.values(gameState.nightActions).find(a => a.action === 'Inspector');
+            let inspectorResult = null;
+            if (inspectorAction) {
+                const target = gameState.players[inspectorAction.target];
+                if (target && target.role === 'Mafia') {
+                    inspectorResult = inspectorAction.target;
+                }
+            }
+            
+            const guardianAction = Object.values(gameState.nightActions).find(a => a.action === 'Guardian');
+            const protected = guardianAction ? guardianAction.target : null;
+            
+            let eliminated = [];
+            
+            if (inspectorResult) {
+                gameState.players[inspectorResult].alive = false;
+                eliminated.push({
+                    peerId: inspectorResult,
+                    name: gameState.players[inspectorResult].name,
+                    reason: 'Inspector'
+                });
+            }
+            
+            if (mafiaTarget && mafiaTarget !== protected) {
+                gameState.players[mafiaTarget].alive = false;
+                eliminated.push({
+                    peerId: mafiaTarget,
+                    name: gameState.players[mafiaTarget].name,
+                    reason: 'Mafia'
+                });
+            } else if (mafiaTarget === protected) {
+                eliminated.push({
+                    peerId: null,
+                    name: 'No one',
+                    reason: 'Protected'
+                });
+            }
+            
+            const aliveMafia = Object.values(gameState.players).filter(p => p.alive && p.role === 'Mafia').length;
+            const aliveVillagers = Object.values(gameState.players).filter(p => p.alive && p.role !== 'Mafia').length;
+            
+            if (aliveMafia === 0) {
+                broadcast({
+                    type: 'game_end',
+                    winner: 'Villagers',
+                    message: 'Villagers Win!',
+                    eliminated: eliminated,
+                    players: gameState.players
+                });
+                handleGameEnd({winner: 'Villagers', message: 'Villagers Win!', eliminated, players: gameState.players});
+                return;
+            } else if (aliveMafia >= aliveVillagers) {
+                broadcast({
+                    type: 'game_end',
+                    winner: 'Mafia',
+                    message: 'Mafia Wins!',
+                    eliminated: eliminated,
+                    players: gameState.players
+                });
+                handleGameEnd({winner: 'Mafia', message: 'Mafia Wins!', eliminated, players: gameState.players});
+                return;
+            }
+            
+            gameState.nightActions = {};
+            gameState.votes = {};
+            gameState.phase = 'day';
+            gameState.hasVoted = false;
+            
+            broadcast({
+                type: 'phase_change',
+                phase: 'day',
+                players: gameState.players,
+                eliminated: eliminated
+            });
+            
+            handlePhaseChange({phase: 'day', players: gameState.players, eliminated});
         }
 
         function handlePhaseChange(data) {
@@ -1487,15 +1543,94 @@
         }
 
         function handleGameEnd(data) {
-            data.eliminated.forEach(e => {
-                if (e.name) addLog(`${e.name} eliminated`);
-            });
-            addLog(data.message);
+            if (data.players) {
+                gameState.players = data.players;
+            }
             
-            setTimeout(() => {
-                alert(data.message);
-                showHome();
-            }, 1000);
+            if (data.eliminated) {
+                data.eliminated.forEach(e => {
+                    if (e.name && e.name !== 'No one') addLog(`${e.name} eliminated`);
+                });
+            }
+            
+            addLog(data.message);
+            showEndGameScreen(data.winner, data.message);
+        }
+
+        function showEndGameScreen(winner, message) {
+            document.getElementById('endGameTitle').textContent = winner ? `${winner} Win!` : 'Game Over';
+            document.getElementById('endGameMessage').textContent = message || 'Game has ended';
+            
+            const finalRoles = document.getElementById('finalRoles');
+            finalRoles.innerHTML = '<h3 style="margin: 20px 0;">Final Roles:</h3>';
+            
+            const playerList = gameState.isLocalGame ? gameState.localPlayers : Object.values(gameState.players);
+            
+            playerList.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>${player.name}</span>
+                    <span>${player.role} ${player.alive ? '✓' : '✗'}</span>
+                `;
+                finalRoles.appendChild(div);
+            });
+            
+            showScreen('endGameScreen');
+        }
+
+        function playAgain() {
+            if (gameState.isLocalGame) {
+                gameState.localPlayers.forEach(p => {
+                    p.role = null;
+                    p.profession = null;
+                    p.alive = true;
+                });
+                gameState.phase = 'lobby';
+                gameState.localVotes = {};
+                gameState.localNightActions = {};
+                gameState.gameStarted = false;
+                gameState.localCurrentPlayerIndex = 0;
+                
+                startLocalGameRoles();
+            } else {
+                if (!gameState.isHost) {
+                    alert('Only host can restart!');
+                    return;
+                }
+                
+                Object.values(gameState.players).forEach(p => {
+                    p.role = null;
+                    p.profession = null;
+                    p.alive = true;
+                });
+                
+                gameState.phase = 'lobby';
+                gameState.votes = {};
+                gameState.hasVoted = false;
+                gameState.gameStarted = false;
+                gameState.nightActions = {};
+                
+                broadcast({ type: 'return_to_lobby' });
+                handleReturnToLobby();
+            }
+        }
+
+        function handleReturnToLobby() {
+            Object.values(gameState.players).forEach(p => {
+                p.role = null;
+                p.profession = null;
+                p.alive = true;
+            });
+            
+            gameState.phase = 'lobby';
+            gameState.votes = {};
+            gameState.hasVoted = false;
+            gameState.gameStarted = false;
+            gameState.nightActions = {};
+            
+            showScreen('lobbyScreen');
+            updatePlayerList();
         }
 
         function updateVoteProgress(data) {
@@ -1505,16 +1640,11 @@
             }
         }
 
-        function broadcast(message, excludePeerId = null) {
-            Object.entries(connections).forEach(([peerId, conn]) => {
-                if (peerId !== excludePeerId) {
-                    try {
-                        conn.send(message);
-                    } catch (e) {
-                        console.error('Send failed:', e);
-                    }
-                }
-            });
+        function endGame() {
+            if (confirm('End game for everyone?')) {
+                broadcast({ type: 'game_end', message: 'Host ended game', winner: null, players: gameState.players });
+                handleGameEnd({message: 'Host ended game', winner: null, players: gameState.players});
+            }
         }
 
         function handlePlayerDisconnect(peerId) {
@@ -1544,66 +1674,511 @@
             }
         }
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        function showHome() {
-            Object.values(connections).forEach(conn => {
-                try { conn.close(); } catch (e) {}
-            });
+        // Chat functions
+        function sendChat() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
             
-            const oldPeerId = gameState.peerId;
+            if (!message) return;
             
-            connections = {};
-            gameState = {
-                roomCode: '',
-                playerName: '',
-                peerId: oldPeerId,
-                isHost: false,
-                hostPeerId: '',
-                players: {},
-                myRole: '',
-                myProfession: '',
-                phase: 'lobby',
-                votes: {},
-                hasVoted: false,
-                gameStarted: false,
-                eliminated: [],
-                roleVotes: {},
-                roleProposal: null,
-                enableInspector: false,
-                enableGuardian: false,
-                nightActions: {},
-                protected: null
+            const chatData = {
+                type: 'chat_message',
+                sender: gameState.playerName,
+                message: message,
+                timestamp: new Date().toLocaleTimeString()
             };
             
-            showScreen('homeScreen');
+            if (gameState.isHost) {
+                addChatMessage(chatData);
+                broadcast(chatData);
+            } else {
+                connections[gameState.hostPeerId].send(chatData);
+            }
+            
+            input.value = '';
         }
 
-        function showHostScreen() {
-            showScreen('hostScreen');
+        function handleChatMessage(data) {
+            addChatMessage(data);
+            
+            if (gameState.isHost && data.sender !== gameState.playerName) {
+                broadcast(data);
+            }
         }
 
-        function showJoinScreen() {
-            showScreen('joinScreen');
+        function addChatMessage(data) {
+            const chatLog = document.getElementById('chatLog');
+            if (!chatLog) return;
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
+            chatLog.appendChild(entry);
+            chatLog.scrollTop = chatLog.scrollHeight;
         }
 
-        function leaveRoom() {
-            if (confirm('Leave game?')) {
-                if (gameState.isHost) {
-                    broadcast({ type: 'game_end', message: 'Host ended game', winner: null });
+        document.getElementById('chatInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChat();
+        });
+
+        // Local Game Functions
+        function startLocalGame() {
+            gameState.isLocalGame = true;
+            gameState.localPlayers = [];
+            showScreen('localSetupScreen');
+        }
+
+        function addLocalPlayer() {
+            const nameInput = document.getElementById('localPlayerName');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('Enter a name!');
+                return;
+            }
+            
+            if (gameState.localPlayers.find(p => p.name === name)) {
+                alert('Name already taken!');
+                return;
+            }
+            
+            gameState.localPlayers.push({
+                name: name,
+                role: null,
+                profession: null,
+                alive: true,
+                id: gameState.localPlayers.length
+            });
+            
+            nameInput.value = '';
+            updateLocalPlayerList();
+        }
+
+        function updateLocalPlayerList() {
+            const list = document.getElementById('localPlayerList');
+            const count = document.getElementById('localPlayerCount');
+            
+            list.innerHTML = '';
+            count.textContent = gameState.localPlayers.length;
+            
+            gameState.localPlayers.forEach((player, index) => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>${player.name}</span>
+                    <button class="btn btn-secondary btn-small" onclick="removeLocalPlayer(${index})">Remove</button>
+                `;
+                list.appendChild(div);
+            });
+            
+            const configDiv = document.getElementById('localRoleConfig');
+            const startBtn = document.getElementById('localStartBtn');
+            
+            if (gameState.localPlayers.length >= 5) {
+                configDiv.style.display = 'block';
+                startBtn.disabled = false;
+                
+                const inspectorCheck = document.getElementById('localEnableInspector');
+                const guardianCheck = document.getElementById('localEnableGuardian');
+                
+                inspectorCheck.disabled = gameState.localPlayers.length < 7;
+                guardianCheck.disabled = gameState.localPlayers.length < 13;
+                
+                if (gameState.localPlayers.length < 7) inspectorCheck.checked = false;
+                if (gameState.localPlayers.length < 13) guardianCheck.checked = false;
+            } else {
+                configDiv.style.display = 'none';
+            }
+        }
+
+        function removeLocalPlayer(index) {
+            gameState.localPlayers.splice(index, 1);
+            gameState.localPlayers.forEach((p, i) => p.id = i);
+            updateLocalPlayerList();
+        }
+
+        function startLocalGameRoles() {
+            const playerCount = gameState.localPlayers.length;
+            
+            let mafiaCount;
+            if (playerCount <= 10) mafiaCount = 2;
+            else if (playerCount <= 15) mafiaCount = 3;
+            else mafiaCount = 4;
+            
+            const roles = [];
+            for (let i = 0; i < mafiaCount; i++) roles.push('Mafia');
+            
+            const enableInspector = document.getElementById('localEnableInspector').checked;
+            const enableGuardian = document.getElementById('localEnableGuardian').checked;
+            
+            if (enableInspector && playerCount >= 7) roles.push('Inspector');
+            if (enableGuardian && playerCount >= 13) roles.push('Guardian');
+            
+            while (roles.length < playerCount) roles.push('Villager');
+            
+            for (let i = roles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [roles[i], roles[j]] = [roles[j], roles[i]];
+            }
+            
+            gameState.localPlayers.forEach((player, i) => {
+                player.role = roles[i];
+            });
+            
+            gameState.localCurrentPlayerIndex = 0;
+            gameState.gameStarted = true;
+            showLocalRoleToPlayer();
+        }
+
+        function showLocalRoleToPlayer() {
+            const player = gameState.localPlayers[gameState.localCurrentPlayerIndex];
+            
+            document.getElementById('privacyMessage').textContent = `Pass device to ${player.name}`;
+            showScreen('privacyScreen');
+        }
+
+        function continueFromPrivacy() {
+            const player = gameState.localPlayers[gameState.localCurrentPlayerIndex];
+            
+            if (player.role && !player.profession) {
+                document.getElementById('localCurrentPlayer').textContent = player.name;
+                document.getElementById('localRoleName').textContent = player.role.toUpperCase();
+                
+                const descEl = document.getElementById('localRoleDescription');
+                const extraEl = document.getElementById('localRoleExtra');
+                
+                if (player.role === 'Mafia') {
+                    descEl.textContent = 'Eliminate villagers at night. Blend in during the day.';
+                    const mafiaMembers = gameState.localPlayers
+                        .filter(p => p.role === 'Mafia' && p.id !== player.id)
+                        .map(p => p.name);
+                    extraEl.textContent = mafiaMembers.length > 0 ? `Partners: ${mafiaMembers.join(', ')}` : 'You are alone';
+                } else if (player.role === 'Inspector') {
+                    descEl.textContent = 'Each night, choose one player to investigate. If they are Mafia, they are eliminated!';
+                    extraEl.textContent = 'Use your power wisely';
+                } else if (player.role === 'Guardian') {
+                    descEl.textContent = 'Each night, protect one player from Mafia. You cannot speak during discussions.';
+                    const mafiaMembers = gameState.localPlayers.filter(p => p.role === 'Mafia').map(p => p.name);
+                    extraEl.textContent = `Mafia: ${mafiaMembers.join(', ')}`;
+                } else {
+                    descEl.textContent = 'Find and eliminate the Mafia through discussion and voting!';
+                    extraEl.textContent = 'Trust no one';
                 }
-                showHome();
+                
+                showScreen('localRoleScreen');
+            } else {
+                showLocalVotingForPlayer();
             }
         }
 
-        function endGame() {
-            if (confirm('End game for everyone?')) {
-                broadcast({ type: 'game_end', message: 'Host ended game', winner: null });
-                showHome();
+        function acknowledgeLocalRole() {
+            document.getElementById('localProfessionPlayer').textContent = 
+                gameState.localPlayers[gameState.localCurrentPlayerIndex].name;
+            showScreen('localProfessionScreen');
+        }
+
+        function submitLocalProfession() {
+            const professionInput = document.getElementById('localProfessionInput');
+            const profession = professionInput.value.trim();
+            
+            if (!profession) {
+                alert('Enter a profession!');
+                return;
             }
+            
+            gameState.localPlayers[gameState.localCurrentPlayerIndex].profession = profession;
+            professionInput.value = '';
+            
+            gameState.localCurrentPlayerIndex++;
+            
+            if (gameState.localCurrentPlayerIndex < gameState.localPlayers.length) {
+                showLocalRoleToPlayer();
+            } else {
+                startLocalIntroductions();
+            }
+        }
+
+        function startLocalIntroductions() {
+            document.getElementById('privacyMessage').textContent = 'Introduction Round - Everyone can see';
+            showScreen('privacyScreen');
+            
+            setTimeout(() => {
+                const introList = document.getElementById('introList');
+                introList.innerHTML = '';
+                
+                gameState.localPlayers.forEach(player => {
+                    const div = document.createElement('div');
+                    div.className = 'player-item';
+                    div.innerHTML = `
+                        <span><strong>${player.name}</strong></span>
+                        <span>${player.profession}</span>
+                    `;
+                    introList.appendChild(div);
+                });
+                
+                showScreen('introductionScreen');
+            }, 2000);
+        }
+
+        function startLocalDayPhase() {
+            document.getElementById('localCurrentPhase').textContent = 'Day - Voting';
+            document.getElementById('localPhaseInfo').textContent = 'Each player votes to eliminate';
+            
+            updateLocalGamePlayerList();
+            showScreen('localGameScreen');
+            
+            gameState.localCurrentPlayerIndex = 0;
+            showLocalVotingForPlayer();
+        }
+
+        function showLocalVotingForPlayer() {
+            const player = gameState.localPlayers[gameState.localCurrentPlayerIndex];
+            
+            if (!player.alive || (gameState.phase === 'day' && player.role === 'Guardian')) {
+                gameState.localCurrentPlayerIndex++;
+                if (gameState.localCurrentPlayerIndex < gameState.localPlayers.length) {
+                    showLocalVotingForPlayer();
+                } else {
+                    if (gameState.phase === 'night') {
+                        processLocalNightActions();
+                    } else {
+                        processLocalVotes();
+                    }
+                }
+                return;
+            }
+            
+            if (gameState.phase === 'night' && player.role !== 'Mafia' && 
+                player.role !== 'Inspector' && player.role !== 'Guardian') {
+                gameState.localCurrentPlayerIndex++;
+                if (gameState.localCurrentPlayerIndex < gameState.localPlayers.length) {
+                    showLocalVotingForPlayer();
+                } else {
+                    processLocalNightActions();
+                }
+                return;
+            }
+            
+            document.getElementById('privacyMessage').textContent = `Pass to ${player.name}`;
+            showScreen('privacyScreen');
+            
+            setTimeout(() => {
+                document.getElementById('localVotingPlayer').textContent = player.name;
+                document.getElementById('localVoteTitle').textContent = 
+                    gameState.phase === 'night' ? 
+                        (player.role === 'Mafia' ? 'Choose Target' : 
+                         player.role === 'Inspector' ? 'Investigate Player' : 'Protect Player') 
+                        : 'Vote to Eliminate';
+                
+                const grid = document.getElementById('localVotingGrid');
+                grid.innerHTML = '';
+                
+                gameState.localPlayers
+                    .filter(p => p.alive && p.id !== player.id)
+                    .forEach(p => {
+                        const btn = document.createElement('button');
+                        btn.className = 'vote-btn';
+                        btn.textContent = p.name;
+                        btn.onclick = () => selectLocalVote(p.id, btn);
+                        grid.appendChild(btn);
+                    });
+                
+                document.getElementById('localVotingSection').style.display = 'block';
+                showScreen('localGameScreen');
+            }, 1500);
+        }
+
+        let localSelectedVote = null;
+        
+        function selectLocalVote(playerId, btn) {
+            document.querySelectorAll('#localVotingGrid .vote-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            localSelectedVote = playerId;
+        }
+
+        function submitLocalVote() {
+            if (localSelectedVote === null) {
+                alert('Select someone!');
+                return;
+            }
+            
+            const voter = gameState.localPlayers[gameState.localCurrentPlayerIndex];
+            
+            if (gameState.phase === 'night') {
+                gameState.localNightActions[voter.id] = {
+                    target: localSelectedVote,
+                    action: voter.role
+                };
+            } else {
+                gameState.localVotes[voter.id] = localSelectedVote;
+            }
+            
+            localSelectedVote = null;
+            document.getElementById('localVotingSection').style.display = 'none';
+            
+            gameState.localCurrentPlayerIndex++;
+            
+            if (gameState.localCurrentPlayerIndex < gameState.localPlayers.length) {
+                showLocalVotingForPlayer();
+            } else {
+                if (gameState.phase === 'night') {
+                    processLocalNightActions();
+                } else {
+                    processLocalVotes();
+                }
+            }
+        }
+
+        function processLocalVotes() {
+            const voteCounts = {};
+            Object.values(gameState.localVotes).forEach(targetId => {
+                voteCounts[targetId] = (voteCounts[targetId] || 0) + 1;
+            });
+            
+            let maxVotes = 0;
+            let eliminatedId = null;
+            
+            Object.entries(voteCounts).forEach(([playerId, count]) => {
+                if (count > maxVotes) {
+                    maxVotes = count;
+                    eliminatedId = parseInt(playerId);
+                }
+            });
+            
+            if (eliminatedId !== null) {
+                const eliminated = gameState.localPlayers.find(p => p.id === eliminatedId);
+                eliminated.alive = false;
+                
+                addLocalLog(`${eliminated.name} was voted out (${eliminated.role})`);
+                
+                if (checkLocalGameEnd()) return;
+                
+                gameState.phase = 'night';
+                gameState.localVotes = {};
+                gameState.localNightActions = {};
+                gameState.localCurrentPlayerIndex = 0;
+                
+                setTimeout(() => startLocalNightPhase(), 2000);
+            }
+        }
+
+        function startLocalNightPhase() {
+            document.getElementById('localCurrentPhase').textContent = 'Night';
+            document.getElementById('localPhaseInfo').textContent = 'Special roles take action';
+            
+            updateLocalGamePlayerList();
+            addLocalLog('Night falls...');
+            
+            gameState.localCurrentPlayerIndex = 0;
+            showLocalVotingForPlayer();
+        }
+
+        function processLocalNightActions() {
+            const mafiaActions = Object.values(gameState.localNightActions).filter(a => a.action === 'Mafia');
+            const mafiaVotes = {};
+            mafiaActions.forEach(a => {
+                mafiaVotes[a.target] = (mafiaVotes[a.target] || 0) + 1;
+            });
+            
+            let mafiaTarget = null;
+            let maxVotes = 0;
+            Object.entries(mafiaVotes).forEach(([playerId, count]) => {
+                if (count > maxVotes) {
+                    maxVotes = count;
+                    mafiaTarget = parseInt(playerId);
+                }
+            });
+            
+            const inspectorAction = Object.values(gameState.localNightActions).find(a => a.action === 'Inspector');
+            let inspectorResult = null;
+            if (inspectorAction) {
+                const target = gameState.localPlayers.find(p => p.id === inspectorAction.target);
+                if (target && target.role === 'Mafia') {
+                    inspectorResult = inspectorAction.target;
+                }
+            }
+            
+            const guardianAction = Object.values(gameState.localNightActions).find(a => a.action === 'Guardian');
+            const protected = guardianAction ? guardianAction.target : null;
+            
+            if (inspectorResult !== null) {
+                const caught = gameState.localPlayers.find(p => p.id === inspectorResult);
+                caught.alive = false;
+                addLocalLog(`${caught.name} caught by Inspector (Mafia)`);
+            }
+            
+            if (mafiaTarget !== null && mafiaTarget !== protected) {
+                const killed = gameState.localPlayers.find(p => p.id === mafiaTarget);
+                killed.alive = false;
+                addLocalLog(`${killed.name} eliminated by Mafia (${killed.role})`);
+            } else if (mafiaTarget === protected) {
+                addLocalLog('Guardian saved someone!');
+            }
+            
+            if (checkLocalGameEnd()) return;
+            
+            gameState.phase = 'day';
+            gameState.localVotes = {};
+            gameState.localNightActions = {};
+            gameState.localCurrentPlayerIndex = 0;
+            
+            setTimeout(() => startLocalDayPhase(), 2000);
+        }
+
+        function checkLocalGameEnd() {
+            const aliveMafia = gameState.localPlayers.filter(p => p.alive && p.role === 'Mafia').length;
+            const aliveVillagers = gameState.localPlayers.filter(p => p.alive && p.role !== 'Mafia').length;
+            
+            if (aliveMafia === 0) {
+                showEndGameScreen('Villagers', 'Villagers Win!');
+                return true;
+            } else if (aliveMafia >= aliveVillagers) {
+                showEndGameScreen('Mafia', 'Mafia Wins!');
+                return true;
+            }
+            
+            return false;
+        }
+
+        function updateLocalGamePlayerList() {
+            const list = document.getElementById('localGamePlayerList');
+            list.innerHTML = '';
+            
+            gameState.localPlayers.forEach(player => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>${player.name} (${player.profession})</span>
+                    <span class="status-badge ${player.alive ? 'badge-alive' : 'badge-dead'}">
+                        ${player.alive ? 'ALIVE' : 'DEAD'}
+                    </span>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function addLocalLog(message) {
+            const log = document.getElementById('localGameLog');
+            if (!log) return;
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Utility functions
+        function broadcast(message, excludePeerId = null) {
+            Object.entries(connections).forEach(([peerId, conn]) => {
+                if (peerId !== excludePeerId) {
+                    try {
+                        conn.send(message);
+                    } catch (e) {
+                        console.error('Send failed:', e);
+                    }
+                }
+            });
         }
 
         function addLog(message) {
@@ -1617,18 +2192,7 @@
             log.scrollTop = log.scrollHeight;
         }
 
-        function copyConnectionInfo() {
-            const code = document.getElementById('displayRoomCode').textContent;
-            const peerId = document.getElementById('displayPeerId').textContent;
-            const info = `Mafia Game\nRoom: ${code}\nPeer ID: ${peerId}`;
-            
-            navigator.clipboard.writeText(info).then(() => {
-                alert('Copied!');
-            }).catch(() => {
-                alert(info);
-            });
-        }
-
+        // Initialize on load
         window.addEventListener('load', () => {
             initPeer();
         });
