@@ -70,6 +70,172 @@ body::after {
 }
 
 
+/* Sticky Scroll Cards for Pūres Šokolāde - STACKING DECK EFFECT */
+.scroll-container {
+  position: relative;
+  padding-top: 60px;
+}
+
+.card-section {
+  height: 150vh;
+  position: relative;
+  margin-top: -10vh; /* This makes sections overlap! */
+}
+
+/* First section shouldn't have negative margin */
+.card-section:first-child {
+  margin-top: 0;
+}
+
+.sticky-card {
+  position: sticky;
+  top: 80px;
+  width: 90%;
+  max-width: 900px;
+  background: rgba(20, 20, 20, 0.95);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 0 30px rgba(0, 255, 204, 0.3);
+  margin: 0 auto;
+  z-index: 1;
+}
+
+/* Each subsequent card has higher z-index to stack on top */
+.card-section:nth-child(1) .sticky-card { z-index: 1; }
+.card-section:nth-child(2) .sticky-card { z-index: 2; }
+.card-section:nth-child(3) .sticky-card { z-index: 3; }
+.card-section:nth-child(4) .sticky-card { z-index: 4; }
+.card-section:nth-child(5) .sticky-card { z-index: 5; }
+.card-section:nth-child(6) .sticky-card { z-index: 6; }
+.card-section:nth-child(7) .sticky-card { z-index: 7; }
+.card-section:nth-child(8) .sticky-card { z-index: 8; }
+.card-section:nth-child(9) .sticky-card { z-index: 9; }
+.card-section:nth-child(10) .sticky-card { z-index: 10; }
+.card-section:nth-child(11) .sticky-card { z-index: 11; }
+.card-section:nth-child(12) .sticky-card { z-index: 12; }
+.card-section:nth-child(13) .sticky-card { z-index: 13; }
+.card-section:nth-child(14) .sticky-card { z-index: 14; }
+.card-section:nth-child(15) .sticky-card { z-index: 15; }
+
+.sticky-card h2 {
+  color: #66ffcc;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #aaa;
+}
+
+.card-content ul {
+  padding-left: 1.5rem;
+  list-style-type: none;
+}
+
+.card-content li {
+  margin-bottom: 0.8rem;
+  font-size: 1.05rem;
+  color: #aaa;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.card-content li::before {
+  content: "•";
+  color: #00ffcc;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+  font-size: 1.5rem;
+}
+
+.card-image {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(135deg, rgba(0, 255, 204, 0.15), rgba(0, 191, 255, 0.15));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+}
+
+/* Alternate background for variety */
+.card-section:nth-child(even) .sticky-card {
+  background: rgba(30, 30, 30, 0.95);
+}
+
+/* Final section styling */
+.final-section {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 255, 204, 0.08), rgba(0, 191, 255, 0.08));
+  position: relative;
+  z-index: 20;
+}
+
+.final-card {
+  text-align: center;
+  padding: 3rem;
+  background: rgba(20, 20, 20, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 0 40px rgba(0, 255, 204, 0.4);
+  max-width: 600px;
+}
+
+.final-card h2 {
+  color: #66ffcc;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.final-card p {
+  color: #aaa;
+  font-size: 1.2rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sticky-card {
+    padding: 1.5rem;
+    top: 60px;
+  }
+
+  .sticky-card h2 {
+    font-size: 1.5rem;
+  }
+
+  .card-content p, .card-content li {
+    font-size: 1rem;
+  }
+
+  .card-image {
+    height: 200px;
+    font-size: 3rem;
+  }
+}
+
 
 
 
