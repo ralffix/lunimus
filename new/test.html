@@ -65,6 +65,18 @@ nav a:hover {
     background: #222;
     color: white !important;
     padding: 0.6rem 1.5rem;
+    transition: color 0.3s;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: #666;
+}
+
+.book-nav-btn {
+    background: #222;
+    color: white !important;
+    padding: 0.6rem 1.5rem;
     border-radius: 5px;
     transition: background 0.3s;
 }
@@ -241,7 +253,10 @@ section h2 {
     font-size: 1.5rem;
     color: #888;
     transition: transform 0.3s;
+    overflow: hidden;
+    padding: 10px;
 }
+
 
 .gallery-item:hover {
     transform: scale(1.05);
@@ -424,6 +439,18 @@ footer {
     .booking-container {
         padding: 1rem;
     }
+    img{
+        width: 50px;
+    }
+    .gallery-item img {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
 }
 </style>
 </head>
@@ -501,9 +528,9 @@ footer {
     <section class="gallery">
         <h2>Galerija</h2>
         <div class="gallery-grid">
-            <div class="gallery-item">✂️</div>
-            <div class="gallery-item">💈</div>
-            <div class="gallery-item">🧔</div>
+            <div class="gallery-item"><img src="snik snak.jpeg"></div>
+            <div class="gallery-item"><img src="sweet.jpeg"></div>
+            <div class="gallery-item"><img src="woof.jpeg"></div>
             <div class="gallery-item">👔</div>
         </div>
     </section>
