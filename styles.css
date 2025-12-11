@@ -8,6 +8,7 @@ html, body {
   color: rgb(37, 37, 37);
 }
 
+
 body::before,
 body::after {
   content: '';

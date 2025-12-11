@@ -12,6 +12,79 @@
     height: auto;
     border-radius: 8px;
   }
+  
+  /* Fixed infinite scroll styles with unique class name */
+  .image-scroll-container {
+    flex: 0 0 300px;
+    height: 600px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+  }
+
+  .image-scroll-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    animation: scrollUp 20s linear infinite;
+  }
+
+  .image-scroll-content:hover {
+    animation-play-state: paused;
+  }
+
+  .product-image {
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    max-width: 100%;
+  }
+
+  .product-image:hover {
+    transform: scale(1.05);
+  }
+
+  @keyframes scrollUp {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  /* Gradient overlays for smooth appearance */
+  .image-scroll-container::before,
+  .image-scroll-container::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 50px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .image-scroll-container::before {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(20, 20, 20, 0.95), transparent);
+  }
+
+  .image-scroll-container::after {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(20, 20, 20, 0.95), transparent);
+  }
+
+  @media (max-width: 768px) {
+    .image-scroll-container {
+      flex: 1;
+      width: 100%;
+      height: 400px;
+    }
+  }
 </style>
 <body>
   <div class="topbar">
@@ -54,7 +127,7 @@
       <div class="sticky-card">
         <h2>📜 2. Uzņēmuma Vēsture</h2>
         <div class="card-grid">
-          <div class="card-image">📅</div>
+          <div class="card-image"><img src="https://cdn.shopify.com/s/files/1/1612/2619/files/Web_graphic_1_1024x1024.jpg?v=1549293973"></div>
           <div class="card-content">
             <p><strong>1996. gads - Sākums:</strong> Pūres šokolādes fabrika tika dibināta Tukuma novadā, Pūres pagastā. Sākotnēji tā bija neliela ģimenes ražotne ar sapni radīt kvalitatīvu Latvijas šokolādi.</p>
             <p><strong>2000-2005 - Izaugsme:</strong> Straujas izaugsmes periods - iegādāts jauns aprīkojums no Šveices un Vācijas, palielināts darbinieku skaits līdz 50 cilvēkiem. Sākta eksportēšana uz Lietuvu un Igauniju.</p>
@@ -70,37 +143,53 @@
     <!-- Section 3: Produkcija -->
     <div class="card-section">
       <div class="sticky-card">
-        <h2> 3. Galvenā Produkcija</h2>
-        <div class="card-content">
-          <h3 style="color: #66ffcc; margin-bottom: 1rem;">Šokolādes Tāfelītes:</h3>
-          <ul>
-            <li>Piena šokolāde  - klasiskā un vispieprasītākā</li>
-            <li>Tumšā šokolāde  - dažādu intensitāšu</li>
-            <li>Baltā šokolāde - maiga un krēmīga</li>
-            <li>Ar riekstiem - lazdu rieksti, mandeļi</li>
-            <li>Ar karameli un sāli - moderna kombinācija</li>
-          </ul>
+        <h2>🍫 3. Galvenā Produkcija</h2>
+        
+        <!-- Flex container for side-by-side layout -->
+        <div style="display: flex; gap: 2rem; align-items: flex-start;">
+          
+          <!-- Text content on the left -->
+          <div class="card-content" style="flex: 1;">
+            <h3 style="color: #66ffcc; margin-bottom: 1rem;">Šokolādes Tāfelītes:</h3>
+            <ul>
+              <li>Piena šokolāde - klasiskā un vispieprasītākā</li>
+              <li>Tumšā šokolāde - dažādu intensitāšu</li>
+              <li>Baltā šokolāde - maiga un krēmīga</li>
+              <li>Ar riekstiem - lazdu rieksti, mandeļi</li>
+              <li>Ar karameli un sāli - moderna kombinācija</li>
+            </ul>
 
-          <h3 style="color: #66ffcc; margin: 1.5rem 0 1rem;">Konfektes un Pralinēs:</h3>
-          <ul>
-            <li>Klasiskās pralinēs - roku darbs ar dažādiem pildījumiem</li>
-            <li>Augļu želejā pildītas - zemeņu, aveņu, apelsīnu</li>
-            <li>Liķiera konfektes - ar konjaku, vīskiju</li>
-            <li>Krema pildījuma konfektes - šokolādes, vaniļas, kafijas</li>
-            <li>Sezonālās kolekcijas - Ziemassvētkiem, Lieldienām</li>
-          </ul>
+            <h3 style="color: #66ffcc; margin: 1.5rem 0 1rem;">Konfektes un Pralinēs:</h3>
+            <ul>
+              <li>Klasiskās pralinēs - roku darbs ar dažādiem pildījumiem</li>
+              <li>Augļu želejā pildītas - zemeņu, aveņu, apelsīnu</li>
+              <li>Liķiera konfektes - ar konjaku, vīskiju</li>
+              <li>Krema pildījuma konfektes - šokolādes, vaniļas, kafijas</li>
+              <li>Sezonālās kolekcijas - Ziemassvētkiem, Lieldienām</li>
+            </ul>
 
-          <h3 style="color: #66ffcc; margin: 1.5rem 0 1rem;">Speciālie Produkti:</h3>
-          <ul>
-            <li>Šokolādes figūriņas - zaķi, Ziemassvētku vecīši</li>
-            <li>Korporatīvie pasūtījumi - ar logo un individuālu dizainu</li>
-            <li>Bio un vegānu līnija - sertificēti produkti</li>
-            <li>Bez cukura opcijas - ar dabīgiem saldinātājiem</li>
-          </ul>
-
-          <p style="margin-top: 1.5rem; padding: 1rem; background: rgba(102, 255, 204, 0.1); border-radius: 8px;">
-            <strong> Ražošanas apjoms:</strong> Gadā vairāk nekā 5 miljoni izstrādājumu, diennaktī līdz 20 tonnām, sortimentā 100+ receptes.
-          </p>
+            <p style="margin-top: 1.5rem; padding: 1rem; background: rgba(102, 255, 204, 0.1); border-radius: 8px;">
+              <strong>📊 Ražošanas apjoms:</strong> Gadā vairāk nekā 5 miljoni izstrādājumu, diennaktī līdz 20 tonnām, sortimentā 100+ receptes.
+            </p>
+          </div>
+          
+          <!-- INFINITE SCROLL IMAGE CONTAINER ON THE RIGHT -->
+          <div class="image-scroll-container">
+            <div class="image-scroll-content">
+              <!-- First set of images -->
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRn-BIbDk0odBiiS1boDS4IAY31quAyhOQU8Q&s" alt="Pūres Šokolāde" class="product-image">
+              <img src="https://cdn.barbora.lv/products/60cd63d2-8700-4acb-90b7-e8822ed95734_m.png" alt="Šokolādes produkti" class="product-image">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-lUvMZXupX2eR9cxm9nsC98GeYFn4cIvyAw&s" alt="Pūres Šokolāde" class="product-image">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROKaIR7qr2WrP1K_SBGcaiim9jP_L4M8QEAQ&s" alt="Šokolādes produkti" class="product-image">
+              
+              <!-- Duplicate set for seamless loop -->
+              <<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRn-BIbDk0odBiiS1boDS4IAY31quAyhOQU8Q&s" alt="Pūres Šokolāde" class="product-image">
+              <img src="https://cdn.barbora.lv/products/60cd63d2-8700-4acb-90b7-e8822ed95734_m.png" alt="Šokolādes produkti" class="product-image">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-lUvMZXupX2eR9cxm9nsC98GeYFn4cIvyAw&s" alt="Pūres Šokolāde" class="product-image">
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcROKaIR7qr2WrP1K_SBGcaiim9jP_L4M8QEAQ&s" alt="Šokolādes produkti" class="product-image">
+              </div>
+          </div>
+          
         </div>
       </div>
     </div>
@@ -108,7 +197,7 @@
     <!-- Section 4: Izejvielas -->
     <div class="card-section">
       <div class="sticky-card">
-        <h2> 4. Izmantotās Izejvielas</h2>
+        <h2>🌾 4. Izmantotās Izejvielas</h2>
         <div class="card-grid">
           <div class="card-content">
             <ul>
@@ -122,7 +211,7 @@
               <li><strong>Augļi:</strong> Žāvēti un saldēti - zemeņu, aveņu, ķiršu pildījumiem</li>
             </ul>
           </div>
-          <div class="card-image"><img src="data:image/jpeg;base64,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"></div>
+          <div class="card-image"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqTaSd46phIJTCuGawY1Do7-WaVkiFFnFuJg&s"> </div>
         </div>
         <div class="card-content" style="margin-top: 1.5rem;">
           <p style="padding: 1rem; background: rgba(102, 255, 204, 0.1); border-radius: 8px;">
@@ -135,7 +224,7 @@
     <!-- Section 5: Eksports -->
     <div class="card-section">
       <div class="sticky-card">
-        <h2> 5. Eksports un Tā Virzieni</h2>
+        <h2>🌍 5. Eksports un Tā Virzieni</h2>
         <div class="card-content">
           <p style="padding: 1rem; background: rgba(102, 255, 204, 0.1); border-radius: 8px; margin-bottom: 1.5rem;">
             <strong>📊 Eksporta statistika:</strong> 40% no kopējās ražošanas, 25+ valstis, galvenais tirgus - ES (95%), gada pieaugums 15-20%
@@ -151,7 +240,7 @@
           </ul>
 
           <p style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 204, 128, 0.1); border-radius: 8px;">
-            <strong> Eksporta stratēģija:</strong> Fokuss uz premium kvalitāti, ilgtspējīgiem produktiem un personalizētiem risinājumiem korporatīvajiem klientiem.
+            <strong>💼 Eksporta stratēģija:</strong> Fokuss uz premium kvalitāti, ilgtspējīgiem produktiem un personalizētiem risinājumiem korporatīvajiem klientiem.
           </p>
         </div>
       </div>
@@ -160,19 +249,19 @@
     <!-- Section 6: Interesanti fakti -->
     <div class="card-section">
       <div class="sticky-card">
-        <h2> 6. Interesanti Fakti</h2>
+        <h2>✨ 6. Interesanti Fakti</h2>
         <div class="card-content">
           <ul>
-            <li><strong> Starptautiskas balvas:</strong> "Great Taste Awards" zelta medaļas (2018, 2020), "Quality Award" Vācijas izstādē ANUGA</li>
-            <li><strong> Zaļā enerģija:</strong> 500 saules paneļi ražo 30% no enerģijas, 95% atkritumu tiek pārstrādāti</li>
-            <li><strong> Noslēpumu receptes:</strong> 7 slepenās ģimenes receptes, kas tiek nodotas tikai ģimenes locekļiem</li>
-            <li><strong> Ražošanas ātrums:</strong> 300 tāfelītes minūtē, 10,000 konfektes stundā</li>
-            <li><strong> Kakao ceļojums:</strong> Pupiņas ceļo vairāk nekā 9,000 km no Āfrikas līdz Latvijai</li>
-            <li><strong> Lielākais darba devējs:</strong> 250+ darbinieki, kas ir 40% no Pūres pagasta iedzīvotājiem</li>
-            <li><strong> Apmācības:</strong> Katru gadu tiek apmācīti 50+ konditori un šokolādes meistari</li>
-            <li><strong> Rekordpasūtījums:</strong> 5 tonnas šokolādes vienā pasūtījumā starptautiskai konferencei (2019)</li>
-            <li><strong> Kvalitāte:</strong> ISO 9001:2015, HACCP, IFS Food standarti, Fair Trade sertifikāts</li>
-            <li><strong> Iepakojums:</strong> 60% no iepakojuma ir pārstrādājams vai biodegradējams</li>
+            <li><strong>🏆 Starptautiskas balvas:</strong> "Great Taste Awards" zelta medaļas (2018, 2020), "Quality Award" Vācijas izstādē ANUGA</li>
+            <li><strong>🌱 Zaļā enerģija:</strong> 500 saules paneļi ražo 30% no enerģijas, 95% atkritumu tiek pārstrādāti</li>
+            <li><strong>🤫 Noslēpumu receptes:</strong> 7 slepenās ģimenes receptes, kas tiek nodotas tikai ģimenes locekļiem</li>
+            <li><strong>⚡ Ražošanas ātrums:</strong> 300 tāfelītes minūtē, 10,000 konfektes stundā</li>
+            <li><strong>✈️ Kakao ceļojums:</strong> Pupiņas ceļo vairāk nekā 9,000 km no Āfrikas līdz Latvijai</li>
+            <li><strong>👥 Lielākais darba devējs:</strong> 250+ darbinieki, kas ir 40% no Pūres pagasta iedzīvotājiem</li>
+            <li><strong>🎓 Apmācības:</strong> Katru gadu tiek apmācīti 50+ konditori un šokolādes meistari</li>
+            <li><strong>📦 Rekordpasūtījums:</strong> 5 tonnas šokolādes vienā pasūtījumā starptautiskai konferencei (2019)</li>
+            <li><strong>✅ Kvalitāte:</strong> ISO 9001:2015, HACCP, IFS Food standarti, Fair Trade sertifikāts</li>
+            <li><strong>♻️ Iepakojums:</strong> 60% no iepakojuma ir pārstrādājams vai biodegradējams</li>
           </ul>
         </div>
       </div>
@@ -181,7 +270,7 @@
     <!-- Section 7: Informācijas avoti -->
     <div class="card-section">
       <div class="sticky-card">
-        <h2> 7. Izmantotie Informācijas Avoti</h2>
+        <h2>📚 7. Izmantotie Informācijas Avoti</h2>
         <div class="card-content">
           <h3 style="color: #66ffcc; margin-bottom: 1rem;">Interneta resursi:</h3>
           <ul style="list-style: decimal; padding-left: 2rem;">
@@ -200,7 +289,6 @@
             <li style="padding-left: 0;">Latvijas pārtikas rūpniecības žurnāli un publikācijas</li>
             <li style="padding-left: 0;">Eiropas Savienības pārtikas drošības dokumentācija</li>
           </ul>
-
         </div>
       </div>
     </div>
