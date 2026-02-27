@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>☢ Gamma Starojums</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a0f;
+    --panel: #0a1420;
+    --border: #0f3a5c;
+    --accent: #00ffe7;
+    --danger: #ff3c3c;
+    --warn: #ffaa00;
+    --text: #c8e8f0;
+    --dim: #4a7a8a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,231,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,231,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+  @keyframes gridMove { to { background-position: 0 40px; } }
+
+  header {
+    text-align: center;
+    padding: 36px 20px 16px;
+    position: relative;
+    z-index: 1;
+  }
+  .nav-back {
+    position: absolute; top: 20px; left: 20px;
+    color: var(--dim); text-decoration: none;
+    font-family: 'Share Tech Mono', monospace; font-size: 13px;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--accent); }
+  h1 {
+    font-size: clamp(28px, 7vw, 56px);
+    font-weight: 800; letter-spacing: 4px; text-transform: uppercase;
+    background: linear-gradient(135deg, #ff3c3c, #ff00cc, #00ffe7);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    filter: drop-shadow(0 0 24px rgba(255,60,60,0.5));
+  }
+  .subtitle {
+    color: var(--dim); font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; letter-spacing: 4px; margin-top: 8px;
+  }
+
+  .tabs {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: 8px; padding: 20px; position: relative; z-index: 1;
+  }
+  .tab-btn {
+    background: var(--panel); border: 1px solid var(--border);
+    color: var(--dim); padding: 10px 18px; border-radius: 3px;
+    font-family: 'Share Tech Mono', monospace; font-size: 11px;
+    letter-spacing: 2px; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--text); }
+  .tab-btn.active {
+    border-color: var(--danger); color: var(--danger);
+    box-shadow: 0 0 16px rgba(255,60,60,0.3);
+    background: rgba(255,60,60,0.08);
+  }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 0 20px 40px; position: relative; z-index: 1; }
+
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 4px; padding: 28px; position: relative; overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .panel::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--danger), transparent);
+  }
+  .panel-title {
+    font-size: 11px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--danger); font-family: 'Share Tech Mono', monospace; margin-bottom: 20px;
+  }
+
+  .wave-wrap {
+    background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+    border-radius: 3px; overflow: hidden; margin-bottom: 16px;
+  }
+  canvas#waveCanvas { display: block; width: 100%; height: 130px; }
+
+  .range-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;
+  }
+  @media(max-width:500px){ .range-row { grid-template-columns: 1fr; } }
+
+  .info-box {
+    background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    border-radius: 3px; padding: 16px; text-align: center;
+  }
+  .info-box .lbl {
+    font-family: 'Share Tech Mono', monospace; font-size: 10px;
+    letter-spacing: 3px; color: var(--dim); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .info-box .val {
+    font-family: 'Share Tech Mono', monospace; font-size: 22px;
+    color: var(--danger); font-weight: 800;
+  }
+  .info-box .unit { font-size: 11px; color: var(--dim); margin-top: 4px; font-family: 'Share Tech Mono', monospace; }
+
+  .compare-note {
+    background: rgba(255,60,60,0.07); border: 1px solid rgba(255,60,60,0.3);
+    border-radius: 3px; padding: 16px; text-align: center;
+    font-size: 14px; line-height: 1.7; color: var(--text);
+  }
+  .compare-note strong { color: var(--danger); }
+
+  .size-scene {
+    display: flex; align-items: flex-end; justify-content: center;
+    gap: 32px; padding: 24px 0; flex-wrap: wrap;
+  }
+  .size-item { text-align: center; }
+  .size-block {
+    margin: 0 auto 10px; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+  }
+  .size-label { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--dim); letter-spacing: 2px; }
+  .size-sub { font-size: 11px; color: var(--accent); margin-top: 4px; font-family: 'Share Tech Mono', monospace; }
+
+  .sources-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;
+  }
+  .source-card {
+    background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    border-radius: 3px; padding: 20px; text-align: center;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .source-card:hover { border-color: var(--danger); box-shadow: 0 0 16px rgba(255,60,60,0.2); }
+  .source-icon { font-size: 36px; margin-bottom: 10px; }
+  .source-name { font-weight: 800; font-size: 14px; color: var(--text); margin-bottom: 6px; }
+  .source-desc { font-size: 12px; color: var(--dim); line-height: 1.5; }
+
+  .uses-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;
+  }
+  .use-card {
+    background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    border-radius: 3px; padding: 20px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .use-card:hover { border-color: var(--accent); box-shadow: 0 0 16px rgba(0,255,231,0.15); }
+  .use-icon { font-size: 30px; margin-bottom: 10px; }
+  .use-title { font-weight: 800; font-size: 14px; color: var(--accent); margin-bottom: 6px; }
+  .use-desc { font-size: 12px; color: var(--dim); line-height: 1.6; }
+
+  .shield-scene { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:560px){ .shield-scene { grid-template-columns: 1fr; } }
+  canvas#shieldCanvas { display: block; width: 100%; height: 180px; }
+  .shield-list { display: flex; flex-direction: column; gap: 8px; }
+  .shield-row {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    border-radius: 3px; padding: 10px 14px; font-size: 13px;
+  }
+  .shield-row .icon { font-size: 20px; }
+  .shield-row .name { flex: 1; font-weight: 600; }
+  .badge {
+    font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 1px;
+    padding: 3px 8px; border-radius: 2px;
+  }
+  .badge.no   { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid #00ff88; }
+  .badge.part { background: rgba(255,170,0,0.12); color: #ffaa00; border: 1px solid #ffaa00; }
+  .badge.yes  { background: rgba(255,60,60,0.12);  color: #ff3c3c; border: 1px solid #ff3c3c; }
+
+  footer {
+    text-align: center; padding: 30px; color: var(--dim);
+    font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px;
+    position: relative; z-index: 1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="../index.html" class="nav-back">← Atpakaļ</a>
+  <h1>☢ Gamma Starojums</h1>
+  <p class="subtitle">Elektromagnētiskā starojuma simulācija · Fizika 9. klase</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('vilnu', this)">λ Viļņu garums</button>
+  <button class="tab-btn" onclick="showTab('frek', this)">f Frekvence</button>
+  <button class="tab-btn" onclick="showTab('izmeri', this)">📐 Izmēri</button>
+  <button class="tab-btn" onclick="showTab('avoti', this)">⚛ Avoti</button>
+  <button class="tab-btn" onclick="showTab('izmantots', this)">🔬 Izmantojums</button>
+</div>
+
+<div class="container">
+
+  <!-- 1. VILNU GARUMS -->
+  <div class="section active" id="tab-vilnu">
+    <div class="panel">
+      <div class="panel-title">// 01 · Viļņu garuma diapazona</div>
+      <div class="wave-wrap">
+        <canvas id="waveCanvas" height="130"></canvas>
+      </div>
+      <div class="range-row">
+        <div class="info-box">
+          <div class="lbl">Viļņu garums</div>
+          <div class="val">&lt; 10 pm</div>
+          <div class="unit">mazāks par 10⁻¹¹ m</div>
+        </div>
+        <div class="info-box">
+          <div class="lbl">Tipiskā vērtība</div>
+          <div class="val">1 pm</div>
+          <div class="unit">10⁻¹² m</div>
+        </div>
+      </div>
+      <div class="compare-note">
+        Gamma starojuma viļņu garums ir <strong>mazāks par 10⁻¹¹ m</strong> —
+        tas ir īsākais no visiem elektromagnētiskā spektra veidiem.<br>
+        Salīdzinājumam: redzamā gaisma ir aptuveni <strong>400–700 nm</strong> (10⁻⁷ m) —
+        gandrīz miljardu reižu garāka!
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. FREKVENCE -->
+  <div class="section" id="tab-frek">
+    <div class="panel">
+      <div class="panel-title">// 02 · Frekvenču diapazona</div>
+      <div class="range-row">
+        <div class="info-box">
+          <div class="lbl">Min frekvence</div>
+          <div class="val">3×10¹⁹</div>
+          <div class="unit">Hz</div>
+        </div>
+        <div class="info-box">
+          <div class="lbl">Tipiska vērtība</div>
+          <div class="val">3×10²⁰</div>
+          <div class="unit">Hz</div>
+        </div>
+      </div>
+      <div class="compare-note" style="margin-bottom:16px">
+        Fotona enerģija: <strong>E = hf</strong><br>
+        h = 6.626 × 10⁻³⁴ J·s &nbsp;·&nbsp; f = 3×10²⁰ Hz<br><br>
+        <strong style="font-size:18px; color:#00ffe7">E ≈ 1.24 MeV</strong><br>
+        <span style="color:var(--dim); font-size:12px">Tas ir pietiekami daudz, lai jonizētu atomus un sabojātu DNS!</span>
+      </div>
+      <div class="compare-note">
+        Redzamā gaisma: ~10¹⁴ Hz &nbsp;|&nbsp; X-stari: ~10¹⁸ Hz &nbsp;|&nbsp; <strong>Gamma: &gt;10¹⁹ Hz</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. IZMERI -->
+  <div class="section" id="tab-izmeri">
+    <div class="panel">
+      <div class="panel-title">// 03 · Kāda fizikāla ķermeņa izmēri ir salīdzināmi</div>
+      <div class="size-scene">
+        <div class="size-item">
+          <div class="size-block" style="width:120px;height:120px;background:rgba(0,100,255,0.1);border:2px solid #0088ff;">🌐</div>
+          <div class="size-label">ATOMS</div>
+          <div class="size-sub">~10⁻¹⁰ m</div>
+        </div>
+        <div class="size-item">
+          <div class="size-block" style="width:60px;height:60px;background:rgba(0,255,200,0.1);border:2px solid #00ffe7;font-size:20px;">⚛️</div>
+          <div class="size-label">ATOMKODOLS</div>
+          <div class="size-sub">~10⁻¹⁴ m</div>
+        </div>
+        <div class="size-item">
+          <div class="size-block" style="width:28px;height:28px;background:rgba(255,60,60,0.15);border:2px solid #ff3c3c;font-size:13px;color:#ff3c3c;font-weight:800;">γ</div>
+          <div class="size-label">GAMMA λ</div>
+          <div class="size-sub">&lt;10⁻¹¹ m</div>
+        </div>
+      </div>
+      <div class="compare-note">
+        Gamma starojuma viļņu garums ir salīdzināms ar <strong>atomkodola izmēriem</strong> (~10⁻¹⁴ m)
+        un ir aptuveni <strong>100× mazāks par atoma izmēru</strong> (~10⁻¹⁰ m).<br><br>
+        Tāpēc gamma stari var iekļūt dziļi atomu struktūrā un jonizēt tos.
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. AVOTI -->
+  <div class="section" id="tab-avoti">
+    <div class="panel">
+      <div class="panel-title">// 04 · AMV avoti</div>
+      <div class="sources-grid">
+        <div class="source-card">
+          <div class="source-icon">☢️</div>
+          <div class="source-name">Radioaktīvais sabrukums</div>
+          <div class="source-desc">Kodoli kā ⁶⁰Co, ¹³⁷Cs — pārejot uz zemāku enerģijas stāvokli, izdala gamma fotonu</div>
+        </div>
+        <div class="source-card">
+          <div class="source-icon">💥</div>
+          <div class="source-name">Kodolreakcijas</div>
+          <div class="source-desc">Kodoldalīšanās un sintēzes reakcijās rodas intensīvs gamma starojums</div>
+        </div>
+        <div class="source-card">
+          <div class="source-icon">🌟</div>
+          <div class="source-name">Kosmiskais starojums</div>
+          <div class="source-desc">Supernovas, neitronu zvaigznes un melnās caurumi — galaktiskā mēroga gamma sprādzieni</div>
+        </div>
+        <div class="source-card">
+          <div class="source-icon">⚡</div>
+          <div class="source-name">Pāra anihilācija</div>
+          <div class="source-desc">Kad elektroni un pozitroni saduras, rodas divi gamma kvanti pa 511 keV katrs</div>
+        </div>
+        <div class="source-card">
+          <div class="source-icon">🏥</div>
+          <div class="source-name">Medicīniskie izotopi</div>
+          <div class="source-desc">⁹⁹ᵐTc, ¹⁸F — radioaktīvie izotopi tiek izmantoti PET/SPECT skenēšanā</div>
+        </div>
+        <div class="source-card">
+          <div class="source-icon">🌩</div>
+          <div class="source-name">Zibens (TGF)</div>
+          <div class="source-desc">Negaisu laikā rodas "zemes gamma uzplaiksnījumi" (Terrestrial Gamma-ray Flashes)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. IZMANTOJUMS -->
+  <div class="section" id="tab-izmantots">
+    <div class="panel">
+      <div class="panel-title">// 05 · Kur tiek izmantots</div>
+      <div class="uses-grid">
+        <div class="use-card">
+          <div class="use-icon">🏥</div>
+          <div class="use-title">Vēža ārstēšana</div>
+          <div class="use-desc">Gamma nazis — precīzi fokusēti stari iznīcina audzēju šūnas, neskarot veselus audus</div>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">🔬</div>
+          <div class="use-title">Medicīniskā diagnostika</div>
+          <div class="use-desc">PET skenēšana — gamma stari parāda audu aktivitāti 3D attēlā</div>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">🧫</div>
+          <div class="use-title">Sterilizācija</div>
+          <div class="use-desc">Medicīnisko instrumentu un pārtikas sterilizācija, iznīcinot baktērijas</div>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">🔩</div>
+          <div class="use-title">Rūpnieciskā defektoskopija</div>
+          <div class="use-desc">Caurlaidspēja ļauj pārbaudīt metāla konstrukcijas un atrast slēptus defektus</div>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">🌍</div>
+          <div class="use-title">Ģeoloģija</div>
+          <div class="use-desc">Gamma spektrometrija — minerālu sastāva noteikšana akmeņos un urbumu izpētē</div>
+        </div>
+        <div class="use-card">
+          <div class="use-icon">🚀</div>
+          <div class="use-title">Kosmoloģija</div>
+          <div class="use-desc">Gamma teleskopi atklāj attālas galaktikas, melnās caurumu plūsmas un supernovas</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <div class="panel-title" style="margin-bottom:16px">// Caurlaidspēja un aizsardzība</div>
+        <div class="shield-scene">
+          <div style="background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:3px;overflow:hidden;">
+            <canvas id="shieldCanvas" height="180"></canvas>
+          </div>
+          <div class="shield-list">
+            <div class="shield-row"><span class="icon">📄</span><span class="name">Papīrs</span><span class="badge yes">CAURLAIDĪGS</span></div>
+            <div class="shield-row"><span class="icon">🪵</span><span class="name">Koks</span><span class="badge yes">CAURLAIDĪGS</span></div>
+            <div class="shield-row"><span class="icon">🔩</span><span class="name">Alumīnijs</span><span class="badge yes">CAURLAIDĪGS</span></div>
+            <div class="shield-row"><span class="icon">🧱</span><span class="name">Svins / Betons</span><span class="badge part">DAĻĒJI BLOĶĒ</span></div>
+            <div class="shield-row"><span class="icon">🏗</span><span class="name">Biezs svins (10cm+)</span><span class="badge no">BLOĶĒ</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>☢ GAMMA STAROJUMA SIMULĀCIJA &nbsp;·&nbsp; FIZIKA 9. KLASE</footer>
+
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'izmantots') setTimeout(drawShield, 80);
+}
+
+// Wave canvas
+const waveCanvas = document.getElementById('waveCanvas');
+const waveCtx = waveCanvas.getContext('2d');
+let frame = 0;
+
+function resizeWave() {
+  waveCanvas.width = waveCanvas.offsetWidth * devicePixelRatio;
+  waveCanvas.height = 130 * devicePixelRatio;
+}
+
+function drawWave() {
+  const w = waveCanvas.offsetWidth;
+  const h = 130;
+  waveCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  waveCtx.clearRect(0, 0, w, h);
+
+  [h*0.3, h*0.5, h*0.7].forEach((cy, i) => {
+    const phase = (i * Math.PI * 2) / 3;
+    waveCtx.save();
+    waveCtx.shadowColor = '#ff3c3c';
+    waveCtx.shadowBlur = 14;
+    waveCtx.strokeStyle = i === 1 ? '#ff3c3c' : 'rgba(255,60,60,0.4)';
+    waveCtx.lineWidth = i === 1 ? 2.5 : 1.5;
+    waveCtx.beginPath();
+    for (let x = 0; x <= w; x++) {
+      const y = cy + 18 * Math.sin((x / w) * 55 * Math.PI * 2 - frame * 0.04 + phase);
+      x === 0 ? waveCtx.moveTo(x, y) : waveCtx.lineTo(x, y);
+    }
+    waveCtx.stroke();
+    waveCtx.restore();
+  });
+
+  frame++;
+  requestAnimationFrame(drawWave);
+}
+
+// Shield canvas
+function drawShield() {
+  const shieldCanvas = document.getElementById('shieldCanvas');
+  if (!shieldCanvas) return;
+  shieldCanvas.width = shieldCanvas.offsetWidth * devicePixelRatio;
+  shieldCanvas.height = 180 * devicePixelRatio;
+  const ctx = shieldCanvas.getContext('2d');
+  const w = shieldCanvas.offsetWidth;
+  const h = 180;
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillRect(0, 0, w, h);
+
+  const layers = [
+    { x: w*0.22, color: '#b0a898' },
+    { x: w*0.37, color: '#7a5c3c' },
+    { x: w*0.52, color: '#7a8fa0' },
+    { x: w*0.67, color: '#334455' },
+    { x: w*0.82, color: '#111e2b' },
+  ];
+  const labels = ['Papīrs','Koks','Al','Pb','Pb+'];
+  layers.forEach((l, i) => {
+    ctx.fillStyle = l.color;
+    ctx.fillRect(l.x - 7, h*0.18, 14, h*0.65);
+    ctx.fillStyle = 'rgba(200,232,240,0.4)';
+    ctx.font = `9px 'Share Tech Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(labels[i], l.x, h*0.12);
+  });
+
+  const rayY = h * 0.5;
+  const alphas = [1, 0.85, 0.65, 0.4, 0.1];
+  const stops = [0, ...layers.map(l => l.x + 7)];
+  for (let i = 0; i < stops.length - 1; i++) {
+    ctx.save();
+    ctx.globalAlpha = alphas[i];
+    ctx.shadowColor = '#ff3c3c'; ctx.shadowBlur = 12;
+    ctx.strokeStyle = '#ff3c3c'; ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(stops[i], rayY);
+    ctx.lineTo(stops[i+1] - 14, rayY);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  ctx.font = 'bold 18px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#ff3c3c';
+  ctx.fillText('☢', 4, rayY + 6);
+
+  ctx.font = 'bold 9px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#00ff88';
+  ctx.fillText('BLOĶĒTS', w*0.82, rayY - 16);
+}
+
+window.addEventListener('resize', resizeWave);
+resizeWave();
+drawWave();
+</script>
+</body>
+</html>
