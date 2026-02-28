@@ -4,46 +4,6 @@
 <meta charset="UTF-8" />
 <title>Add Recipe</title>
 <link rel="stylesheet" href="../styles.css" />
-<style>
-main {
-  max-width: 600px;
-  margin: 100px auto 40px;
-  background: rgba(20, 20, 20, 0.85);
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
-  color: #ccc;
-}
-h1 { color: #66ffcc; text-align:center; margin-bottom:2rem; }
-form input, form textarea, form select {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  border: 1px solid #333;
-  background: #1e1e1e;
-  color: #ccc;
-  font-size: 1rem;
-  resize: vertical;
-}
-form button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  font-weight: bold;
-  font-size: 1rem;
-  color: black;
-  background: linear-gradient(to right, #00ffcc, #00bfff);
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-}
-form button:hover {
-  background: linear-gradient(to right, #00bfff, #00ffcc);
-  transform: scale(1.03);
-}
-label { display:block; margin: 0.5rem 0 0.2rem; color:#aaa; }
-</style>
 </head>
 <body>
 <nav class="topbar">
@@ -59,7 +19,7 @@ label { display:block; margin: 0.5rem 0 0.2rem; color:#aaa; }
   <a href="myrecipes.html">My Recipes</a>
 </nav>
 
-<main>
+<main class="addrecipe-main">
 <h1>Add a New Recipe</h1>
 <form id="recipe-form">
   <label for="title">Recipe Title</label>

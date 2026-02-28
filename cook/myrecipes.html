@@ -4,29 +4,6 @@
 <meta charset="UTF-8" />
 <title>My Recipes</title>
 <link rel="stylesheet" href="../styles.css" />
-<style>
-ul#my-recipe-list { list-style: none; padding:0; }
-ul#my-recipe-list li {
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: rgba(20,20,20,0.85);
-  border-radius: 8px;
-  color: #ccc;
-}
-ul#my-recipe-list li button {
-  margin-top: 5px;
-  margin-right: 5px;
-  padding: 5px 10px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  color:black;
-}
-button.delete { background: #ff6666; }
-button.toggle { background: linear-gradient(to right, #00ffcc,#00bfff); }
-button.delete:hover { background: #ff3333; }
-button.toggle:hover { background: linear-gradient(to right, #00bfff,#00ffcc); }
-</style>
 </head>
 <body>
 <nav class="topbar">
@@ -92,7 +69,7 @@ async function loadMyRecipes() {
       Steps: ${r.steps || ""}<br>
       Difficulty: ${r.difficulty || "?"} ⭐<br>
       Equipment: ${r.equipment || "None"}<br>
-      ${r.image ? `<img src="${r.image}" style="max-width:200px;border-radius:8px;margin-top:5px;">` : ""}
+      ${r.image ? `<img src="${r.image}" class="recipe-image">` : ""}
       <br>
       <button class="delete" onclick="deleteRecipe('${r.id}')">Delete</button>
       <button class="toggle" onclick="togglePublic('${r.id}', ${r.is_public})">
