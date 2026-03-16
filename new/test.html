@@ -6,461 +6,174 @@
 <title>Half Time</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Open Sans', sans-serif; background: #1a1a1a; color: #e8e0d0; }
+h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
 
-body {
-    font-family: 'Open Sans', sans-serif;
-    background: #e8e8e8;
-    color: #333;
-}
-
-h1, h2, h3, h4 {
-    font-family: 'Playfair Display', serif;
-}
-
-/* Navigation */
+/* ── NAV (original structure, dark colors) ── */
 nav {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.95);
+    position: fixed; top: 0; width: 100%;
+    background: rgba(20, 20, 20, 0.97);
     padding: 1rem 2rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    z-index: 1000; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #2e2e2e;
 }
-
-nav .logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #222;
-    width: 50px;
-    height: auto;
-}
-
-nav ul {
-    list-style: none;
-    display: flex;
-    gap: 2rem;
-    align-items: center;
-}
-
-nav a {
-    text-decoration: none;
-    color: #333;
-    transition: color 0.3s;
-    font-weight: 500;
-}
-
-nav a:hover {
-    color: #666;
-}
-
+nav .logo { width: 50px; height: auto; filter: invert(1) brightness(0.85); }
+nav ul { list-style: none; display: flex; gap: 2rem; align-items: center; }
+nav a { text-decoration: none; color: #999; transition: color 0.3s; font-weight: 500; }
+nav a:hover { color: #c9a96e; }
 .book-nav-btn {
-    background: #222;
-    color: white !important;
-    padding: 0.6rem 1.5rem;
-    transition: color 0.3s;
-    font-weight: 500;
+    background: #c9a96e; color: #111 !important;
+    padding: 0.6rem 1.5rem; border-radius: 5px;
+    font-weight: 700; transition: background 0.3s !important;
 }
+.book-nav-btn:hover { background: #e0bb85 !important; }
 
-nav a:hover {
-    color: #666;
-}
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
 
-.book-nav-btn {
-    background: #222;
-    color: white !important;
-    padding: 0.6rem 1.5rem;
-    border-radius: 5px;
-    transition: background 0.3s;
-}
-
-.book-nav-btn:hover {
-    background: #444;
-}
-
-/* Pages */
-.page {
-    display: none;
-}
-
-.page.active {
-    display: block;
-}
-
-/* Hero Section */
+/* ── HERO (original structure, dark overlay) ── */
 .hero {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: #222222;
-    image-rendering: auto;
+    height: 100vh; display: flex; align-items: center;
+    justify-content: center; text-align: center;
+    color: #e8e0d0; image-rendering: auto; position: relative; overflow: hidden;
 }
-
-.hero-content {
-    max-width: 800px;
-    padding: 0 20px;
-}
-
-.hero h1 {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
-}
-
-.hero p {
-    font-size: 1.3rem;
-    margin-bottom: 2rem;
-    color: #444;
-}
-
+.hero-content { max-width: 800px; padding: 0 20px; position: relative; z-index: 2; }
+.hero h1 { font-size: 3.5rem; margin-bottom: 1rem; color: #f0ece4; text-shadow: 0 2px 20px rgba(0,0,0,0.9); }
+.hero p { font-size: 1.3rem; margin-bottom: 1rem; color: #ccc; }
+.hero p:last-of-type { margin-bottom: 2rem; }
 .cta-button {
-    display: inline-block;
-    background: #222;
-    color: rgb(255, 255, 255);
-    padding: 1rem 3rem;
-    text-decoration: none;
-    border-radius: 50px;
-    font-weight: 600;
-    transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: inline-block; background: #c9a96e; color: #111;
+    padding: 1rem 3rem; text-decoration: none; border-radius: 50px;
+    font-weight: 700; transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(201,169,110,0.35);
 }
+.cta-button:hover { transform: translateY(-3px); box-shadow: 0 6px 28px rgba(201,169,110,0.5); background: #e0bb85; }
 
-.cta-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    background: #444444;
-}
+/* ── SECTIONS ── */
+section { padding: 4rem 2rem; background: #1a1a1a; }
+section.alt { background: #202020; }
+section h2 { font-size: 2.5rem; text-align: center; margin-bottom: 3rem; color: #f0ece4; }
 
-/* Sections */
-section {
-    padding: 4rem 2rem;
-    background: rgb(211, 211, 211);
-}
-
-section h2 {
-    font-size: 2.5rem;
-    text-align: center;
-    margin-bottom: 3rem;
-    color: #222;
-}
-
-/* Services */
+/* ── SERVICES ── */
 .services-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem; max-width: 1200px; margin: 0 auto;
 }
-
 .service-card {
-    padding: 2rem;
-    border-radius: 10px;
-    background: #f5f5f5;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    transition: 0.3s;
-    text-align: center;
-    cursor: pointer;
+    padding: 2rem; border-radius: 10px;
+    background: #242424; border: 1px solid #2e2e2e;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.35);
+    transition: 0.3s; text-align: center; cursor: pointer;
 }
-
 .service-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border-color: #c9a96e55;
+    box-shadow: 0 10px 30px rgba(201,169,110,0.12);
 }
-
-.service-card h3 {
-    color: #222;
-    margin-bottom: 1rem;
-    font-size: 1.4rem;
-}
-
-.service-card p {
-    color: #555;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-}
-
-.service-duration {
-    color: #777;
-    font-size: 0.9rem;
-    margin: 0.5rem 0;
-}
-
-.service-price {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #222;
-    margin: 1rem 0;
-}
-
+.service-card h3 { color: #f0ece4; margin-bottom: 1rem; font-size: 1.4rem; }
+.service-card p { color: #888; line-height: 1.6; margin-bottom: 1rem; }
+.service-duration { color: #666; font-size: 0.9rem; margin: 0.5rem 0; }
+.service-price { font-size: 1.5rem; font-weight: 700; color: #c9a96e; margin: 1rem 0; }
 .book-btn {
-    display: inline-block;
-    background: #222;
-    color: white;
-    padding: 0.7rem 2rem;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-top: 1rem;
-    transition: background 0.3s;
-    font-weight: 600;
+    display: inline-block; background: #c9a96e; color: #111;
+    padding: 0.7rem 2rem; text-decoration: none; border-radius: 5px;
+    margin-top: 1rem; transition: background 0.3s; font-weight: 700;
 }
+.book-btn:hover { background: #e0bb85; }
 
-.book-btn:hover {
-    background: #444;
-}
-
-/* About */
+/* ── ABOUT ── */
 .about {
-    background: #f5f5f5;
-    color: #333;
-    padding: 3rem 2rem;
-    border-radius: 10px;
-    max-width: 900px;
-    margin: 0 auto;
-    text-align: center;
+    background: #242424; color: #333; padding: 3rem 2rem;
+    border-radius: 10px; max-width: 900px; margin: 0 auto; text-align: center;
+    border: 1px solid #2e2e2e;
 }
+.about p { font-size: 1.1rem; line-height: 1.8; color: #888; }
 
-.about p {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: #555;
-}
-
-/* Gallery */
+/* ── GALLERY ── */
 .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem; max-width: 1200px; margin: 0 auto;
 }
-
 .gallery-item {
-    aspect-ratio: 1;
-    background: #d0d0d0;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: #888;
-    transition: transform 0.3s;
-    overflow: hidden;
-    padding: 10px;
+    aspect-ratio: 1; background: #242424; border-radius: 8px;
+    border: 1px solid #2e2e2e;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; color: #555;
+    transition: transform 0.3s, border-color 0.3s; overflow: hidden; padding: 10px;
 }
-
-
-.gallery-item:hover {
-    transform: scale(1.05);
+.gallery-item:hover { transform: scale(1.03); border-color: #c9a96e55; }
+.gallery-item img {
+    max-width: 100%; max-height: 100%; width: auto; height: auto;
+    object-fit: contain; border-radius: 6px;
+    filter: brightness(0.88) contrast(1.05);
+    transition: filter 0.3s;
 }
+.gallery-item:hover img { filter: brightness(1) contrast(1.05); }
 
-/* Contact */
-.contact {
-    max-width: 800px;
-    margin: 0 auto;
-    text-align: center;
-}
+/* ── CONTACT ── */
+.contact { max-width: 800px; margin: 0 auto; text-align: center; }
+.contact p { font-size: 1.1rem; margin: 1rem 0; color: #888; }
+.contact a { color: #c9a96e; text-decoration: none; font-weight: 600; }
+.contact a:hover { text-decoration: underline; color: #e0bb85; }
 
-.contact p {
-    font-size: 1.1rem;
-    margin: 1rem 0;
-    color: #555;
-}
+/* ── FOOTER ── */
+footer { background: #141414; border-top: 1px solid #2e2e2e; color: #555; text-align: center; padding: 2rem; }
 
-.contact a {
-    color: #222;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.contact a:hover {
-    text-decoration: underline;
-}
-
-/* Footer */
-footer {
-    background: #d0d0d0;
-    color: #333;
-    text-align: center;
-    padding: 2rem;
-}
-
-/* Booking Page */
-.booking-page {
-    min-height: 100vh;
-    padding-top: 80px;
-    background: lightgray;
-}
-
-.booking-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.booking-header {
-    text-align: center;
-    margin-bottom: 3rem;
-}
-
-.booking-header h1 {
-    font-size: 2.5rem;
-    color: #222;
-    margin-bottom: 1rem;
-}
-
-.booking-header p {
-    color: #555;
-    font-size: 1.1rem;
-}
+/* ── BOOKING PAGE ── */
+.booking-page { min-height: 100vh; padding-top: 80px; background: #1a1a1a; }
+.booking-container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+.booking-header { text-align: center; margin-bottom: 3rem; }
+.booking-header h1 { font-size: 2.5rem; color: #f0ece4; margin-bottom: 1rem; }
+.booking-header p { color: #888; font-size: 1.1rem; }
 
 .service-selector {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem; margin-bottom: 3rem;
 }
-
 .service-option {
-    background: #f5f5f5;
-    padding: 1.5rem;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-    border: 3px solid transparent;
-    text-align: center;
+    background: #242424; border: 2px solid #2e2e2e;
+    padding: 1.5rem; border-radius: 10px; cursor: pointer;
+    transition: all 0.3s; text-align: center;
 }
+.service-option:hover { transform: translateY(-3px); border-color: #c9a96e55; box-shadow: 0 5px 20px rgba(201,169,110,0.1); }
+.service-option.selected { border-color: #c9a96e; background: #221f18; }
+.service-option h3 { color: #f0ece4; font-size: 1.1rem; margin-bottom: 0.5rem; font-family: 'Playfair Display', serif; }
+.service-option .duration { color: #666; font-size: 0.9rem; margin: 0.3rem 0; }
+.service-option .price { color: #c9a96e; font-size: 1.3rem; font-weight: 700; margin-top: 0.5rem; }
 
-.service-option:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
+.calendly-wrapper { background: #202020; border: 1px solid #2e2e2e; border-radius: 10px; padding: 2rem; display: none; }
+.calendly-wrapper.active { display: block; }
+.calendly-inline-widget { filter: invert(0.87) hue-rotate(180deg) saturate(0.85) brightness(1.05); border-radius: 8px; overflow: hidden; }
 
-.service-option.selected {
-    border-color: #222;
-    background: white;
-}
+.back-link { text-align: center; margin-top: 2rem; }
+.back-link a { color: #c9a96e; text-decoration: none; font-weight: 600; }
+.back-link a:hover { text-decoration: underline; }
 
-.service-option h3 {
-    color: #222;
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.service-option .duration {
-    color: #777;
-    font-size: 0.9rem;
-    margin: 0.3rem 0;
-}
-
-.service-option .price {
-    color: #222;
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-top: 0.5rem;
-}
-
-.calendly-wrapper {
-    background: white;
-    border-radius: 10px;
-    padding: 2rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    display: none;
-}
-
-.calendly-wrapper.active {
-    display: block;
-}
-
-.back-link {
-    text-align: center;
-    margin-top: 2rem;
-}
-
-.back-link a {
-    color: #222;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.back-link a:hover {
-    text-decoration: underline;
-}
-
-/* Mobile */
+/* ── MOBILE ── */
 @media(max-width: 768px) {
-    nav ul {
-        gap: 1rem;
-    }
-    
-    nav a {
-        font-size: 0.9rem;
-    }
-    
-    .hero h1 {
-        font-size: 2rem;
-    }
-    
-    .hero p {
-        font-size: 1rem;
-    }
-    
-    section {
-        padding: 3rem 1rem;
-    }
-    
-    section h2 {
-        font-size: 2rem;
-    }
-    
-    .services-grid,
-    .gallery-grid,
-    .service-selector {
-        grid-template-columns: 1fr;
-    }
-    
-    /* Make Calendly bigger on mobile */
-    .calendly-inline-widget {
-        height: 1000px !important;
-    }
-    
-    .calendly-wrapper {
-        padding: 1rem;
-    }
-    
-    .booking-container {
-        padding: 1rem;
-    }
-    img{
-        width: 50px;
-    }
-    .gallery-item img {
-        max-width: 100%;
-        max-height: 100%;
-        width: auto;
-        height: auto;
-        object-fit: contain;
-        border-radius: 8px;
-    }
-
+    nav ul { gap: 1rem; }
+    nav a { font-size: 0.9rem; }
+    .hero h1 { font-size: 2rem; }
+    .hero p { font-size: 1rem; }
+    section { padding: 3rem 1rem; }
+    section h2 { font-size: 2rem; }
+    .services-grid, .gallery-grid, .service-selector { grid-template-columns: 1fr; }
+    .calendly-inline-widget { height: 1000px !important; }
+    .calendly-wrapper { padding: 1rem; }
+    .booking-container { padding: 1rem; }
+    img { width: 50px; }
+    .gallery-item img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 8px; }
 }
 </style>
 </head>
 <body>
 
-<!-- Navigation -->
+<!-- Navigation — original structure -->
 <nav>
-    <img src="HalfTime_melns.png" class="logo" >
+    <img src="HalfTime_melns.png" class="logo">
     <ul>
         <li><a href="#" onclick="showPage('home')">Sākums</a></li>
         <li><a href="#" class="book-nav-btn" onclick="showPage('booking')">Pierakstīties</a></li>
@@ -469,26 +182,28 @@ footer {
 
 <!-- Home Page -->
 <div id="home" class="page active">
+
+    <!-- Hero — original structure, darker overlay -->
     <section class="hero">
-        <img src="main menu.jpeg" alt="Frizieris" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.3;">
+        <img src="main menu.jpeg" alt="Frizieris" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;filter:brightness(0.5);">
         <div class="hero-content">
-            <h1>Tavs stils. Tavs laiks.</h1>
+            <h1>Halftime barbershop Sigulda.</h1>
+            <p>Tavs stils. Tavs laiks.</p>
             <p>Precizitāte katrā griezumā.</p>
             <a href="#" class="cta-button" onclick="showPage('booking')">Pierakstīties tagad</a>
         </div>
     </section>
-    
-    <section class="services">
+
+    <section class="services alt">
         <h2>Pakalpojumi</h2>
         <div class="services-grid">
             <div class="service-card" onclick="showPage('booking'); selectService(0)">
                 <h3>Matu griezums</h3>
-                <p>Stilīgas un precīzas frizūras katram vīrietim ( vec'aks par 13)</p>
+                <p>Stilīgas un precīzas frizūras katram vīrietim (vec'āks par 13)</p>
                 <div class="service-duration">⏱️ 1 stunda</div>
                 <div class="service-price">25 EUR</div>
                 <a href="#" class="book-btn" onclick="event.stopPropagation(); showPage('booking'); selectService(0)">Pierakstīties</a>
             </div>
-            
             <div class="service-card" onclick="showPage('booking'); selectService(1)">
                 <h3>Matu griezums + Bārdas korekcija</h3>
                 <p>Pilnīgs sakopšanās pakalpojums</p>
@@ -496,7 +211,6 @@ footer {
                 <div class="service-price">40 EUR</div>
                 <a href="#" class="book-btn" onclick="event.stopPropagation(); showPage('booking'); selectService(1)">Pierakstīties</a>
             </div>
-            
             <div class="service-card" onclick="showPage('booking'); selectService(2)">
                 <h3>Bārdas korekcija</h3>
                 <p>Precīza bārdas veidošana un kopšana</p>
@@ -504,7 +218,6 @@ footer {
                 <div class="service-price">20 EUR</div>
                 <a href="#" class="book-btn" onclick="event.stopPropagation(); showPage('booking'); selectService(2)">Pierakstīties</a>
             </div>
-            
             <div class="service-card" onclick="showPage('booking'); selectService(3)">
                 <h3>Bērnu matu griezums</h3>
                 <p>Mīļi un ērti bērnu griezumi (līdz 13 gadiem)</p>
@@ -512,7 +225,6 @@ footer {
                 <div class="service-price">15 EUR</div>
                 <a href="#" class="book-btn" onclick="event.stopPropagation(); showPage('booking'); selectService(3)">Pierakstīties</a>
             </div>
-            
             <div class="service-card" onclick="showPage('booking'); selectService(4)">
                 <h3>Premium pakalpojums</h3>
                 <p>Matu griezums + bārdas korekcija ar karstajiem dvieļiem un bārdas nazi</p>
@@ -522,27 +234,31 @@ footer {
             </div>
         </div>
     </section>
-    
-    <section class="about">
+
+    <section>
         <h2>Par Mums</h2>
-        <p>Mēs radām frizūras, kas izceļ jūsu personību. Pieredzējuši frizieri, kas seko jaunākajām tendencēm un nodrošina augstākās kvalitātes pakalpojumus Siguldā.</p>
+        <div class="about">
+            <p>Mēs radām frizūras, kas izceļ jūsu personību. Pieredzējuši frizieri, kas seko jaunākajām tendencēm un nodrošina augstākās kvalitātes pakalpojumus Siguldā.</p>
+        </div>
     </section>
-    
-    <section class="gallery">
+
+    <section class="gallery alt">
         <h2>Galerija</h2>
         <div class="gallery-grid">
-            <div class="gallery-item"><img src="snik snak.jpeg"></div>
-            <div class="gallery-item"><img src="sweet.jpeg"></div>
-            <div class="gallery-item"><img src="woof.jpeg"></div>
+            <div class="gallery-item"><img src="snik snak.jpeg" alt="Darbs 1"></div>
+            <div class="gallery-item"><img src="sweet.jpeg" alt="Darbs 2"></div>
+            <div class="gallery-item"><img src="woof.jpeg" alt="Darbs 3"></div>
             <div class="gallery-item">👔</div>
         </div>
     </section>
-    
-    <section class="contact">
+
+    <section>
         <h2>Sazinieties ar mums</h2>
-        <p>📍 Adrese: Parka iela 12, Sigulda, Siguldas pilsēta, Siguldas novads, LV-2150</p>
-        <p>📞 Telefons: <a href="tel:+37122493359">+371 22493359</a></p>
-        <p>✉️ E-pasts: <a href="mailto:info@velamais.lv">info@velamais.lv</a></p>
+        <div class="contact">
+            <p>📍 Adrese: Parka iela 12, Sigulda, Siguldas pilsēta, Siguldas novads, LV-2150</p>
+            <p>📞 Telefons: <a href="tel:+37122493359">+371 22493359</a></p>
+            <p>✉️ E-pasts: <a href="mailto:info@velamais.lv">info@velamais.lv</a></p>
+        </div>
     </section>
 </div>
 
@@ -553,60 +269,48 @@ footer {
             <h1>Pierakstīties uz apmeklējumu</h1>
             <p>Izvēlieties pakalpojumu un piemērotu laiku</p>
         </div>
-        
         <div class="service-selector">
             <div class="service-option" onclick="selectService(0)">
                 <h3>Matu griezums</h3>
                 <div class="duration">1 stunda</div>
                 <div class="price">25 EUR</div>
             </div>
-            
             <div class="service-option" onclick="selectService(1)">
                 <h3>Matu griezums + Bārda</h3>
                 <div class="duration">1h 30min</div>
                 <div class="price">40 EUR</div>
             </div>
-            
             <div class="service-option" onclick="selectService(2)">
                 <h3>Bārdas korekcija</h3>
                 <div class="duration">45 minūtes</div>
                 <div class="price">20 EUR</div>
             </div>
-            
             <div class="service-option" onclick="selectService(3)">
                 <h3>Bērnu griezums</h3>
                 <div class="duration">1 stunda</div>
                 <div class="price">15 EUR</div>
             </div>
-            
             <div class="service-option" onclick="selectService(4)">
                 <h3>Premium</h3>
                 <div class="duration">2 stundas</div>
                 <div class="price">50 EUR</div>
             </div>
         </div>
-        
-        <!-- Calendly widgets for each service -->
         <div id="calendly-0" class="calendly-wrapper">
             <div class="calendly-inline-widget" data-url="https://calendly.com/ralffix22/matu-griezums-bardas-korekcija" style="min-width:320px;height:900px;"></div>
         </div>
-        
         <div id="calendly-1" class="calendly-wrapper">
             <div class="calendly-inline-widget" data-url="https://calendly.com/ralffix22/matu-griezums-bardas-korekcija" style="min-width:320px;height:900px;"></div>
         </div>
-        
         <div id="calendly-2" class="calendly-wrapper">
             <div class="calendly-inline-widget" data-url="https://calendly.com/ralffix22/bardas-korekcija" style="min-width:320px;height:900px;"></div>
         </div>
-        
         <div id="calendly-3" class="calendly-wrapper">
             <div class="calendly-inline-widget" data-url="https://calendly.com/ralffix22/bernu-matu-griezums" style="min-width:320px;height:900px;"></div>
         </div>
-        
         <div id="calendly-4" class="calendly-wrapper">
             <div class="calendly-inline-widget" data-url="https://calendly.com/ralffix22/matu-griezums-bardas-korekcija-ar-karstajiem-dvieliem" style="min-width:320px;height:900px;"></div>
         </div>
-        
         <div class="back-link">
             <a href="#" onclick="showPage('home')">← Atpakaļ uz sākumlapu</a>
         </div>
@@ -618,49 +322,24 @@ footer {
 </footer>
 
 <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
-
 <script>
 let currentService = -1;
-
 function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById(pageId).classList.add('active');
     window.scrollTo(0, 0);
 }
-
 function selectService(index) {
-    // Hide all calendly widgets
-    document.querySelectorAll('.calendly-wrapper').forEach(wrapper => {
-        wrapper.classList.remove('active');
-    });
-    
-    // Remove selected state from all service options
-    document.querySelectorAll('.service-option').forEach(option => {
-        option.classList.remove('selected');
-    });
-    
-    // Show selected calendly widget
+    document.querySelectorAll('.calendly-wrapper').forEach(w => w.classList.remove('active'));
+    document.querySelectorAll('.service-option').forEach(o => o.classList.remove('selected'));
     document.getElementById('calendly-' + index).classList.add('active');
-    
-    // Highlight selected service
-    const serviceOptions = document.querySelectorAll('.service-option');
-    if (serviceOptions[index]) {
-        serviceOptions[index].classList.add('selected');
-    }
-    
+    const opts = document.querySelectorAll('.service-option');
+    if (opts[index]) opts[index].classList.add('selected');
     currentService = index;
-    
-    // Scroll to calendly widget
     setTimeout(() => {
-        document.querySelector('.calendly-wrapper.active').scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start' 
-        });
+        document.querySelector('.calendly-wrapper.active')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 }
 </script>
-
 </body>
 </html>
