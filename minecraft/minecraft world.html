@@ -3,21 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Interactive Minecraft Map</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { margin: 0; background: #1a1a1a; color: white; font-family: sans-serif; }
+        
+        /* 2. Set the size of your map container */
+        #map {
+            height: 80vh; /* 80% of the screen height */
+            width: 90%;
+            margin: 20px auto;
+            border: 5px solid #3c3c3c;
+            border-radius: 8px;
+            background: #000; /* Background color while image loads */
+        }
+
+        .map-header { text-align: center; padding: 20px; }
+        .topbar { display: flex; justify-content: center; gap: 15px; padding: 15px; background: #333; }
+        .topbar a { color: white; text-decoration: none; font-weight: bold; }
+    </style>
 </head>
 <body>
+
     <nav class="topbar">
-    <a href="../index.html">Home</a>
-    <a href="../mygames.html">My Games</a>
-    <a href="../buygames.html">Buy Games</a>
-    <a href="../other projects.html">Other Projects</a>
-    <a href="../server.html">Minecraft Server</a>
-    <a href="../about me.html">About Me</a>
-    <a href="https://discord.com/channels/1428006761662648455/1428008982789754912">Diskord</a>
-    <a href="../login.html" id="login-link">Sign In / Log In</a>
-  </nav>  
-  <img src="map.png" alt="Minecraft World Map" class="project-image" style="width: auto; height: auto; max-width: 100%; max-height: auto;">
-    
+        <a href="../index.html">Home</a>
+        <a href="../server.html">Server</a>
+        <a href="https://discord.com/channels/1428006761662648455/1428008982789754912">Discord</a>
+    </nav>
+
+    <div class="map-header">
+        <h1>Server World Map</h1>
+        <p>Scroll to zoom, click and drag to pan around!</p>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+    // --- CONFIGURATION ---
+    // 1. Your current map.png size (update this when you overwrite the file)
+    var imgW = 2000; 
+    var imgH = 2000;
+
+    // 2. The Minecraft coordinates of the TOP-LEFT corner of your map.png
+    // (You can find this by standing at the top-left limit of your map in-game)
+    var mcTopLeftX = -1000;
+    var mcTopLeftZ = -1000;
+
+    // 3. The Minecraft coordinates of the BOTTOM-RIGHT corner
+    var mcBottomRightX = 1000;
+    var mcBottomRightZ = 1000;
+
+    // 4. Your Actual Spawn Coordinates (In-game /tp numbers)
+    var spawnMC = { x: 120, z: -45 }; 
+    // ---------------------
+
+    var map = L.map('map', {
+        crs: L.CRS.Simple,
+        minZoom: -2
+    });
+
+    var bounds = [[0, 0], [imgH, imgW]];
+    L.imageOverlay('map.png', bounds).addTo(map);
+    map.fitBounds(bounds);
+
+    // HELPER FUNCTION: Converts MC coords to Map Pixels
+    function mcToPixels(mcX, mcZ) {
+        var percentX = (mcX - mcTopLeftX) / (mcBottomRightX - mcTopLeftX);
+        var percentZ = (mcZ - mcTopLeftZ) / (mcBottomRightZ - mcTopLeftZ);
+        
+        // Leaflet Y is inverted (0 is bottom), so we calculate from top
+        return [imgH - (percentZ * imgH), percentX * imgW];
+    }
+
+    // Place the marker using the function
+    var spawnPos = mcToPixels(spawnMC.x, spawnMC.z);
+    var marker = L.marker(spawnPos).addTo(map);
+    marker.bindPopup("<b>Spawn</b><br>X: " + spawnMC.x + " Z: " + spawnMC.z).openPopup();
+
+</script>
 </body>
 </html>
