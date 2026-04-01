@@ -1,0 +1,162 @@
+{
+  "nodes": {
+    "s1": {
+      "id": "s1",
+      "name": "Cobblestone",
+      "automated": true
+    },
+    "s2": {
+      "id": "s2",
+      "name": "Gravel",
+      "automated": false
+    },
+    "s3": {
+      "id": "s3",
+      "name": "Flint",
+      "automated": false
+    },
+    "s4": {
+      "id": "s4",
+      "name": "Iron Nuggets",
+      "automated": false
+    },
+    "s5": {
+      "id": "s5",
+      "name": "Iron Ingot",
+      "automated": false
+    },
+    "s6": {
+      "id": "s6",
+      "name": "Andesite",
+      "automated": false
+    },
+    "s7": {
+      "id": "s7",
+      "name": "Andesite Alloy",
+      "automated": false
+    },
+    "n1775073269977": {
+      "id": "n1775073269977",
+      "name": "Quartz",
+      "automated": false
+    },
+    "n1775073544450": {
+      "id": "n1775073544450",
+      "name": "Steel",
+      "automated": false
+    },
+    "n1775073551566": {
+      "id": "n1775073551566",
+      "name": "Coal",
+      "automated": false
+    },
+    "n1775073687595": {
+      "id": "n1775073687595",
+      "name": "Soul sand",
+      "automated": false
+    }
+  },
+  "edges": [
+    {
+      "from": "s1",
+      "to": "s2",
+      "label": "crush"
+    },
+    {
+      "from": "s2",
+      "to": "s3",
+      "label": "wash"
+    },
+    {
+      "from": "s2",
+      "to": "s4",
+      "label": "wash"
+    },
+    {
+      "from": "s4",
+      "to": "s5",
+      "label": "x9"
+    },
+    {
+      "from": "s6",
+      "to": "s7",
+      "label": "craft"
+    },
+    {
+      "from": "s4",
+      "to": "s7",
+      "label": "craft"
+    },
+    {
+      "from": "s1",
+      "to": "s6",
+      "label": "craft"
+    },
+    {
+      "from": "n1775073269977",
+      "to": "s6",
+      "label": "craft"
+    },
+    {
+      "from": "s5",
+      "to": "n1775073544450",
+      "label": "Eletronik melt"
+    },
+    {
+      "from": "n1775073551566",
+      "to": "n1775073544450",
+      "label": "Eletronik melt"
+    },
+    {
+      "from": "n1775073687595",
+      "to": "n1775073269977",
+      "label": "wash"
+    }
+  ],
+  "positions": {
+    "s1": {
+      "x": 125,
+      "y": 135.5
+    },
+    "s2": {
+      "x": 365,
+      "y": 110
+    },
+    "s3": {
+      "x": 605,
+      "y": 69
+    },
+    "s4": {
+      "x": 605,
+      "y": 151
+    },
+    "s5": {
+      "x": 845,
+      "y": 141
+    },
+    "s6": {
+      "x": 605,
+      "y": 268.5
+    },
+    "s7": {
+      "x": 845,
+      "y": 258.5
+    },
+    "n1775073269977": {
+      "x": 365,
+      "y": 294
+    },
+    "n1775073544450": {
+      "x": 1085,
+      "y": 258.5
+    },
+    "n1775073551566": {
+      "x": 845,
+      "y": 340.5
+    },
+    "n1775073687595": {
+      "x": 125,
+      "y": 294
+    }
+  }
+}

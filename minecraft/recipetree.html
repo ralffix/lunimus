@@ -381,6 +381,34 @@ svg#graph {
   pointer-events: none;
   z-index: 5;
 }
+
+
+/* ── FARM STATE (personal, localStorage) ── */
+.node-group.has-farm .node-rect {
+  stroke: #3b82f6;
+  fill: #0c1a2e;
+}
+.node-group.has-farm .node-text { fill: #93c5fd; }
+.node-group.has-farm .node-auto-badge { fill: #3b82f6; }
+.node-group.has-farm:hover .node-rect {
+  stroke: #60a5fa;
+  filter: drop-shadow(0 0 6px rgba(59,130,246,0.5));
+}
+.node-group.has-farm.highlighted .node-rect {
+  stroke: #3b82f6;
+  fill: #0c1a2e;
+  filter: drop-shadow(0 0 8px rgba(59,130,246,0.6));
+}
+
+/* or-edge: yellow */
+.edge-path.or-edge { stroke: #ca8a04; stroke-width: 1.5; stroke-dasharray: 6,3; }
+.edge-path.or-edge.or-pending { stroke: #fbbf24; stroke-width: 2.5; filter: drop-shadow(0 0 6px rgba(251,191,36,0.7)); }
+.edge-path.or-edge.highlighted { stroke: #ff3c3c; stroke-dasharray: none; }
+.edge-label.or-edge { fill: #fbbf24; }
+
+
+
+
 </style>
 </head>
 <body>
@@ -411,7 +439,8 @@ svg#graph {
   <button id="btn-export">Export</button>
   <button id="btn-import">Import</button>
   <button id="btn-clear-all" style="border-color:#5a1515;color:#804040;">Clear All</button>
-
+  <div class="sep"></div>
+  <button id="btn-json">{ } JSON</button>
   <span id="mode-pill">NORMAL</span>
 </div>
 
@@ -424,6 +453,9 @@ svg#graph {
       <marker id="arr-hl" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
         <path d="M0,0 L0,6 L7,3 z" fill="#ff3c3c"/>
       </marker>
+      <marker id="arr-or" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L7,3 z" fill="#fbbf24"/>
+      </marker>
     </defs>
     <g id="root"></g>
   </svg>
@@ -434,16 +466,44 @@ svg#graph {
   <div id="status"></div>
   <div id="help">
     Click → highlight chain<br>
-    Right-click → options<br>
+    Yellow arrows → pick OR path<br>
+    Right-click → options / farm<br>
+    🏭 blue = have farm (stops chain)<br>
     Drag to pan · Scroll to zoom
   </div>
 </div>
 
 </div>
 
+<!-- JSON Sidebar -->
+<div id="json-sidebar">
+  <div id="json-sidebar-header">
+    <span>// recipetree.json</span>
+    <button id="json-copy-btn">⎘ Copy</button>
+    <button id="json-close-btn">✕ Close</button>
+  </div>
+  <pre id="json-pre"></pre>
+</div>
+
+
+<div id="or-dialog">
+  <div id="or-dialog-title">// Alternative Recipes</div>
+  <div id="or-dialog-sub">Add recipe names for each path</div>
+  <div id="or-recipes-list"></div>
+  <div style="display:flex;gap:6px;margin-top:10px;">
+    <input type="text" id="or-recipe-input" placeholder="Recipe name..." style="flex:1"/>
+    <button id="or-add-recipe">+ Add</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:8px;">
+    <button class="primary" id="or-ok">Create Links</button>
+    <button id="or-cancel">Cancel</button>
+  </div>
+</div>
+
 <!-- Context menu -->
 <div id="ctx-menu">
   <div class="ctx-item" id="ctx-auto">⚙ Toggle Automated</div>
+  <div class="ctx-item" id="ctx-farm">🏭 Toggle Have Farm</div>
   <div class="ctx-item" id="ctx-rename">✏ Rename</div>
   <div class="ctx-item danger" id="ctx-del">✕ Delete Node</div>
 </div>
@@ -456,6 +516,24 @@ svg#graph {
     <button class="primary" id="qty-ok">Link</button>
     <button id="qty-cancel">Cancel</button>
   </div>
+</div>
+
+
+<div id="or-dialog">
+  <h3>// OR Recipes</h3>
+  <div id="or-recipes-list"></div>
+  <button id="or-add-btn">+ Add Recipe</button>
+  <div class="row">
+    <button id="or-ok-btn" class="primary">Create Links</button>
+    <button id="or-cancel-btn">Cancel</button>
+  </div>
+</div>
+
+<!-- Recipe popup -->
+<div id="recipe-popup">
+  <h3>// Add to recipe</h3>
+  <div id="recipe-popup-list"></div>
+  <button id="recipe-popup-cancel">Cancel</button>
 </div>
 
 <input type="file" id="file-in" accept=".json" style="display:none"/>
@@ -478,6 +556,15 @@ let panning = false, panStart = null;
 
 // link mode
 let linkMode = false, linkSrc = null;
+
+// farm state (personal, not in shared JSON)
+const FARM_KEY = 'recipetree_farms';
+let farmSet = new Set(JSON.parse(localStorage.getItem(FARM_KEY)||'[]'));
+function saveFarms() { localStorage.setItem(FARM_KEY, JSON.stringify([...farmSet])); }
+
+// or-path pending choice
+let orPending = null; // { targetId, orEdgeIndices }
+
 
 // ─── STORAGE ─────────────────────────────────────────────────────────────────
 const STORE_KEY = 'recipetree_v2';
@@ -518,30 +605,48 @@ function render() {
     const p1=positions[e.from], p2=positions[e.to];
     if(!p1||!p2) return;
     const isHl = hlEdges.has(i);
+    const isOr = orPending && orPending.orEdgeIndices.includes(i);
+    const orDisplayLabel = e.label;
+    const isOrPending = orPending && orPending.orEdgeIndices.includes(i);
     const dx = p2.x-p1.x;
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
     path.setAttribute('d',
       `M${p1.x},${p1.y} C${p1.x+dx*0.5},${p1.y} ${p2.x-dx*0.5},${p2.y} ${p2.x},${p2.y}`);
-    path.setAttribute('class','edge-path'+(isHl?' highlighted':''));
-    path.setAttribute('marker-end', isHl?'url(#arr-hl)':'url(#arr)');
+    let edgeCls = 'edge-path';
+    if(isOr) edgeCls += ' or-edge';
+    if(isOrPending) edgeCls += ' or-pending';
+    if(isHl && !isOrPending) edgeCls += ' highlighted';
+    path.setAttribute('class', edgeCls);
+    let markerColor = 'url(#arr)';
+    if(isHl && !isOrPending) markerColor = 'url(#arr-hl)';
+    if(isOrPending) markerColor = 'url(#arr-or)';
+    path.setAttribute('marker-end', markerColor);
     root.appendChild(path);
 
     if(e.label) {
       const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
       const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
-      const tw = e.label.length*7+8;
+      const displayLbl = e.label || '';
+      const tw = displayLbl.length*7+8;
       bg.setAttribute('x', mx-tw/2); bg.setAttribute('y', my-18);
       bg.setAttribute('width', tw); bg.setAttribute('height', 14);
       bg.setAttribute('rx', 2);
-      bg.setAttribute('fill', isHl ? 'rgba(42,8,8,0.9)' : 'rgba(10,5,5,0.85)');
-      bg.setAttribute('stroke', isHl ? '#ff3c3c' : '#3a0f0f');
+      let bgFill = 'rgba(10,5,5,0.85)', bgStroke = '#3a0f0f';
+      if(isOrPending){ bgFill='rgba(30,20,0,0.95)'; bgStroke='#fbbf24'; }
+      else if(isOr){ bgFill='rgba(20,14,0,0.9)'; bgStroke='#92400e'; }
+      else if(isHl){ bgFill='rgba(42,8,8,0.9)'; bgStroke='#ff3c3c'; }
+      bg.setAttribute('fill', bgFill);
+      bg.setAttribute('stroke', bgStroke);
       bg.setAttribute('stroke-width','0.8');
       root.appendChild(bg);
 
       const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
       lbl.setAttribute('x', mx); lbl.setAttribute('y', my-8);
-      lbl.setAttribute('class','edge-label'+(isHl?' highlighted':''));
-      lbl.textContent = e.label;
+      let lblCls = 'edge-label';
+      if(isOr||isOrPending) lblCls+=' or-edge';
+      if(isHl && !isOrPending) lblCls+=' highlighted';
+      lbl.setAttribute('class', lblCls);
+      lbl.textContent = e.label || '';
       root.appendChild(lbl);
     }
   });
@@ -555,11 +660,13 @@ function render() {
     const isSF = searchFocus===n.id;
 
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    const hasFarm = farmSet.has(n.id);
     let cls = 'node-group';
     if(isHl) cls+=' highlighted';
     if(isSel) cls+=' selected';
     if(n.automated) cls+=' automated';
     if(isSF) cls+=' search-focus';
+    if(hasFarm) cls+=' has-farm';
     g.setAttribute('class', cls);
     g.setAttribute('data-id', n.id);
     g.setAttribute('transform',`translate(${x},${y})`);
@@ -575,7 +682,7 @@ function render() {
     accent.setAttribute('x',-NW/2); accent.setAttribute('y',-NH/2);
     accent.setAttribute('width',NW); accent.setAttribute('height',2);
     accent.setAttribute('rx',3);
-    accent.setAttribute('fill', n.automated ? 'rgba(255,170,0,0.4)' : 'rgba(255,60,60,0.25)');
+    accent.setAttribute('fill', hasFarm ? 'rgba(59,130,246,0.5)' : n.automated ? 'rgba(255,170,0,0.4)' : 'rgba(255,60,60,0.25)');
     accent.setAttribute('pointer-events','none');
     g.appendChild(accent);
 
@@ -592,6 +699,14 @@ function render() {
       badge.textContent='⚙';
       g.appendChild(badge);
     }
+    if(hasFarm) {
+      const fb = document.createElementNS('http://www.w3.org/2000/svg','text');
+      fb.setAttribute('class','node-auto-badge');
+      fb.setAttribute('x', -NW/2+8); fb.setAttribute('y', -NH/2+9);
+      fb.setAttribute('fill','#3b82f6');
+      fb.textContent='🏭';
+      g.appendChild(fb);
+    }
 
     g.addEventListener('click', ev => { ev.stopPropagation(); onNodeClick(n.id); });
     g.addEventListener('contextmenu', ev => { ev.preventDefault(); openCtx(n.id,ev.clientX,ev.clientY); });
@@ -602,20 +717,70 @@ function render() {
 // ─── NODE CLICK ──────────────────────────────────────────────────────────────
 function onNodeClick(id) {
   if(linkMode) { handleLink(id); return; }
+
+  // if clicking a node while or-pending: resolve the or choice
+  if(orPending) {
+    // find which group this clicked node belongs to
+    if(orPending.groups) {
+      const chosenGroup = Object.entries(orPending.groups)
+        .find(([lbl, arr]) => arr.some(({e}) => e.from===id));
+      if(chosenGroup) {
+        const [lbl, arr] = chosenGroup;
+        // clear all pending, only keep chosen group
+        orPending.orEdgeIndices.forEach(i => hlEdges.delete(i));
+        arr.forEach(({e,i}) => { hlEdges.add(i); });
+        orPending = null;
+        // continue BFS from all sources in chosen group
+        arr.forEach(({e}) => { if(!highlighted.has(e.from)) bfsHighlight(e.from, true); });
+        render(); return;
+      }
+    }
+    orPending = null;
+  }
+
   searchFocus = null;
   if(selectedNode===id) {
-    selectedNode=null; highlighted.clear(); hlEdges.clear(); render(); return;
+    selectedNode=null; highlighted.clear(); hlEdges.clear(); orPending=null; render(); return;
   }
   selectedNode=id;
-  highlighted.clear(); hlEdges.clear();
-  // BFS backwards
-  const q=[id];
-  while(q.length) {
-    const cur=q.shift(); highlighted.add(cur);
-    edges.forEach((e,i)=>{ if(e.to===cur && !highlighted.has(e.from)){ hlEdges.add(i); q.push(e.from); }});
-  }
+  highlighted.clear(); hlEdges.clear(); orPending=null;
+  bfsHighlight(id, false);
   render();
   status(`Chain to "${nodes[id]?.name}" — ${highlighted.size} nodes`);
+}
+
+function bfsHighlight(startId, append) {
+  if(!append) { highlighted.clear(); hlEdges.clear(); }
+  const q=[startId];
+  while(q.length) {
+    const cur=q.shift();
+    if(highlighted.has(cur)) continue;
+    highlighted.add(cur);
+    // stop at farm nodes (don't trace past them)
+    if(farmSet.has(cur) && cur!==startId) continue;
+    // find all incoming edges
+    const incoming = edges.map((e,i)=>({e,i})).filter(({e})=>e.to===cur);
+    // group by source node to detect 'or' alternatives
+    // an 'or' situation = multiple incoming edges to same node with label 'or'
+    // group incoming edges by recipe label
+    const labelGroups = {};
+    incoming.forEach(({e,i}) => {
+      const lbl = e.label || '';
+      if(!labelGroups[lbl]) labelGroups[lbl] = [];
+      labelGroups[lbl].push({e,i});
+    });
+    const groupKeys = Object.keys(labelGroups);
+
+    if(groupKeys.length > 1) {
+      // multiple recipe groups → OR choice needed
+      // highlight all as pending, wait for user
+      incoming.forEach(({e,i}) => hlEdges.add(i));
+      orPending = { targetId: cur, orEdgeIndices: incoming.map(({i})=>i), groups: labelGroups };
+    } else {
+      // single group or no label — just follow all
+      incoming.forEach(({e,i})=>{ if(!highlighted.has(e.from)){ hlEdges.add(i); q.push(e.from); }});
+    }
+  }
 }
 
 // ─── LINK MODE ───────────────────────────────────────────────────────────────
@@ -630,6 +795,62 @@ function handleLink(id) {
 
 let pendingLink=null;
 function showQty() {
+  if(!pendingLink) return;
+  // find existing recipe groups on this target
+  const existing = edges
+    .filter(e => e.to === pendingLink.to && e.label && e.label.trim() !== '')
+    .map(e => e.label)
+    .filter((v,i,a) => a.indexOf(v)===i); // unique labels
+
+  if(existing.length > 0) {
+    showRecipePopup(existing);
+  } else {
+    openSimpleLabelDialog();
+  }
+}
+
+function openSimpleLabelDialog() {
+  const d = document.getElementById('qty-dialog');
+  const w = document.getElementById('canvas-wrap').getBoundingClientRect();
+  d.style.left = (w.width/2-115)+'px'; d.style.top = (w.height/2-70)+'px';
+  d.classList.add('open');
+  document.getElementById('qty-input').value='';
+  document.getElementById('qty-input').focus();
+}
+
+function showRecipePopup(existingLabels) {
+  const d = document.getElementById('recipe-popup');
+  const list = document.getElementById('recipe-popup-list');
+  list.innerHTML = '';
+  const w = document.getElementById('canvas-wrap').getBoundingClientRect();
+  d.style.left = (w.width/2-140)+'px'; d.style.top = (w.height/2-100)+'px';
+
+  existingLabels.forEach(lbl => {
+    const btn = document.createElement('button');
+    btn.className = 'recipe-popup-opt';
+    btn.textContent = '→ Add to: ' + lbl;
+    btn.addEventListener('click', () => {
+      edges.push({from: pendingLink.from, to: pendingLink.to, label: lbl});
+      pendingLink = null;
+      d.classList.remove('open');
+      save(); layout(); status('Added to recipe: ' + lbl + ' ✓');
+    });
+    list.appendChild(btn);
+  });
+
+  // new recipe option
+  const newBtn = document.createElement('button');
+  newBtn.className = 'recipe-popup-opt new';
+  newBtn.textContent = '+ New recipe...';
+  newBtn.addEventListener('click', () => {
+    d.classList.remove('open');
+    openSimpleLabelDialog();
+  });
+  list.appendChild(newBtn);
+
+  d.classList.add('open');
+}
+  // normal label dialog
   const d=document.getElementById('qty-dialog');
   const w=document.getElementById('canvas-wrap').getBoundingClientRect();
   d.style.left=(w.width/2-115)+'px'; d.style.top=(w.height/2-70)+'px';
@@ -640,8 +861,12 @@ function showQty() {
 
 document.getElementById('qty-ok').addEventListener('click',()=>{
   if(!pendingLink) return;
-  const lbl=document.getElementById('qty-input').value.trim();
-  edges.push({from:pendingLink.from, to:pendingLink.to, label:lbl});
+  const lbl = document.getElementById('qty-input').value.trim();
+  edges.push({from: pendingLink.from, to: pendingLink.to, label: lbl});
+  pendingLink = null;
+  document.getElementById('qty-dialog').classList.remove('open');
+  save(); layout(); status('Link created ✓');
+});
   pendingLink=null;
   document.getElementById('qty-dialog').classList.remove('open');
   save(); layout(); status('Link created ✓');
@@ -764,6 +989,13 @@ document.getElementById('ctx-auto').addEventListener('click',()=>{
   if(!ctxTarget||!nodes[ctxTarget]) return;
   nodes[ctxTarget].automated=!nodes[ctxTarget].automated;
   save(); render();
+});
+document.getElementById('ctx-farm').addEventListener('click',()=>{
+  if(!ctxTarget) return;
+  if(farmSet.has(ctxTarget)) farmSet.delete(ctxTarget);
+  else farmSet.add(ctxTarget);
+  saveFarms(); render();
+  status(farmSet.has(ctxTarget) ? '🏭 Farm marked!' : 'Farm removed');
 });
 document.getElementById('ctx-rename').addEventListener('click',()=>{
   if(!ctxTarget||!nodes[ctxTarget]) return;
@@ -896,8 +1128,56 @@ function seed(){
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-if(!load() || Object.keys(nodes).length===0) seed();
-layout();
+async function init() {
+  try {
+    const res = await fetch('recipetree.json');
+    if(res.ok) {
+      const d = await res.json();
+      nodes=d.nodes||{}; edges=d.edges||[]; positions=d.positions||{};
+      status('Loaded from recipetree.json');
+      layout(); return;
+    }
+  } catch(e) {}
+  if(!load() || Object.keys(nodes).length===0) seed();
+  layout();
+}
+
+
+// ─── JSON SIDEBAR ─────────────────────────────────────────────────────────────
+function highlightJson(json) {
+  return json
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+      if (/^"/.test(m)) {
+        if (/:$/.test(m)) return `<span class="jk">${m}</span>`;
+        return `<span class="js">${m}</span>`;
+      }
+      return `<span class="jn">${m}</span>`;
+    });
+}
+
+function openJsonSidebar() {
+  const raw = JSON.stringify({nodes, edges, positions}, null, 2);
+  document.getElementById('json-pre').innerHTML = highlightJson(raw);
+  document.getElementById('json-sidebar').classList.add('open');
+  document.getElementById('json-copy-btn').classList.remove('copied');
+  document.getElementById('json-copy-btn').textContent = '⎘ Copy';
+}
+
+document.getElementById('btn-json').addEventListener('click', openJsonSidebar);
+document.getElementById('json-close-btn').addEventListener('click', () => {
+  document.getElementById('json-sidebar').classList.remove('open');
+});
+document.getElementById('json-copy-btn').addEventListener('click', () => {
+  const raw = JSON.stringify({nodes, edges, positions}, null, 2);
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.getElementById('json-copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+});
+
 </script>
 </body>
 </html>
