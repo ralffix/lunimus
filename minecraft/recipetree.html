@@ -35,7 +35,6 @@ html, body {
   overflow: hidden;
 }
 
-/* animated grid */
 body {
   background-image:
     linear-gradient(var(--grid-col) 1px, transparent 1px),
@@ -45,7 +44,6 @@ body {
 }
 @keyframes gridMove { to { background-position: 0 40px, 0 40px; } }
 
-/* ── TOOLBAR ── */
 #toolbar {
   display: flex;
   align-items: center;
@@ -149,7 +147,6 @@ button.active-btn {
   text-shadow: 0 0 10px rgba(255,170,0,0.4);
 }
 
-/* ── SEARCH RESULTS DROPDOWN ── */
 #search-wrap { position: relative; }
 #search-results {
   position: absolute;
@@ -185,7 +182,6 @@ button.active-btn {
   margin-left: 6px;
 }
 
-/* ── CANVAS ── */
 #canvas-wrap {
   flex: 1;
   position: relative;
@@ -202,7 +198,6 @@ svg#graph {
   width: 100%; height: 100%;
 }
 
-/* ── NODES ── */
 .node-group { cursor: pointer; }
 
 .node-rect {
@@ -260,7 +255,6 @@ svg#graph {
   text-anchor: middle;
 }
 
-/* ── EDGES ── */
 .edge-path {
   fill: none;
   stroke: var(--border);
@@ -278,11 +272,15 @@ svg#graph {
   font-size: 10px;
   letter-spacing: 1px;
   text-anchor: middle;
-  pointer-events: none;
+  cursor: pointer;
+  pointer-events: all;
+}
+.edge-label:hover {
+  fill: var(--accent);
 }
 .edge-label.highlighted { fill: var(--accent); text-shadow: none; }
+.edge-label-bg { cursor: pointer; pointer-events: all; }
 
-/* ── CONTEXT MENU ── */
 #ctx-menu {
   position: fixed;
   background: var(--surface);
@@ -309,7 +307,6 @@ svg#graph {
 .ctx-item:hover { background: var(--accent-dim); color: var(--accent); }
 .ctx-item.danger:hover { color: var(--danger); }
 
-/* ── QTY DIALOG ── */
 #qty-dialog {
   position: fixed;
   background: var(--surface);
@@ -339,7 +336,6 @@ svg#graph {
 #qty-dialog .row { display: flex; gap: 6px; margin-top: 10px; }
 #qty-dialog .row button { flex: 1; }
 
-/* ── STATUS BAR ── */
 #status {
   position: absolute;
   bottom: 14px;
@@ -360,7 +356,6 @@ svg#graph {
 }
 #status.show { opacity: 1; }
 
-/* ── HELP ── */
 #help {
   position: absolute;
   bottom: 14px;
@@ -374,7 +369,6 @@ svg#graph {
   pointer-events: none;
 }
 
-/* ── LINK LINE (temp) ── */
 #link-line {
   position: absolute;
   top: 0; left: 0;
@@ -382,8 +376,6 @@ svg#graph {
   z-index: 5;
 }
 
-
-/* ── FARM STATE (personal, localStorage) ── */
 .node-group.has-farm .node-rect {
   stroke: #3b82f6;
   fill: #0c1a2e;
@@ -400,14 +392,81 @@ svg#graph {
   filter: drop-shadow(0 0 8px rgba(59,130,246,0.6));
 }
 
-/* or-edge: yellow */
 .edge-path.or-edge { stroke: #ca8a04; stroke-width: 1.5; stroke-dasharray: 6,3; }
 .edge-path.or-edge.or-pending { stroke: #fbbf24; stroke-width: 2.5; filter: drop-shadow(0 0 6px rgba(251,191,36,0.7)); }
 .edge-path.or-edge.highlighted { stroke: #ff3c3c; stroke-dasharray: none; }
 .edge-label.or-edge { fill: #fbbf24; }
 
+#json-sidebar {
+  position: fixed;
+  top: 0; right: -450px;
+  width: 450px; height: 100%;
+  background: var(--surface2);
+  border-left: 1px solid var(--border);
+  z-index: 500;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+#json-sidebar.open { right: 0; }
+#json-sidebar-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+#json-pre {
+  flex: 1;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}
+.jk { color: #ffaa00; }
+.js { color: #4ade80; }
+.jn { color: #60a5fa; }
 
-
+#recipe-popup {
+  position: fixed;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 16px;
+  z-index: 450;
+  width: 280px;
+  display: none;
+  box-shadow: 0 0 40px rgba(0,0,0,0.8);
+}
+#recipe-popup.open { display: block; }
+#recipe-popup h3 {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.recipe-popup-opt {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  margin-bottom: 4px;
+  background: rgba(255,60,60,0.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+}
+.recipe-popup-opt:hover { border-color: var(--accent); background: rgba(255,60,60,0.1); }
+.recipe-popup-opt.new { color: var(--auto-col); border-color: rgba(255,170,0,0.3); }
 
 </style>
 </head>
@@ -417,25 +476,18 @@ svg#graph {
 <div id="toolbar">
   <span class="logo">Recipe Tree</span>
   <div class="sep"></div>
-
   <input type="text" id="node-name" placeholder="Item name..." />
   <button class="primary" id="btn-add">+ Node</button>
-
   <div class="sep"></div>
-
   <div id="search-wrap">
     <input type="text" id="search-box" placeholder="Search item..." autocomplete="off" />
     <div id="search-results"></div>
   </div>
-
   <div class="sep"></div>
-
   <button id="btn-link">🔗 Link</button>
   <button id="btn-layout">⟳ Layout</button>
   <button id="btn-clear-hl">Clear HL</button>
-
   <div class="sep"></div>
-
   <button id="btn-export">Export</button>
   <button id="btn-import">Import</button>
   <button id="btn-clear-all" style="border-color:#5a1515;color:#804040;">Clear All</button>
@@ -466,7 +518,7 @@ svg#graph {
   <div id="status"></div>
   <div id="help">
     Click → highlight chain<br>
-    Yellow arrows → pick OR path<br>
+    Click Label → delete connection<br>
     Right-click → options / farm<br>
     🏭 blue = have farm (stops chain)<br>
     Drag to pan · Scroll to zoom
@@ -475,32 +527,17 @@ svg#graph {
 
 </div>
 
-<!-- JSON Sidebar -->
 <div id="json-sidebar">
   <div id="json-sidebar-header">
     <span>// recipetree.json</span>
-    <button id="json-copy-btn">⎘ Copy</button>
-    <button id="json-close-btn">✕ Close</button>
+    <div>
+      <button id="json-copy-btn">⎘ Copy</button>
+      <button id="json-close-btn">✕ Close</button>
+    </div>
   </div>
   <pre id="json-pre"></pre>
 </div>
 
-
-<div id="or-dialog">
-  <div id="or-dialog-title">// Alternative Recipes</div>
-  <div id="or-dialog-sub">Add recipe names for each path</div>
-  <div id="or-recipes-list"></div>
-  <div style="display:flex;gap:6px;margin-top:10px;">
-    <input type="text" id="or-recipe-input" placeholder="Recipe name..." style="flex:1"/>
-    <button id="or-add-recipe">+ Add</button>
-  </div>
-  <div style="display:flex;gap:6px;margin-top:8px;">
-    <button class="primary" id="or-ok">Create Links</button>
-    <button id="or-cancel">Cancel</button>
-  </div>
-</div>
-
-<!-- Context menu -->
 <div id="ctx-menu">
   <div class="ctx-item" id="ctx-auto">⚙ Toggle Automated</div>
   <div class="ctx-item" id="ctx-farm">🏭 Toggle Have Farm</div>
@@ -508,7 +545,6 @@ svg#graph {
   <div class="ctx-item danger" id="ctx-del">✕ Delete Node</div>
 </div>
 
-<!-- Link qty dialog -->
 <div id="qty-dialog">
   <label>Step label (optional):<br><small style="color:#804040">e.g. crush · wash · x9 · craft</small></label>
   <input type="text" id="qty-input" placeholder="label..." style="width:100%;margin-top:6px"/>
@@ -518,70 +554,50 @@ svg#graph {
   </div>
 </div>
 
-
-<div id="or-dialog">
-  <h3>// OR Recipes</h3>
-  <div id="or-recipes-list"></div>
-  <button id="or-add-btn">+ Add Recipe</button>
-  <div class="row">
-    <button id="or-ok-btn" class="primary">Create Links</button>
-    <button id="or-cancel-btn">Cancel</button>
-  </div>
-</div>
-
-<!-- Recipe popup -->
 <div id="recipe-popup">
   <h3>// Add to recipe</h3>
   <div id="recipe-popup-list"></div>
-  <button id="recipe-popup-cancel">Cancel</button>
+  <button id="recipe-popup-cancel" style="width:100%;margin-top:10px;">Cancel</button>
 </div>
 
 <input type="file" id="file-in" accept=".json" style="display:none"/>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────────────────────────
-let nodes = {};     // id → {id,name,automated}
-let edges = [];     // {from,to,label}
-let positions = {}; // id → {x,y}
+let nodes = {};
+let edges = [];
+let positions = {};
 let highlighted = new Set();
 let hlEdges = new Set();
 let selectedNode = null;
 let searchFocus = null;
-
-const NW = 150, NH = 38;
-
-// pan/zoom
 let pan = {x:0,y:0}, zoom = 1;
 let panning = false, panStart = null;
-
-// link mode
 let linkMode = false, linkSrc = null;
+let orPending = null;
+let pendingLink = null;
 
-// farm state (personal, not in shared JSON)
+const NW = 150, NH = 38;
 const FARM_KEY = 'recipetree_farms';
 let farmSet = new Set(JSON.parse(localStorage.getItem(FARM_KEY)||'[]'));
+
 function saveFarms() { localStorage.setItem(FARM_KEY, JSON.stringify([...farmSet])); }
 
-// or-path pending choice
-let orPending = null; // { targetId, orEdgeIndices }
-
-
-// ─── STORAGE ─────────────────────────────────────────────────────────────────
-const STORE_KEY = 'recipetree_v2';
+// STORAGE ONLY SAVES FARM STATUS
 function save() {
-  localStorage.setItem(STORE_KEY, JSON.stringify({nodes,edges,positions,pan,zoom}));
+  saveFarms();
 }
+
 function load() {
   try {
-    const d = JSON.parse(localStorage.getItem(STORE_KEY)||'null');
-    if (!d) return false;
-    nodes=d.nodes||{}; edges=d.edges||[];
-    positions=d.positions||{}; pan=d.pan||{x:0,y:0}; zoom=d.zoom||1;
-    return true;
+    const savedFarms = localStorage.getItem(FARM_KEY);
+    if (savedFarms) {
+      farmSet = new Set(JSON.parse(savedFarms));
+      return true;
+    }
+    return false;
   } catch { return false; }
 }
 
-// ─── DAGRE LAYOUT ────────────────────────────────────────────────────────────
 function layout() {
   if (!Object.keys(nodes).length) return;
   const g = new dagre.graphlib.Graph();
@@ -591,32 +607,31 @@ function layout() {
   edges.forEach(e => { if(nodes[e.from]&&nodes[e.to]) g.setEdge(e.from, e.to); });
   dagre.layout(g);
   g.nodes().forEach(id => { const n=g.node(id); if(n) positions[id]={x:n.x,y:n.y}; });
-  save(); render();
+  render();
 }
 
-// ─── RENDER ──────────────────────────────────────────────────────────────────
 function render() {
   const root = document.getElementById('root');
   root.innerHTML = '';
   root.setAttribute('transform',`translate(${pan.x},${pan.y}) scale(${zoom})`);
 
-  // edges
   edges.forEach((e,i) => {
     const p1=positions[e.from], p2=positions[e.to];
     if(!p1||!p2) return;
     const isHl = hlEdges.has(i);
-    const isOr = orPending && orPending.orEdgeIndices.includes(i);
-    const orDisplayLabel = e.label;
     const isOrPending = orPending && orPending.orEdgeIndices.includes(i);
+    const isOr = (orPending && orPending.orEdgeIndices.includes(i)) || (e.label && e.label.toLowerCase() === 'or');
+    
     const dx = p2.x-p1.x;
     const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',
-      `M${p1.x},${p1.y} C${p1.x+dx*0.5},${p1.y} ${p2.x-dx*0.5},${p2.y} ${p2.x},${p2.y}`);
+    path.setAttribute('d', `M${p1.x},${p1.y} C${p1.x+dx*0.5},${p1.y} ${p2.x-dx*0.5},${p2.y} ${p2.x},${p2.y}`);
+    
     let edgeCls = 'edge-path';
     if(isOr) edgeCls += ' or-edge';
     if(isOrPending) edgeCls += ' or-pending';
     if(isHl && !isOrPending) edgeCls += ' highlighted';
     path.setAttribute('class', edgeCls);
+    
     let markerColor = 'url(#arr)';
     if(isHl && !isOrPending) markerColor = 'url(#arr-hl)';
     if(isOrPending) markerColor = 'url(#arr-or)';
@@ -625,12 +640,15 @@ function render() {
 
     if(e.label) {
       const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
-      const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
       const displayLbl = e.label || '';
       const tw = displayLbl.length*7+8;
+      
+      const bg = document.createElementNS('http://www.w3.org/2000/svg','rect');
       bg.setAttribute('x', mx-tw/2); bg.setAttribute('y', my-18);
       bg.setAttribute('width', tw); bg.setAttribute('height', 14);
       bg.setAttribute('rx', 2);
+      bg.setAttribute('class', 'edge-label-bg');
+      
       let bgFill = 'rgba(10,5,5,0.85)', bgStroke = '#3a0f0f';
       if(isOrPending){ bgFill='rgba(30,20,0,0.95)'; bgStroke='#fbbf24'; }
       else if(isOr){ bgFill='rgba(20,14,0,0.9)'; bgStroke='#92400e'; }
@@ -638,29 +656,39 @@ function render() {
       bg.setAttribute('fill', bgFill);
       bg.setAttribute('stroke', bgStroke);
       bg.setAttribute('stroke-width','0.8');
-      root.appendChild(bg);
-
+      
       const lbl = document.createElementNS('http://www.w3.org/2000/svg','text');
       lbl.setAttribute('x', mx); lbl.setAttribute('y', my-8);
       let lblCls = 'edge-label';
       if(isOr||isOrPending) lblCls+=' or-edge';
       if(isHl && !isOrPending) lblCls+=' highlighted';
       lbl.setAttribute('class', lblCls);
-      lbl.textContent = e.label || '';
+      lbl.textContent = displayLbl;
+
+      const deleteAction = (ev) => {
+        ev.stopPropagation();
+        if(confirm(`Delete connection labeled "${displayLbl}"?`)) {
+          edges.splice(i, 1);
+          render(); status('Label deleted');
+        }
+      };
+      bg.addEventListener('click', deleteAction);
+      lbl.addEventListener('click', deleteAction);
+
+      root.appendChild(bg);
       root.appendChild(lbl);
     }
   });
 
-  // nodes
   Object.values(nodes).forEach(n => {
     if(!positions[n.id]) positions[n.id]={x:120+Math.random()*300, y:80+Math.random()*200};
     const {x,y}=positions[n.id];
     const isHl = highlighted.has(n.id);
     const isSel = selectedNode===n.id;
     const isSF = searchFocus===n.id;
+    const hasFarm = farmSet.has(n.id);
 
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    const hasFarm = farmSet.has(n.id);
     let cls = 'node-group';
     if(isHl) cls+=' highlighted';
     if(isSel) cls+=' selected';
@@ -668,7 +696,6 @@ function render() {
     if(isSF) cls+=' search-focus';
     if(hasFarm) cls+=' has-farm';
     g.setAttribute('class', cls);
-    g.setAttribute('data-id', n.id);
     g.setAttribute('transform',`translate(${x},${y})`);
 
     const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
@@ -677,7 +704,6 @@ function render() {
     rect.setAttribute('rx',3); rect.setAttribute('class','node-rect');
     g.appendChild(rect);
 
-    // top accent line
     const accent = document.createElementNS('http://www.w3.org/2000/svg','rect');
     accent.setAttribute('x',-NW/2); accent.setAttribute('y',-NH/2);
     accent.setAttribute('width',NW); accent.setAttribute('height',2);
@@ -714,30 +740,22 @@ function render() {
   });
 }
 
-// ─── NODE CLICK ──────────────────────────────────────────────────────────────
 function onNodeClick(id) {
   if(linkMode) { handleLink(id); return; }
-
-  // if clicking a node while or-pending: resolve the or choice
   if(orPending) {
-    // find which group this clicked node belongs to
     if(orPending.groups) {
-      const chosenGroup = Object.entries(orPending.groups)
-        .find(([lbl, arr]) => arr.some(({e}) => e.from===id));
+      const chosenGroup = Object.entries(orPending.groups).find(([lbl, arr]) => arr.some(({e}) => e.from===id));
       if(chosenGroup) {
         const [lbl, arr] = chosenGroup;
-        // clear all pending, only keep chosen group
         orPending.orEdgeIndices.forEach(i => hlEdges.delete(i));
         arr.forEach(({e,i}) => { hlEdges.add(i); });
         orPending = null;
-        // continue BFS from all sources in chosen group
         arr.forEach(({e}) => { if(!highlighted.has(e.from)) bfsHighlight(e.from, true); });
         render(); return;
       }
     }
     orPending = null;
   }
-
   searchFocus = null;
   if(selectedNode===id) {
     selectedNode=null; highlighted.clear(); hlEdges.clear(); orPending=null; render(); return;
@@ -756,13 +774,8 @@ function bfsHighlight(startId, append) {
     const cur=q.shift();
     if(highlighted.has(cur)) continue;
     highlighted.add(cur);
-    // stop at farm nodes (don't trace past them)
     if(farmSet.has(cur) && cur!==startId) continue;
-    // find all incoming edges
     const incoming = edges.map((e,i)=>({e,i})).filter(({e})=>e.to===cur);
-    // group by source node to detect 'or' alternatives
-    // an 'or' situation = multiple incoming edges to same node with label 'or'
-    // group incoming edges by recipe label
     const labelGroups = {};
     incoming.forEach(({e,i}) => {
       const lbl = e.label || '';
@@ -770,43 +783,27 @@ function bfsHighlight(startId, append) {
       labelGroups[lbl].push({e,i});
     });
     const groupKeys = Object.keys(labelGroups);
-
     if(groupKeys.length > 1) {
-      // multiple recipe groups → OR choice needed
-      // highlight all as pending, wait for user
       incoming.forEach(({e,i}) => hlEdges.add(i));
       orPending = { targetId: cur, orEdgeIndices: incoming.map(({i})=>i), groups: labelGroups };
     } else {
-      // single group or no label — just follow all
       incoming.forEach(({e,i})=>{ if(!highlighted.has(e.from)){ hlEdges.add(i); q.push(e.from); }});
     }
   }
 }
 
-// ─── LINK MODE ───────────────────────────────────────────────────────────────
 function handleLink(id) {
-  if(!linkSrc) {
-    linkSrc=id; status(`FROM: ${nodes[id].name} → pick target`); render(); return;
-  }
+  if(!linkSrc) { linkSrc=id; status(`FROM: ${nodes[id].name} → pick target`); render(); return; }
   if(linkSrc===id) { linkSrc=null; status('Cancelled'); render(); return; }
   pendingLink={from:linkSrc,to:id}; linkSrc=null;
   showQty(); render();
 }
 
-let pendingLink=null;
 function showQty() {
   if(!pendingLink) return;
-  // find existing recipe groups on this target
-  const existing = edges
-    .filter(e => e.to === pendingLink.to && e.label && e.label.trim() !== '')
-    .map(e => e.label)
-    .filter((v,i,a) => a.indexOf(v)===i); // unique labels
-
-  if(existing.length > 0) {
-    showRecipePopup(existing);
-  } else {
-    openSimpleLabelDialog();
-  }
+  const existing = edges.filter(e => e.to === pendingLink.to && e.label && e.label.trim() !== '').map(e => e.label).filter((v,i,a) => a.indexOf(v)===i);
+  if(existing.length > 0) showRecipePopup(existing);
+  else openSimpleLabelDialog();
 }
 
 function openSimpleLabelDialog() {
@@ -824,75 +821,47 @@ function showRecipePopup(existingLabels) {
   list.innerHTML = '';
   const w = document.getElementById('canvas-wrap').getBoundingClientRect();
   d.style.left = (w.width/2-140)+'px'; d.style.top = (w.height/2-100)+'px';
-
   existingLabels.forEach(lbl => {
     const btn = document.createElement('button');
     btn.className = 'recipe-popup-opt';
     btn.textContent = '→ Add to: ' + lbl;
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
       edges.push({from: pendingLink.from, to: pendingLink.to, label: lbl});
-      pendingLink = null;
-      d.classList.remove('open');
-      save(); layout(); status('Added to recipe: ' + lbl + ' ✓');
-    });
+      pendingLink = null; d.classList.remove('open');
+      layout(); status('Added to recipe: ' + lbl + ' ✓');
+    };
     list.appendChild(btn);
   });
-
-  // new recipe option
   const newBtn = document.createElement('button');
   newBtn.className = 'recipe-popup-opt new';
   newBtn.textContent = '+ New recipe...';
-  newBtn.addEventListener('click', () => {
-    d.classList.remove('open');
-    openSimpleLabelDialog();
-  });
+  newBtn.onclick = () => { d.classList.remove('open'); openSimpleLabelDialog(); };
   list.appendChild(newBtn);
-
   d.classList.add('open');
 }
-  // normal label dialog
-  const d=document.getElementById('qty-dialog');
-  const w=document.getElementById('canvas-wrap').getBoundingClientRect();
-  d.style.left=(w.width/2-115)+'px'; d.style.top=(w.height/2-70)+'px';
-  d.classList.add('open');
-  document.getElementById('qty-input').value='';
-  document.getElementById('qty-input').focus();
-}
 
+document.getElementById('recipe-popup-cancel').onclick = () => { pendingLink = null; document.getElementById('recipe-popup').classList.remove('open'); };
 document.getElementById('qty-ok').addEventListener('click',()=>{
   if(!pendingLink) return;
   const lbl = document.getElementById('qty-input').value.trim();
   edges.push({from: pendingLink.from, to: pendingLink.to, label: lbl});
-  pendingLink = null;
-  document.getElementById('qty-dialog').classList.remove('open');
-  save(); layout(); status('Link created ✓');
+  pendingLink = null; document.getElementById('qty-dialog').classList.remove('open');
+  layout(); status('Link created ✓');
 });
-  pendingLink=null;
-  document.getElementById('qty-dialog').classList.remove('open');
-  save(); layout(); status('Link created ✓');
-});
-document.getElementById('qty-cancel').addEventListener('click',()=>{
-  pendingLink=null;
-  document.getElementById('qty-dialog').classList.remove('open');
-});
-document.getElementById('qty-input').addEventListener('keydown',e=>{
-  if(e.key==='Enter') document.getElementById('qty-ok').click();
-  if(e.key==='Escape') document.getElementById('qty-cancel').click();
-});
+document.getElementById('qty-cancel').addEventListener('click',()=>{ pendingLink=null; document.getElementById('qty-dialog').classList.remove('open'); });
+document.getElementById('qty-input').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('qty-ok').click(); if(e.key==='Escape') document.getElementById('qty-cancel').click(); });
 
-// ─── ADD NODE ────────────────────────────────────────────────────────────────
 function addNode() {
   const el=document.getElementById('node-name');
   const name=el.value.trim(); if(!name){ status('Enter a name'); return; }
   const id='n'+Date.now();
   nodes[id]={id,name,automated:false};
   positions[id]={x:120+Math.random()*400, y:80+Math.random()*300};
-  el.value=''; save(); layout(); status(`Added: ${name}`);
+  el.value=''; layout(); status(`Added: ${name}`);
 }
 document.getElementById('btn-add').addEventListener('click',addNode);
 document.getElementById('node-name').addEventListener('keydown',e=>{ if(e.key==='Enter') addNode(); });
 
-// ─── LINK TOGGLE ─────────────────────────────────────────────────────────────
 document.getElementById('btn-link').addEventListener('click',()=>{
   linkMode=!linkMode; linkSrc=null;
   const pill=document.getElementById('mode-pill');
@@ -912,11 +881,9 @@ document.getElementById('btn-link').addEventListener('click',()=>{
   render();
 });
 
-// ─── SEARCH ───────────────────────────────────────────────────────────────────
 const searchBox = document.getElementById('search-box');
 const searchRes = document.getElementById('search-results');
 let srFocusIdx = -1;
-
 searchBox.addEventListener('input',()=>{
   const q=searchBox.value.trim().toLowerCase();
   srFocusIdx=-1;
@@ -933,127 +900,67 @@ searchBox.addEventListener('input',()=>{
   });
   searchRes.classList.add('open');
 });
-
 searchBox.addEventListener('keydown',e=>{
   const items=searchRes.querySelectorAll('.sr-item');
   if(e.key==='ArrowDown'){ e.preventDefault(); srFocusIdx=Math.min(srFocusIdx+1,items.length-1); updateSrFocus(items); }
   else if(e.key==='ArrowUp'){ e.preventDefault(); srFocusIdx=Math.max(srFocusIdx-1,0); updateSrFocus(items); }
   else if(e.key==='Enter'){
     if(srFocusIdx>=0 && items[srFocusIdx]){
-      const id=Object.values(nodes).filter(n=>n.name.toLowerCase().includes(searchBox.value.trim().toLowerCase()))[srFocusIdx]?.id;
-      if(id) selectSearch(id);
+      const matches = Object.values(nodes).filter(n=>n.name.toLowerCase().includes(searchBox.value.trim().toLowerCase()));
+      if(matches[srFocusIdx]) selectSearch(matches[srFocusIdx].id);
     }
   }
   else if(e.key==='Escape'){ searchRes.classList.remove('open'); searchBox.blur(); }
 });
-
-function updateSrFocus(items){
-  items.forEach((el,i)=>el.classList.toggle('focused',i===srFocusIdx));
-}
-
+function updateSrFocus(items){ items.forEach((el,i)=>el.classList.toggle('focused',i===srFocusIdx)); }
 function selectSearch(id) {
-  searchRes.classList.remove('open');
-  searchBox.value='';
-  searchFocus=id;
-  selectedNode=null; highlighted.clear(); hlEdges.clear();
-  render();
-  // pan to node
+  searchRes.classList.remove('open'); searchBox.value=''; searchFocus=id;
+  selectedNode=null; highlighted.clear(); hlEdges.clear(); render();
   const p=positions[id];
   if(p){
     const wrap=document.getElementById('canvas-wrap');
     pan.x=wrap.clientWidth/2-p.x*zoom;
     pan.y=wrap.clientHeight/2-p.y*zoom;
     document.getElementById('root').setAttribute('transform',`translate(${pan.x},${pan.y}) scale(${zoom})`);
-    save();
   }
   status(`Found: ${nodes[id]?.name}`);
 }
+document.addEventListener('click',e=>{ if(!e.target.closest('#search-wrap')) searchRes.classList.remove('open'); });
 
-document.addEventListener('click',e=>{
-  if(!e.target.closest('#search-wrap')) searchRes.classList.remove('open');
-});
-
-// ─── CONTEXT MENU ────────────────────────────────────────────────────────────
 let ctxTarget=null;
 function openCtx(id,x,y){
   ctxTarget=id;
   const m=document.getElementById('ctx-menu');
   m.style.left=x+'px'; m.style.top=y+'px';
   m.classList.add('open');
-  document.getElementById('ctx-auto').textContent =
-    nodes[id]?.automated ? '⚙ Mark as Manual' : '⚙ Mark as Automated';
+  document.getElementById('ctx-auto').textContent = nodes[id]?.automated ? '⚙ Mark as Manual' : '⚙ Mark as Automated';
 }
 document.addEventListener('click',()=>document.getElementById('ctx-menu').classList.remove('open'));
+document.getElementById('ctx-auto').addEventListener('click',()=>{ if(!ctxTarget||!nodes[ctxTarget]) return; nodes[ctxTarget].automated=!nodes[ctxTarget].automated; render(); });
+document.getElementById('ctx-farm').addEventListener('click',()=>{ if(!ctxTarget) return; if(farmSet.has(ctxTarget)) farmSet.delete(ctxTarget); else farmSet.add(ctxTarget); save(); render(); status(farmSet.has(ctxTarget) ? '🏭 Farm marked!' : 'Farm removed'); });
+document.getElementById('ctx-rename').addEventListener('click',()=>{ if(!ctxTarget||!nodes[ctxTarget]) return; const n=prompt('Rename:',nodes[ctxTarget].name); if(n&&n.trim()){ nodes[ctxTarget].name=n.trim(); render(); } });
+document.getElementById('ctx-del').addEventListener('click',()=>{ if(!ctxTarget) return; delete nodes[ctxTarget]; edges=edges.filter(e=>e.from!==ctxTarget&&e.to!==ctxTarget); delete positions[ctxTarget]; if(selectedNode===ctxTarget) selectedNode=null; highlighted.delete(ctxTarget); ctxTarget=null; layout(); status('Node deleted'); });
 
-document.getElementById('ctx-auto').addEventListener('click',()=>{
-  if(!ctxTarget||!nodes[ctxTarget]) return;
-  nodes[ctxTarget].automated=!nodes[ctxTarget].automated;
-  save(); render();
-});
-document.getElementById('ctx-farm').addEventListener('click',()=>{
-  if(!ctxTarget) return;
-  if(farmSet.has(ctxTarget)) farmSet.delete(ctxTarget);
-  else farmSet.add(ctxTarget);
-  saveFarms(); render();
-  status(farmSet.has(ctxTarget) ? '🏭 Farm marked!' : 'Farm removed');
-});
-document.getElementById('ctx-rename').addEventListener('click',()=>{
-  if(!ctxTarget||!nodes[ctxTarget]) return;
-  const n=prompt('Rename:',nodes[ctxTarget].name);
-  if(n&&n.trim()){ nodes[ctxTarget].name=n.trim(); save(); render(); }
-});
-document.getElementById('ctx-del').addEventListener('click',()=>{
-  if(!ctxTarget) return;
-  delete nodes[ctxTarget];
-  edges=edges.filter(e=>e.from!==ctxTarget&&e.to!==ctxTarget);
-  delete positions[ctxTarget];
-  if(selectedNode===ctxTarget) selectedNode=null;
-  highlighted.delete(ctxTarget);
-  ctxTarget=null; save(); layout(); status('Node deleted');
-});
-
-// ─── TOOLBAR BUTTONS ─────────────────────────────────────────────────────────
 document.getElementById('btn-layout').addEventListener('click',()=>{ layout(); status('Layout applied'); });
-document.getElementById('btn-clear-hl').addEventListener('click',()=>{
-  highlighted.clear(); hlEdges.clear(); selectedNode=null; searchFocus=null; render();
-});
-document.getElementById('btn-clear-all').addEventListener('click',()=>{
-  if(!confirm('Delete everything?')) return;
-  nodes={}; edges={}=[]; positions={}; highlighted.clear(); hlEdges.clear();
-  selectedNode=null; searchFocus=null; save(); render(); status('Cleared');
-});
-document.getElementById('btn-export').addEventListener('click',()=>{
-  const blob=new Blob([JSON.stringify({nodes,edges,positions},null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='recipetree.json'; a.click();
-});
+document.getElementById('btn-clear-hl').addEventListener('click',()=>{ highlighted.clear(); hlEdges.clear(); selectedNode=null; searchFocus=null; render(); });
+document.getElementById('btn-clear-all').addEventListener('click',()=>{ if(!confirm('Delete everything?')) return; nodes={}; edges=[]; positions={}; highlighted.clear(); hlEdges.clear(); selectedNode=null; searchFocus=null; render(); status('Cleared'); });
+document.getElementById('btn-export').addEventListener('click',()=>{ const blob=new Blob([JSON.stringify({nodes,edges,positions},null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='recipetree.json'; a.click(); });
 document.getElementById('btn-import').addEventListener('click',()=>document.getElementById('file-in').click());
 document.getElementById('file-in').addEventListener('change',e=>{
   const f=e.target.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=ev=>{
-    try {
-      const d=JSON.parse(ev.target.result);
-      nodes=d.nodes||{}; edges=d.edges||[]; positions=d.positions||{};
-      save(); layout(); status('Imported ✓');
-    } catch { status('Invalid JSON'); }
+    try { const d=JSON.parse(ev.target.result); nodes=d.nodes||{}; edges=d.edges||[]; positions=d.positions||{}; layout(); status('Imported ✓'); } catch { status('Invalid JSON'); }
   };
   r.readAsText(f); e.target.value='';
 });
 
-// ─── PAN / ZOOM ───────────────────────────────────────────────────────────────
 const wrap=document.getElementById('canvas-wrap');
-
-wrap.addEventListener('mousedown',e=>{
-  if(e.target.closest('.node-group')||e.target.closest('#ctx-menu')||e.target.closest('#qty-dialog')) return;
-  panning=true; panStart={x:e.clientX-pan.x, y:e.clientY-pan.y};
-  wrap.classList.add('grabbing');
-});
+wrap.addEventListener('mousedown',e=>{ if(e.target.closest('.node-group')||e.target.closest('#ctx-menu')||e.target.closest('#qty-dialog')||e.target.closest('.edge-label')||e.target.closest('.edge-label-bg')) return; panning=true; panStart={x:e.clientX-pan.x, y:e.clientY-pan.y}; wrap.classList.add('grabbing'); });
 window.addEventListener('mousemove',e=>{
   if(!panning) return;
   pan.x=e.clientX-panStart.x; pan.y=e.clientY-panStart.y;
   document.getElementById('root').setAttribute('transform',`translate(${pan.x},${pan.y}) scale(${zoom})`);
-  // temp link line
   if(linkMode && linkSrc && positions[linkSrc]) {
     const p=positions[linkSrc];
     const sx=p.x*zoom+pan.x, sy=p.y*zoom+pan.y;
@@ -1063,8 +970,7 @@ window.addEventListener('mousemove',e=>{
     tl.setAttribute('opacity','1');
   }
 });
-window.addEventListener('mouseup',()=>{ if(panning){ panning=false; wrap.classList.remove('grabbing'); save(); }});
-
+window.addEventListener('mouseup',()=>{ if(panning){ panning=false; wrap.classList.remove('grabbing'); }});
 wrap.addEventListener('mousemove',e=>{
   if(panning) return;
   if(linkMode && linkSrc && positions[linkSrc]){
@@ -1074,60 +980,23 @@ wrap.addEventListener('mousemove',e=>{
     tl.setAttribute('x1',sx); tl.setAttribute('y1',sy);
     tl.setAttribute('x2',e.clientX); tl.setAttribute('y2',e.clientY);
     tl.setAttribute('opacity','1');
-  } else {
-    document.getElementById('temp-line').setAttribute('opacity','0');
-  }
+  } else { document.getElementById('temp-line').setAttribute('opacity','0'); }
 });
+wrap.addEventListener('wheel',e=>{ e.preventDefault(); const f=e.deltaY<0?1.1:0.9; const r=wrap.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top; pan.x=mx-(mx-pan.x)*f; pan.y=my-(my-pan.y)*f; zoom=Math.max(0.15,Math.min(5,zoom*f)); document.getElementById('root').setAttribute('transform',`translate(${pan.x},${pan.y}) scale(${zoom})`); },{passive:false});
+wrap.addEventListener('click',e=>{ if(!e.target.closest('.node-group')&&!linkMode&&!e.target.closest('.edge-label')&&!e.target.closest('.edge-label-bg')){ selectedNode=null; searchFocus=null; highlighted.clear(); hlEdges.clear(); render(); } });
 
-wrap.addEventListener('wheel',e=>{
-  e.preventDefault();
-  const f=e.deltaY<0?1.1:0.9;
-  const r=wrap.getBoundingClientRect();
-  const mx=e.clientX-r.left, my=e.clientY-r.top;
-  pan.x=mx-(mx-pan.x)*f; pan.y=my-(my-pan.y)*f;
-  zoom=Math.max(0.15,Math.min(5,zoom*f));
-  document.getElementById('root').setAttribute('transform',`translate(${pan.x},${pan.y}) scale(${zoom})`);
-  save();
-},{passive:false});
-
-wrap.addEventListener('click',e=>{
-  if(!e.target.closest('.node-group')&&!linkMode){
-    selectedNode=null; searchFocus=null;
-    highlighted.clear(); hlEdges.clear(); render();
-  }
-});
-
-// ─── STATUS ───────────────────────────────────────────────────────────────────
 let _st=null;
-function status(msg){
-  const s=document.getElementById('status');
-  s.textContent=msg; s.classList.add('show');
-  clearTimeout(_st); _st=setTimeout(()=>s.classList.remove('show'),2500);
-}
+function status(msg){ const s=document.getElementById('status'); s.textContent=msg; s.classList.add('show'); clearTimeout(_st); _st=setTimeout(()=>s.classList.remove('show'),2500); }
 
-// ─── SEED DATA ────────────────────────────────────────────────────────────────
 function seed(){
   const ns=[
-    {id:'s1',name:'Cobblestone',automated:true},
-    {id:'s2',name:'Gravel',automated:false},
-    {id:'s3',name:'Flint',automated:false},
-    {id:'s4',name:'Iron Nuggets',automated:false},
-    {id:'s5',name:'Iron Ingot',automated:false},
-    {id:'s6',name:'Andesite',automated:false},
-    {id:'s7',name:'Andesite Alloy',automated:false},
+    {id:'s1',name:'Cobblestone',automated:true}, {id:'s2',name:'Gravel',automated:false}, {id:'s3',name:'Flint',automated:false},
+    {id:'s4',name:'Iron Nuggets',automated:false}, {id:'s5',name:'Iron Ingot',automated:false}, {id:'s6',name:'Andesite',automated:false}, {id:'s7',name:'Andesite Alloy',automated:false},
   ];
   ns.forEach(n=>nodes[n.id]=n);
-  edges=[
-    {from:'s1',to:'s2',label:'crush'},
-    {from:'s2',to:'s3',label:'wash'},
-    {from:'s2',to:'s4',label:'wash'},
-    {from:'s4',to:'s5',label:'x9'},
-    {from:'s6',to:'s7',label:'craft'},
-    {from:'s4',to:'s7',label:'craft'},
-  ];
+  edges=[ {from:'s1',to:'s2',label:'crush'}, {from:'s2',to:'s3',label:'wash'}, {from:'s2',to:'s4',label:'wash'}, {from:'s4',to:'s5',label:'x9'}, {from:'s6',to:'s7',label:'craft'}, {from:'s4',to:'s7',label:'craft'}, ];
 }
 
-// ─── INIT ─────────────────────────────────────────────────────────────────────
 async function init() {
   try {
     const res = await fetch('recipetree.json');
@@ -1135,49 +1004,27 @@ async function init() {
       const d = await res.json();
       nodes=d.nodes||{}; edges=d.edges||[]; positions=d.positions||{};
       status('Loaded from recipetree.json');
-      layout(); return;
     }
   } catch(e) {}
-  if(!load() || Object.keys(nodes).length===0) seed();
+  if(Object.keys(nodes).length===0) seed();
+  load(); // only loads farm status
   layout();
 }
+init();
 
-
-// ─── JSON SIDEBAR ─────────────────────────────────────────────────────────────
 function highlightJson(json) {
-  return json
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
-      if (/^"/.test(m)) {
-        if (/:$/.test(m)) return `<span class="jk">${m}</span>`;
-        return `<span class="js">${m}</span>`;
-      }
-      return `<span class="jn">${m}</span>`;
-    });
+  return json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, m => {
+    if (/^"/.test(m)) { if (/:$/.test(m)) return `<span class="jk">${m}</span>`; return `<span class="js">${m}</span>`; }
+    return `<span class="jn">${m}</span>`;
+  });
 }
-
-function openJsonSidebar() {
-  const raw = JSON.stringify({nodes, edges, positions}, null, 2);
-  document.getElementById('json-pre').innerHTML = highlightJson(raw);
-  document.getElementById('json-sidebar').classList.add('open');
-  document.getElementById('json-copy-btn').classList.remove('copied');
-  document.getElementById('json-copy-btn').textContent = '⎘ Copy';
-}
-
+function openJsonSidebar() { const raw = JSON.stringify({nodes, edges, positions}, null, 2); document.getElementById('json-pre').innerHTML = highlightJson(raw); document.getElementById('json-sidebar').classList.add('open'); document.getElementById('json-copy-btn').textContent = '⎘ Copy'; }
 document.getElementById('btn-json').addEventListener('click', openJsonSidebar);
-document.getElementById('json-close-btn').addEventListener('click', () => {
-  document.getElementById('json-sidebar').classList.remove('open');
-});
+document.getElementById('json-close-btn').addEventListener('click', () => { document.getElementById('json-sidebar').classList.remove('open'); });
 document.getElementById('json-copy-btn').addEventListener('click', () => {
   const raw = JSON.stringify({nodes, edges, positions}, null, 2);
-  navigator.clipboard.writeText(raw).then(() => {
-    const btn = document.getElementById('json-copy-btn');
-    btn.textContent = '✓ Copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '⎘ Copy'; btn.classList.remove('copied'); }, 2000);
-  });
+  navigator.clipboard.writeText(raw).then(() => { const btn = document.getElementById('json-copy-btn'); btn.textContent = '✓ Copied!'; setTimeout(() => { btn.textContent = '⎘ Copy'; }, 2000); });
 });
-
 </script>
 </body>
 </html>
