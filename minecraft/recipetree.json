@@ -3,7 +3,7 @@
     "s1": {
       "id": "s1",
       "name": "Cobblestone",
-      "automated": true
+      "automated": false
     },
     "s2": {
       "id": "s2",

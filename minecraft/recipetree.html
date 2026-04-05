@@ -712,10 +712,30 @@ function render() {
     accent.setAttribute('pointer-events','none');
     g.appendChild(accent);
 
+    // trigger image load if not yet tried
+    preloadImg(n.name);
+
+    const imgSize = NH - 8; // 30px
+    const hasImg = imgCache[n.name] === true;
+    const shortName = n.name.length > (hasImg ? 12 : 16) ? n.name.slice(0, hasImg ? 11 : 15) + '…' : n.name;
+
+    if(hasImg) {
+      const imgEl = document.createElementNS('http://www.w3.org/2000/svg','image');
+      imgEl.setAttribute('href', 'items/' + encodeURIComponent(n.name) + '.png');
+      imgEl.setAttribute('x', -NW/2 + 5);
+      imgEl.setAttribute('y', -imgSize/2);
+      imgEl.setAttribute('width', imgSize);
+      imgEl.setAttribute('height', imgSize);
+      imgEl.setAttribute('pointer-events','none');
+      g.appendChild(imgEl);
+    }
+
     const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
     txt.setAttribute('class','node-text');
-    txt.setAttribute('x',0); txt.setAttribute('y',0);
-    txt.textContent = n.name.length>16 ? n.name.slice(0,15)+'…' : n.name;
+    txt.setAttribute('x', hasImg ? -NW/2 + imgSize + 10 : 0);
+    txt.setAttribute('y', 0);
+    if(hasImg) txt.setAttribute('text-anchor','start');
+    txt.textContent = shortName;
     g.appendChild(txt);
 
     if(n.automated) {
@@ -784,10 +804,12 @@ function bfsHighlight(startId, append) {
     });
     const groupKeys = Object.keys(labelGroups);
     if(groupKeys.length > 1) {
+      // multiple DIFFERENT labels = OR choice, ask user to pick
       incoming.forEach(({e,i}) => hlEdges.add(i));
       orPending = { targetId: cur, orEdgeIndices: incoming.map(({i})=>i), groups: labelGroups };
     } else {
-      incoming.forEach(({e,i})=>{ if(!highlighted.has(e.from)){ hlEdges.add(i); q.push(e.from); }});
+      // same label (or no label) = ALL are required ingredients, highlight every one
+      incoming.forEach(({e,i})=>{ hlEdges.add(i); if(!highlighted.has(e.from)) q.push(e.from); });
     }
   }
 }
@@ -995,6 +1017,18 @@ function seed(){
   ];
   ns.forEach(n=>nodes[n.id]=n);
   edges=[ {from:'s1',to:'s2',label:'crush'}, {from:'s2',to:'s3',label:'wash'}, {from:'s2',to:'s4',label:'wash'}, {from:'s4',to:'s5',label:'x9'}, {from:'s6',to:'s7',label:'craft'}, {from:'s4',to:'s7',label:'craft'}, ];
+}
+
+// ─── IMAGE CACHE ──────────────────────────────────────────────────────────────
+const imgCache = {}; // name → true | false | 'loading'
+
+function preloadImg(name) {
+  if(imgCache[name] !== undefined) return;
+  imgCache[name] = 'loading';
+  const img = new Image();
+  img.onload  = () => { imgCache[name] = true;  render(); };
+  img.onerror = () => { imgCache[name] = false; };
+  img.src = 'items/' + encodeURIComponent(name) + '.png';
 }
 
 async function init() {
